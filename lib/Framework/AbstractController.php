@@ -68,6 +68,16 @@ abstract class AbstractController
         die;
     }
 
+    /**
+     * Rend un composant réutilisable (sans layout global).
+     *
+     * @param string $componentPath Chemin relatif à `templates/components/` (ex: 'hero.php')
+     * @param array<string, mixed> $data Données injectées dans le scope local du composant
+     *
+     * @return string HTML du composant
+     *
+     * @throws \InvalidArgumentException Si le fichier de composant est introuvable
+     */
     protected function renderComponent(string $componentPath, array $data = []): string
     {
         $path = dirname(__DIR__, 2) . '/templates/components/' . $componentPath;
