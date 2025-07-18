@@ -5,6 +5,9 @@ declare(strict_types=1);
 use CapsuleLib\Service\Lang\Translate;
 use CapsuleLib\Security\Authenticator;
 
+var_dump(Authenticator::isAuthenticated());
+var_dump($_SESSION["admin"]);
+
 Translate::load(default: 'fr', page: basename($_SERVER['SCRIPT_NAME'], '.php'));
 ?>
 

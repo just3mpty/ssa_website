@@ -1,4 +1,5 @@
-<h1>Connexion</h1>
+<!-- templates/admin/login.php -->
+<h1><?= htmlspecialchars($title ?? 'Connexion') ?></h1>
 
 <?php if (!empty($error)): ?>
     <p style="color:red"><?= htmlspecialchars($error) ?></p>

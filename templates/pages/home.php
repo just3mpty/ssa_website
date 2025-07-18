@@ -8,7 +8,6 @@
             <a href="contact.html" class="btn secondary">Contact</a>
         </div>
     </div>
-    test
 
     <?= $this->renderComponent('apropos.php') ?>
 </section>
