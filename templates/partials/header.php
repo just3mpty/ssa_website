@@ -35,7 +35,7 @@ Translate::load(default: 'fr', page: basename($_SERVER['SCRIPT_NAME'], '.php'));
                 </form>
             </li>
             <?php if (Authenticator::isAuthenticated()): ?>
-                <li><a href="/Dashboard">Dashboard</a></li>
+                <li><a href="/dashboard">Dashboard</a></li>
                 <li><a href="/logout">Déconnexion</a></li>
             <?php else: ?>
                 <li><a href="/login">Connexion</a></li>
