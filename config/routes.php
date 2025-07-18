@@ -8,9 +8,9 @@ use App\Controller\AdminController;
 const ROUTES = [
 
     //AdminController
-    '/admin' => [
+    '/dashboard' => [
         'controller' => AdminController::class,
-        'method'     => 'admin',
+        'method'     => 'dashboard',
     ],
     '/login' => [
         'controller' => AdminController::class,

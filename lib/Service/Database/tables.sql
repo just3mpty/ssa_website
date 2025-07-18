@@ -29,5 +29,5 @@ CREATE TABLE IF NOT EXISTS events (
 
 INSERT INTO admin_users (username, password_hash) VALUES (
     'admin',
-    'admin'
+    '$2y$12$DdRaR1i6wNQbPGxbmgeB9OvAnhSzFvN98/wIBdO3w0Qcqsu62BMEy'
 );
