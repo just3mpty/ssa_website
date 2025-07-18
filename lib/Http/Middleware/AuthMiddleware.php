@@ -2,6 +2,7 @@
 #
 declare(strict_types=1);
 
+#te
 namespace CapsuleLib\Http\Middleware;
 
 use CapsuleLib\Security\Authenticator;
