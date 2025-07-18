@@ -1,0 +1,17 @@
+# Activer mod_rewrite (si disponible)
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Rediriger toutes les requêtes vers index.php sauf fichiers existants
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]
+</IfModule>
+
+# Sécuriser les fichiers PHP
+# <FilesMatch "\.php$">
+#     Require all denied
+# </FilesMatch>
+
+# Désactiver l'énumération de répertoire
+Options -Indexes
