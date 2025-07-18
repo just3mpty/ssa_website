@@ -37,6 +37,6 @@ run-dev:
 	done
 
 ## 🧪 Init DB locale
-init-db:
+deploy-db:
 	@echo "🧪 Init base SQLite..."
 	@bash ./init_db.sh

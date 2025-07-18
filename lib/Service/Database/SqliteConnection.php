@@ -27,6 +27,7 @@ class SqliteConnection
      *
      * @var string
      */
+
     private static string $relativePath = '/data/database.sqlite';
 
     /**
@@ -39,8 +40,7 @@ class SqliteConnection
     public static function getInstance(): PDO
     {
         if (self::$pdo === null) {
-            $absolutePath = dirname(__DIR__, 2) . self::$relativePath;
-
+            $absolutePath = dirname(__DIR__, 3) . self::$relativePath;
             try {
                 self::$pdo = new PDO('sqlite:' . $absolutePath, null, null, [
                     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
