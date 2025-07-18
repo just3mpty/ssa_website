@@ -9,3 +9,4 @@
     </div>
 </section>
 <?= $this->renderComponent('apropos.php') ?>
+<?= $this->renderComponent('actualites.php') ?>

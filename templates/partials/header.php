@@ -35,10 +35,16 @@ Translate::load(default: 'fr', page: basename($_SERVER['SCRIPT_NAME'], '.php'));
                 </form>
             </li>
             <?php if (Authenticator::isAuthenticated()): ?>
-                <li><a href="/dashboard">Dashboard</a></li>
-                <li><a href="/logout">Déconnexion</a></li>
+                <li><a class="icons" href="/dashboard">
+                        <img src="/assets/icons/dashboard.svg" alt="Dashboard icon">
+                    </a></li>
+                <li><a class="icons" href="/logout">
+                        <img src="/assets/icons/logout.svg" alt="Logout icon">
+                    </a></li>
             <?php else: ?>
-                <li><a href="/login">Connexion</a></li>
+                <li><a class="icons" href="/login">
+                        <img src="/assets/icons/login.svg" alt="Login icon">
+                    </a></li>
             <?php endif; ?>
         </ul>
     </nav>
