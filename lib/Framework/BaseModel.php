@@ -15,19 +15,14 @@ use PDO;
 abstract class BaseModel
 {
     protected PDO $pdo;
-    protected string $table;      // Nom de la table (doit être défini dans la sous-classe)
-    protected string $primaryKey; // Clé primaire (par défaut "id")
+    protected string $table;      // Nom de la table (à définir dans la sous-classe)
+    protected string $primaryKey; // Clé primaire (ex: "id")
 
     public function __construct(PDO $pdo)
     {
         $this->pdo = $pdo;
     }
 
-    // ===== CRUD GÉNÉRIQUE =====
-
-    /**
-     * Récupère un enregistrement par clé primaire.
-     */
     public function find($id): ?array
     {
         $stmt = $this->pdo->prepare("SELECT * FROM {$this->table} WHERE {$this->primaryKey} = :id");
@@ -36,19 +31,27 @@ abstract class BaseModel
         return $row === false ? null : $row;
     }
 
-    /**
-     * Récupère tous les enregistrements.
-     */
     public function all(): array
     {
         $stmt = $this->pdo->query("SELECT * FROM {$this->table}");
         return $stmt->fetchAll();
     }
 
-    /**
-     * Insère un nouvel enregistrement (array [col => value]).
-     * Retourne l’ID inséré.
-     */
+    protected function queryOne(string $sql, array $params = []): ?array
+    {
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        $row = $stmt->fetch();
+        return $row === false ? null : $row;
+    }
+
+    protected function query(string $sql, array $params = []): array
+    {
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
     public function insert(array $data): int
     {
         $cols = array_keys($data);
@@ -60,10 +63,6 @@ abstract class BaseModel
         return (int)$this->pdo->lastInsertId();
     }
 
-    /**
-     * Met à jour un enregistrement par clé primaire.
-     * $data = [col => value], $id = valeur de la PK.
-     */
     public function update($id, array $data): bool
     {
         $set = implode(', ', array_map(fn($c) => "$c = :$c", array_keys($data)));
@@ -73,9 +72,6 @@ abstract class BaseModel
         return $stmt->execute($data);
     }
 
-    /**
-     * Supprime un enregistrement par clé primaire.
-     */
     public function delete($id): bool
     {
         $stmt = $this->pdo->prepare("DELETE FROM {$this->table} WHERE {$this->primaryKey} = :id");
