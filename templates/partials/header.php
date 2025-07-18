@@ -5,9 +5,6 @@ declare(strict_types=1);
 use CapsuleLib\Service\Lang\Translate;
 use CapsuleLib\Security\Authenticator;
 
-var_dump(Authenticator::isAuthenticated());
-var_dump($_SESSION["admin"]);
-
 Translate::load(default: 'fr', page: basename($_SERVER['SCRIPT_NAME'], '.php'));
 ?>
 
@@ -38,7 +35,7 @@ Translate::load(default: 'fr', page: basename($_SERVER['SCRIPT_NAME'], '.php'));
                 </form>
             </li>
             <?php if (Authenticator::isAuthenticated()): ?>
-                <li><a href="/admin">Admin</a></li>
+                <li><a href="/Dashboard">Dashboard</a></li>
                 <li><a href="/logout">Déconnexion</a></li>
             <?php else: ?>
                 <li><a href="/login">Connexion</a></li>
