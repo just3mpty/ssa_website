@@ -24,7 +24,6 @@ Translate::load(default: 'fr', page: basename($_SERVER['SCRIPT_NAME'], '.php'));
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Open+Sans:wght@400;600&display=swap">
     <link rel="icon" type="image/png" href="img/logoSSA.png">
-    <script src="/public/assets/js/script.js"></script>
 </head>
 
 <body>
@@ -34,6 +33,7 @@ Translate::load(default: 'fr', page: basename($_SERVER['SCRIPT_NAME'], '.php'));
         <?php echo $viewContent; ?>
     </main>
     <?php require dirname(__DIR__) . '/templates/partials/footer.php'; ?>
+    <script src="/assets/js/script.js"></script>
 </body>
 
 </html>
