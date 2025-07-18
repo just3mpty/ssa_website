@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CapsuleLib\Service\Lang\Translate;
+use App\Lang\Translate;
 use CapsuleLib\Security\Authenticator;
 
 Translate::load(default: 'fr', page: basename($_SERVER['SCRIPT_NAME'], '.php'));

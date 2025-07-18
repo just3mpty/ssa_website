@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CapsuleLib\Service\Lang;
+namespace App\Lang;
 
 /**
  * Classe statique de gestion des traductions multilingues.
