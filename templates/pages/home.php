@@ -10,3 +10,4 @@
 </section>
 <?= $this->renderComponent('apropos.php') ?>
 <?= $this->renderComponent('actualites.php') ?>
+<?= $this->renderComponent('agenda.php') ?>
