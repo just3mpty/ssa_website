@@ -67,4 +67,18 @@ abstract class AbstractController
         header("Location: " . $uri);
         die;
     }
+
+    protected function renderComponent(string $componentPath, array $data = []): string
+    {
+        $path = dirname(__DIR__, 2) . '/templates/components/' . $componentPath;
+
+        if (!file_exists($path)) {
+            throw new \InvalidArgumentException("Component not found: {$path}");
+        }
+
+        extract($data, EXTR_SKIP);
+        ob_start();
+        require $path;
+        return ob_get_clean();
+    }
 }

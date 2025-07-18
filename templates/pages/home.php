@@ -8,4 +8,6 @@
             <a href="contact.html" class="btn secondary">Contact</a>
         </div>
     </div>
+
+    <?= $this->renderComponent('hero.php') ?>
 </section>
