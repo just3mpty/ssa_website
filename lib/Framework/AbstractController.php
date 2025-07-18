@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CapsuleLib\Core;
+namespace CapsuleLib\Framework;
 
 /**
  * Classe de base pour tous les contrôleurs.

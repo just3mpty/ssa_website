@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CapsuleLib\Lang\Translate;
+use CapsuleLib\Service\Lang\Translate;
 
 Translate::load(default: 'fr', page: basename($_SERVER['SCRIPT_NAME'], '.php')); // détecte automatiquement la page courante
 ?>

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CapsuleLib\Security;
+namespace CapsuleLib\Http;
 
 /**
  * Gère l'envoi centralisé d'en-têtes HTTP liés à la sécurité.

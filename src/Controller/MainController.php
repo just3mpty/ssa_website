@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use CapsuleLib\Core\AbstractController;
+use CapsuleLib\Framework\AbstractController;
+use CapsuleLib\Service\Database\SqliteConnection;
+use CapsuleLib\Http\Middleware\AuthMiddleware;
+use CapsuleLib\Security\Authenticator;
 
 /**
  * Contrôleur principal du site.
@@ -14,6 +17,36 @@ use CapsuleLib\Core\AbstractController;
  */
 class MainController extends AbstractController
 {
+
+    public function login(): void
+    {
+
+        $error = null;
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $pdo = SqliteConnection::getInstance();
+            $success = Authenticator::login($pdo, $_POST['username'], $_POST['password']);
+
+            if ($success) {
+                header('Location: /admin');
+                exit;
+            }
+
+            $error = "Identifiants incorrects.";
+        }
+
+        echo $this->renderView('admin/login.php', [
+            'title' => 'Connexion',
+            'error' => $error
+        ]);
+    }
+
+    public function admin(): void
+    {
+        session_start();
+        AuthMiddleware::handle(); // 🚫 Bloque si non connecté
+        echo $this->renderView('admin/admin.php', ['title' => 'Accueil']);
+    }
     /**
      * Page d'accueil du site.
      *
@@ -23,6 +56,7 @@ class MainController extends AbstractController
     {
         echo $this->renderView('pages/home.php', ['title' => 'Accueil']);
     }
+
 
     /**
      * Page de présentation du projet.

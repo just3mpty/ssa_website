@@ -1,4 +1,4 @@
-.PHONY: init-db run-local run-dev
+.PHONY: init-db run-dev run-local desac-apache
 
 init-db:
 	@echo "Init db"

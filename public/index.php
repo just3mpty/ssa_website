@@ -7,7 +7,7 @@ ini_set('display_startup_errors', '1');
 error_reporting(E_ALL);
 
 use CapsuleLib\Router\Router;
-use CapsuleLib\Security\SecureHeaders;
+use CapsuleLib\Http\SecureHeaders;
 // use CapsuleLib\Lang\Translate;
 
 require dirname(__DIR__) . '/lib/autoload.php';

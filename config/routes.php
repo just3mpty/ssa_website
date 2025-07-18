@@ -9,6 +9,14 @@ const ROUTES = [
         'controller' => MainController::class,
         'method'     => 'home',
     ],
+    '/admin' => [
+        'controller' => MainController::class,
+        'method'     => 'admin',
+    ],
+    '/login' => [
+        'controller' => MainController::class,
+        'method'     => 'login',
+    ],
     '/projet' => [
         'controller' => MainController::class,
         'method'     => 'projet',

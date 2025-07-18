@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CapsuleLib\Lang;
+namespace CapsuleLib\Service\Lang;
 
 /**
  * Classe statique de gestion des traductions multilingues.
@@ -51,12 +51,12 @@ class Translate
         $langCode = $_GET['lang'] ?? $_SESSION['lang'] ?? $default;
         $_SESSION['lang'] = $langCode;
 
-        $basePath = __DIR__ . "/language/{$langCode}";
+        $basePath = __DIR__ . "/locales/{$langCode}";
         $commonFile = "{$basePath}/common.php";
         $pageFile   = "{$basePath}/{$page}.php";
 
         if (!file_exists($commonFile)) {
-            $basePath   = __DIR__ . "/language/{$default}";
+            $basePath   = __DIR__ . "/locales/{$default}";
             $commonFile = "{$basePath}/common.php";
             $pageFile   = "{$basePath}/{$page}.php";
         }
