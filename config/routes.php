@@ -3,19 +3,24 @@
 declare(strict_types=1);
 
 use App\Controller\MainController;
+use App\Controller\AdminController;
 
 const ROUTES = [
-    '/' => [
-        'controller' => MainController::class,
-        'method'     => 'home',
-    ],
+
+    //AdminController
     '/admin' => [
-        'controller' => MainController::class,
+        'controller' => AdminController::class,
         'method'     => 'admin',
     ],
     '/login' => [
-        'controller' => MainController::class,
+        'controller' => AdminController::class,
         'method'     => 'login',
+    ],
+
+    // MainController
+    '/' => [
+        'controller' => MainController::class,
+        'method'     => 'home',
     ],
     '/projet' => [
         'controller' => MainController::class,
