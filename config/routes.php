@@ -16,6 +16,10 @@ const ROUTES = [
         'controller' => AdminController::class,
         'method'     => 'login',
     ],
+    '/logout' => [
+        'controller' => AdminController::class,
+        'method' => 'logout'
+    ],
 
     // MainController
     '/' => [

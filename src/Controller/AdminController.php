@@ -45,4 +45,12 @@ class AdminController extends AbstractController
         AuthMiddleware::handle(); // 🚫 Bloque si non connecté
         echo $this->renderView('admin/dashboard.php', ['title' => 'Accueil']);
     }
+
+
+    public function logout(): void
+    {
+        Authenticator::logout();
+        header('Location: /login');
+        exit;
+    }
 }
