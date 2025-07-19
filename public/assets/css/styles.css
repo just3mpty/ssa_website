@@ -18,12 +18,10 @@ body {
     background-color: var(--background);
     color: var(--blue);
     line-height: 1.6;
-
-    &.container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 20px;
-    }
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 
     /* HEADER */
     & header {
@@ -653,6 +651,48 @@ body {
             color: var(--grey);
         }
     }
+
+    /* PAGE DE LOGIN */
+    & .login {
+        width: 100%;
+        flex: 1;
+        min-height: 65vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 30px;
+
+        & form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 25%;
+
+            & input {
+                padding: 15px;
+                border: 1px solid var(--grey);
+                border-radius: 8px;
+                background-color: #b8b8b825;
+                transition: border-color 0.3s;
+                outline: none;
+
+                &:focus {
+                    border: 1px solid var(--orange);
+                }
+            }
+
+            & button {
+                all: unset;
+                padding: 15px 30px;
+                background: var(--orange);
+                color: var(--background);
+                border-radius: 8px;
+                cursor: pointer;
+                max-width: fit-content;
+                font-weight: 600;
+            }
+        }
+    }
 }
 
 /* TODO: Refaire tout le responsive via media queries */
@@ -688,10 +728,5 @@ body {
     .contact-form,
     .agenda {
         padding: 15px;
-    }
-
-    .scroll-top-btn {
-        width: 40px;
-        height: 40px;
     }
 }

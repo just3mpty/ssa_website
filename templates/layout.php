@@ -27,7 +27,6 @@ Translate::load(default: 'fr', page: basename($_SERVER['SCRIPT_NAME'], '.php'));
 </head>
 
 <body>
-
     <?php require dirname(__DIR__) . '/templates/partials/header.php'; ?>
     <main>
         <?php echo $viewContent; ?>
