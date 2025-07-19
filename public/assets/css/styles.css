@@ -96,12 +96,11 @@ body {
     & main {
         display: flex;
         flex-direction: column;
-        gap: 30px;
 
         /* SEPARATION ENTRE SECTION */
         & .separator {
             width: 75%;
-            margin: 0 auto;
+            margin: 30px auto;
             height: 1px;
             background-color: var(--grey);
             border-radius: 2px;
