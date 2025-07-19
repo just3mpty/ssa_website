@@ -450,6 +450,7 @@ body {
             padding: 30px;
             display: flex;
             flex-direction: column;
+            align-items: center;
             gap: 30px;
             background: var(--orange);
             color: var(--background);
@@ -460,15 +461,17 @@ body {
             }
 
             & .infos {
+                width: 100%;
                 height: 100%;
                 display: flex;
+                align-items: center;
                 flex-direction: column;
                 gap: 30px;
 
                 & .contact-info,
                 & .contact-form {
                     flex: 1;
-                    max-width: 50%;
+                    width: 50%;
                     height: 100%;
                     background: #ffffff25;
                     display: flex;
@@ -543,7 +546,6 @@ body {
             width: 100%;
             display: flex;
             align-items: center;
-            justify-content: space-between;
 
             & .infos {
                 flex: 1;
