@@ -11,3 +11,5 @@
 <?= $this->renderComponent('apropos.php') ?>
 <?= $this->renderComponent('actualites.php') ?>
 <?= $this->renderComponent('agenda.php') ?>
+<?= $this->renderComponent('partenaires.php') ?>
+<?= $this->renderComponent('contact.php') ?>
