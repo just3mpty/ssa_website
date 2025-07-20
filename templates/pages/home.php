@@ -11,7 +11,27 @@
 <?= $this->renderComponent('apropos.php') ?>
 <?= $this->renderComponent('actualites.php') ?>
 <div class="separator"></div>
-<?= $this->renderComponent('agenda.php') ?>
+<section id="agenda" class="agenda">
+    <h2>Agenda</h2>
+    <p>Retrouvez nos événements à venir :</p>
+    <div class="events">
+        <?php if (empty($events)): ?>
+            <p class="no-events">Aucun événement à venir.</p>
+        <?php else: ?>
+            <?php foreach ($events as $event): ?>
+                <article class="event">
+                    <div class="date-time">
+                        <p><?= htmlspecialchars($event['date_event']) ?></p>
+                        <p>17:00</p>
+                    </div>
+                    <div class="description">
+                        <p><?= nl2br(htmlspecialchars($event['description'])) ?></p>
+                    </div>
+                </article>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
+</section>
 <div class="separator"></div>
 <?= $this->renderComponent('partenaires.php') ?>
 <div class="separator"></div>

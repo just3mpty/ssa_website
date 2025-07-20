@@ -22,12 +22,12 @@ function isActive(string $path): string
     <nav>
         <ul>
             <li><a href="/" class="<?= isActive('/') ?>"><?= Translate::t('nav_home') ?></a></li>
-            <li><a href="/#about" class="<?= isActive('/apropos') ?>"><?= Translate::t('nav_apropos') ?></a></li>
-            <li><a href="/#news" class="<?= isActive('/actualites') ?>"><?= Translate::t('nav_actualites') ?></a></li>
-            <li><a href="/#agenda" class="<?= isActive('/events') ?>"><?= Translate::t('nav_agenda') ?></a></li>
+            <li><a href="/#about"><?= Translate::t('nav_apropos') ?></a></li>
+            <li><a href="/#news"><?= Translate::t('nav_actualites') ?></a></li>
+            <li><a href="/#agenda"><?= Translate::t('nav_agenda') ?></a></li>
             <li><a href="/projet" class="<?= isActive('/projet') ?>"><?= Translate::t('nav_project') ?></a></li>
             <li><a href="/galerie" class="<?= isActive('/galerie') ?>"><?= Translate::t('nav_galerie') ?></a></li>
-            <li><a href="/#contact" class="<?= isActive('/contact') ?>"><?= Translate::t('nav_contact') ?></a></li>
+            <li><a href="/#contact"><?= Translate::t('nav_contact') ?></a></li>
 
             <li>
                 <form method="get" action="">

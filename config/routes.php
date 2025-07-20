@@ -43,14 +43,6 @@ const ROUTES = [
         'controller' => MainController::class,
         'method'     => 'galerie',
     ],
-    '/apropos' => [
-        'controller' => MainController::class,
-        'method'     => 'apropos',
-    ],
-    '/contact' => [
-        'controller' => MainController::class,
-        'method'     => 'contact',
-    ],
     '/wiki' => [
         'controller' => MainController::class,
         'method'     => 'wiki',

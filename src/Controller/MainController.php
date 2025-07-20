@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Model\Event;
+use CapsuleLib\Service\Database\SqliteConnection;
 use CapsuleLib\Framework\AbstractController;
 
 /**
@@ -22,9 +24,14 @@ class MainController extends AbstractController
      */
     public function home(): void
     {
-        echo $this->renderView('pages/home.php', ['title' => 'Accueil']);
-    }
+        $pdo = SqliteConnection::getInstance();
+        $eventModel = new Event($pdo);
+        $events = $eventModel->upcoming();
 
+        echo $this->renderView('pages/home.php', [
+            'events' => $events, // Ajoute explicitement
+        ]);
+    }
 
     /**
      * Page de présentation du projet.
@@ -47,16 +54,6 @@ class MainController extends AbstractController
     }
 
     /**
-     * Page listant les actualités ou événements récents.
-     *
-     * @return void
-     */
-    public function actualites(): void
-    {
-        echo $this->renderView('pages/actualites.php', ['title' => 'Actualités']);
-    }
-
-    /**
      * Galerie multimédia (images, vidéos…).
      *
      * @return void
@@ -64,34 +61,6 @@ class MainController extends AbstractController
     public function galerie(): void
     {
         echo $this->renderView('pages/galerie.php', ['title' => 'Galerie']);
-    }
-
-    /**
-     * Page de présentation "à propos" ou historique du projet.
-     *
-     * @return void
-     */
-    public function apropos(): void
-    {
-        echo $this->renderView('pages/apropos.php', ['title' => 'À propos']);
-    }
-
-    /**
-     * Page de contact, avec éventuelle gestion du formulaire.
-     *
-     * Si la requête est POST, traite les données et redirige.
-     * Sinon, affiche simplement la page de contact.
-     *
-     * @return void
-     */
-    public function contact(): void
-    {
-        // if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        //     // Traitement formulaire ici (validation, envoi mail…)
-        //     return $this->redirectToRoute('/contact', ['state' => 'success']);
-        // }
-
-        echo $this->renderView('pages/contact.php', ['title' => 'Contact']);
     }
 
     /**

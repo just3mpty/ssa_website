@@ -54,7 +54,6 @@ class AdminController extends AbstractController
         ]);
     }
 
-
     public function logout(): void
     {
         Authenticator::logout();
