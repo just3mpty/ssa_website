@@ -16,4 +16,3 @@
 <?= $this->renderComponent('partenaires.php') ?>
 <div class="separator"></div>
 <?= $this->renderComponent('contact.php') ?>
->>>>>>> main
