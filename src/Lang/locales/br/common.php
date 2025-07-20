@@ -28,6 +28,7 @@ return  [
     'footer_email_1'    => 'g.gabilletcpie@gmail.com',
     'footer_email_2'    => 'nicolas@buzuk.bzh',
     'footer_siret'      => 'SIRET : 300 79 63 489 000 11 | Kodoù APE : 9004Z',
+    'footer_copyright'  => 'Copyright © 2025 SSA Pays de Morlaix',
 
     // BOUTON REMONTER
     'btn_top'           => 'Distreiñ d’ar cʼhrecʼh',

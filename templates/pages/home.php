@@ -10,3 +10,10 @@
 </section>
 <?= $this->renderComponent('apropos.php') ?>
 <?= $this->renderComponent('actualites.php') ?>
+<div class="separator"></div>
+<?= $this->renderComponent('agenda.php') ?>
+<div class="separator"></div>
+<?= $this->renderComponent('partenaires.php') ?>
+<div class="separator"></div>
+<?= $this->renderComponent('contact.php') ?>
+>>>>>>> main

@@ -25,11 +25,12 @@ return  [
 
 
     // FOOTER
-    'footer_address'    => 'ULAMIR CPIE – Rue du 19 Mars 1962, 29620 Lanmeur',
-    'footer_tel'        => 'Tél : 02 98 67 51 54',
+    'footer_address'    => 'SSA Pays de Morlaix – Rue de quelque chose, 29000 Breizh',
+    'footer_tel'        => 'Tél : 01 23 45 67 89',
     'footer_email_1'    => 'g.gabilletcpie@gmail.com',
     'footer_email_2'    => 'nicolas@buzuk.bzh',
     'footer_siret'      => 'SIRET : 300 79 63 489 000 11 | Code APE : 9004Z',
+    'footer_copyright'  => 'Copyright © 2025 SSA Pays de Morlaix',
 
     // BOUTON REMONTER
     'btn_top'           => 'Remonter en haut',

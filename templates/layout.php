@@ -23,11 +23,10 @@ Translate::load(default: 'fr', page: basename($_SERVER['SCRIPT_NAME'], '.php'));
     <link rel="stylesheet" href="./assets/css/styles.css">
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Open+Sans:wght@400;600&display=swap">
-    <link rel="icon" type="image/png" href="img/logoSSA.png">
+    <link rel="icon" type="image/png" href="assets/img/logoSSA.png">
 </head>
 
 <body>
-
     <?php require dirname(__DIR__) . '/templates/partials/header.php'; ?>
     <main>
         <?php echo $viewContent; ?>
