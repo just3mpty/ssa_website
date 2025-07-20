@@ -4,100 +4,66 @@ declare(strict_types=1);
 
 namespace CapsuleLib\Router;
 
-require dirname(__DIR__, 2) . '/config/routes.php';
 
-/**
- * Routeur minimaliste pour applications PHP sans framework.
- *
- * Associe des chemins d'URL à des méthodes de contrôleur via une table de routage définie dans `config/routes.php`.
- * Supporte les paramètres dynamiques (ex: /user/{id}).
- */
 class Router
 {
-    /**
-     * @var array<string, array{controller: class-string, method: string}>
-     */
-    private array $routes;
+    private array $routes = []; // ['GET' => [pattern => [controller, method]], ...]
+    private $notFoundHandler = null;
 
-    /**
-     * @var string URI demandée, sans les slashes de début/fin.
-     */
-    private string $path;
-
-    /**
-     * Instancie le routeur et déclenche l’analyse de l’URL courante.
-     */
-    public function __construct()
+    public function get(string $path, array $handler): void
     {
-        $this->routes = ROUTES;
-        $this->path = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
-        $this->handle();
+        $this->addRoute('GET', $path, $handler);
+    }
+    public function post(string $path, array $handler): void
+    {
+        $this->addRoute('POST', $path, $handler);
+    }
+    public function any(string $path, array $handler): void
+    {
+        foreach (['GET', 'POST', 'PUT', 'DELETE', 'PATCH'] as $m) {
+            $this->addRoute($m, $path, $handler);
+        }
     }
 
-    /**
-     * Analyse la route et appelle dynamiquement le bon contrôleur/méthode.
-     * Affiche une page 404 si aucun pattern ne correspond.
-     *
-     * @return void
-     */
-    private function handle(): void
+    public function setNotFoundHandler(callable $handler): void
     {
-        foreach ($this->routes as $routePattern => $handler) {
-            $routePattern = trim($routePattern, '/');
-            $params = [];
+        $this->notFoundHandler = $handler;
+    }
 
-            if ($this->match($routePattern, $this->path, $params)) {
-                $controller = new $handler['controller'];
-                $method = $handler['method'];
-                $controller->$method(...$params);
+    private function addRoute(string $method, string $path, array $handler): void
+    {
+        $pattern = $this->convertPathToRegex($path);
+        $this->routes[$method][$pattern] = $handler;
+    }
+
+    private function convertPathToRegex(string $path): string
+    {
+        $pattern = preg_replace('#\{([a-z]+)\}#i', '(?P<$1>[^/]+)', trim($path, '/'));
+        return '#^' . $pattern . '$#';
+    }
+
+    public function dispatch(): void
+    {
+        $method = $_SERVER['REQUEST_METHOD'];
+        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        $uri = trim($uri, '/');
+
+        foreach ($this->routes[$method] ?? [] as $pattern => $handler) {
+            if (preg_match($pattern, $uri, $matches)) {
+                [$controllerClass, $methodName] = $handler;
+                $params = array_filter($matches, fn($k) => !is_int($k), ARRAY_FILTER_USE_KEY);
+
+                $controller = new $controllerClass();
+                $controller->$methodName(...array_values($params));
                 return;
             }
         }
 
         http_response_code(404);
-        echo "404 Not Found";
-    }
-
-    /**
-     * Vérifie si un chemin demandé correspond à un pattern défini.
-     * Extrait les paramètres s’il y en a.
-     *
-     * @param string               $pattern Pattern à tester (ex: 'user/{id}').
-     * @param string               $actual  Chemin réel de la requête (ex: 'user/42').
-     * @param array<string, string> &$params Référence pour stocker les paramètres extraits.
-     *
-     * @return bool True si match trouvé, false sinon.
-     */
-    private function match(string $pattern, string $actual, array &$params): bool
-    {
-        $patternParts = explode('/', $pattern);
-        $actualParts = explode('/', $actual);
-
-        if (count($patternParts) !== count($actualParts)) {
-            return false;
+        if (isset($this->notFoundHandler)) {
+            call_user_func($this->notFoundHandler);
+        } else {
+            echo "404 Not Found";
         }
-
-        foreach ($patternParts as $i => $part) {
-            if ($this->isParam($part)) {
-                $paramName = trim($part, '{}');
-                $params[$paramName] = $actualParts[$i];
-            } elseif ($part !== $actualParts[$i]) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Détermine si une partie d’un chemin est un paramètre dynamique `{...}`.
-     *
-     * @param string $part Élément du chemin à tester.
-     *
-     * @return bool True si le fragment est un paramètre, false sinon.
-     */
-    private function isParam(string $part): bool
-    {
-        return str_starts_with($part, '{') && str_ends_with($part, '}');
     }
 }
