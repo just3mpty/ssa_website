@@ -18,6 +18,7 @@ class Authenticator
             $_SESSION['admin'] = [
                 'id'       => $user['id'],
                 'username' => $user['username'],
+                'role'     => $user['role'],
             ];
             return true;
         }

@@ -35,4 +35,14 @@ class AuthMiddleware
         }
         // Sinon, l’exécution continue
     }
+
+    public static function requireRole(string $role): void
+    {
+        if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+        $user = Authenticator::getUser();
+        if (!$user || ($user['role'] ?? null) !== $role) {
+            header('Location: /login');
+            exit;
+        }
+    }
 }
