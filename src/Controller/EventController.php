@@ -3,12 +3,12 @@
 namespace App\Controller;
 
 use App\Model\Event;
-use CapsuleLib\Framework\AbstractController;
+use CapsuleLib\Framework\ViewController;
 use CapsuleLib\Service\Database\SqliteConnection;
 use CapsuleLib\Http\Middleware\AuthMiddleware;
 use CapsuleLib\Security\Authenticator;
 
-class EventController extends AbstractController
+class EventController extends ViewController
 {
     // /events : Public
     // GET /events

@@ -13,7 +13,7 @@ namespace CapsuleLib\Framework;
  *
  * @version 1.0
  */
-abstract class AbstractController
+abstract class ViewController
 {
     /**
      * Rend une vue HTML avec un layout global.

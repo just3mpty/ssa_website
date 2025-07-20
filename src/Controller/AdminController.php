@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use CapsuleLib\Framework\AbstractController;
+use CapsuleLib\Framework\ViewController;
 use CapsuleLib\Service\Database\SqliteConnection;
 use CapsuleLib\Http\Middleware\AuthMiddleware;
 use CapsuleLib\Security\Authenticator;
 
-class AdminController extends AbstractController
+class AdminController extends ViewController
 {
     /**
      * GET /login

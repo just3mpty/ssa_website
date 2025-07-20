@@ -6,7 +6,7 @@ namespace App\Controller;
 
 use App\Model\Event;
 use CapsuleLib\Service\Database\SqliteConnection;
-use CapsuleLib\Framework\AbstractController;
+use CapsuleLib\Framework\ViewController;
 
 /**
  * Contrôleur principal du site.
@@ -14,7 +14,7 @@ use CapsuleLib\Framework\AbstractController;
  * Gère les pages publiques statiques telles que l'accueil, les actualités, la galerie, etc.
  * Chaque méthode correspond à une route définie dans `config/routes.php`.
  */
-class MainController extends AbstractController
+class MainController extends  ViewController
 {
 
     /**
