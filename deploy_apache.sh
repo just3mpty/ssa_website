@@ -38,6 +38,12 @@ if [ -f "$DB_PATH" ]; then
     sudo chmod 640 "$DB_PATH"
     # SELinux : autoriser lecture/écriture
     sudo chcon -t httpd_sys_rw_content_t "$DB_PATH"
+
+    # Nouveau : droits sur le dossier parent data/
+    DATA_DIR="$(dirname "$DB_PATH")"
+    sudo chown $APACHE_USER:$APACHE_USER "$DATA_DIR"
+    sudo chmod 770 "$DATA_DIR"
+    sudo chcon -t httpd_sys_rw_content_t "$DATA_DIR"
 fi
 
 echo "🔒 Vérification SELinux..."
