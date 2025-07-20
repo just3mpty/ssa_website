@@ -24,7 +24,7 @@ SecureHeaders::send();
 $router = new Router();
 
 // 3. Chargement des routes définies dans config/routes.php
-$routes = require dirname(__DIR__) . '/src/config/routes.php';
+$routes = require dirname(__DIR__) . '/config/routes.php';
 
 // 4. Enregistrement des routes selon la méthode HTTP
 foreach ($routes as [$method, $path, $handler]) {
