@@ -1,7 +1,8 @@
 <?php
-
+#
 declare(strict_types=1);
 
+#te
 namespace CapsuleLib\Http\Middleware;
 
 use CapsuleLib\Security\Authenticator;
@@ -33,5 +34,15 @@ class AuthMiddleware
             exit;
         }
         // Sinon, l’exécution continue
+    }
+
+    public static function requireRole(string $role): void
+    {
+        if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+        $user = Authenticator::getUser();
+        if (!$user || ($user['role'] ?? null) !== $role) {
+            header('Location: /login');
+            exit;
+        }
     }
 }

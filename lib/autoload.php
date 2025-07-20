@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-
+#
 /**
  * Table de correspondance entre les namespaces racines et les répertoires réels.
  *

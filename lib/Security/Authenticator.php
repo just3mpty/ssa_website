@@ -10,7 +10,7 @@ class Authenticator
 {
     public static function login(PDO $pdo, string $username, string $password): bool
     {
-        $stmt = $pdo->prepare("SELECT * FROM admin_users WHERE username = :username");
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = :username");
         $stmt->execute(['username' => $username]);
         $user = $stmt->fetch();
 
@@ -18,6 +18,7 @@ class Authenticator
             $_SESSION['admin'] = [
                 'id'       => $user['id'],
                 'username' => $user['username'],
+                'role'     => $user['role'],
             ];
             return true;
         }

@@ -1,11 +1,23 @@
--- Table pour le compte admin (1 seul utilisateur, mais extensible)
-CREATE TABLE IF NOT EXISTS admin_users (
+CREATE TABLE IF NOT EXISTS users (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
     username      TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL,   -- hashé avec password_hash() PHP
+    password_hash TEXT NOT NULL,
+    role          TEXT NOT NULL DEFAULT 'employee', -- 'admin' ou 'employee'
+    email         TEXT NOT NULL,
     created_at    DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS events (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    titre       TEXT NOT NULL,
+    description TEXT NOT NULL,
+    date_event  DATETIME NOT NULL,
+    lieu        TEXT,
+    image       TEXT,
+    created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
+    author_id   INTEGER NOT NULL, -- FK vers users(id)
+    FOREIGN KEY(author_id) REFERENCES users(id) ON DELETE CASCADE
+);
 -- Table pour les messages de contact
 CREATE TABLE IF NOT EXISTS contacts (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,7 +39,5 @@ CREATE TABLE IF NOT EXISTS events (
     created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO admin_users (username, password_hash) VALUES (
-    'admin',
-    '$2y$12$DdRaR1i6wNQbPGxbmgeB9OvAnhSzFvN98/wIBdO3w0Qcqsu62BMEy'
-);
+INSERT INTO users (username, password_hash, role, email) 
+VALUES ('admin', '$2y$12$DdRaR1i6wNQbPGxbmgeB9OvAnhSzFvN98/wIBdO3w0Qcqsu62BMEy','admin', 'admin@example.org');

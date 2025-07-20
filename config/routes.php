@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Controller\MainController;
 use App\Controller\AdminController;
+use App\Controller\EventController;
 
 const ROUTES = [
 
@@ -53,5 +54,23 @@ const ROUTES = [
     '/wiki' => [
         'controller' => MainController::class,
         'method'     => 'wiki',
+    ],
+
+    // EventController
+    '/events' => [
+        'controller' => EventController::class,
+        'method' => 'listEvents',
+    ],
+    '/events/create' => [
+        'controller' => EventController::class,
+        'method' => 'createEvent',
+    ],
+    '/events/edit/{id}' => [
+        'controller' => EventController::class,
+        'method' => 'editEvent',
+    ],
+    '/events/delete/{id}' => [
+        'controller' => EventController::class,
+        'method' => 'deleteEvent',
     ],
 ];
