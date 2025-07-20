@@ -24,7 +24,7 @@ class EventController extends AbstractController
             $isAdmin = ($user['role'] ?? '') === 'admin';
         }
 
-        echo $this->renderView('pages/events.php', [
+        echo $this->renderView('admin/dashboard.php', [
             'events' => $events,
             'isAdmin' => $isAdmin,
         ]);

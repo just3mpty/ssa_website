@@ -42,8 +42,16 @@ class AdminController extends AbstractController
 
     public function dashboard(): void
     {
-        AuthMiddleware::handle(); // 🚫 Bloque si non connecté
-        echo $this->renderView('admin/dashboard.php', ['title' => 'Accueil']);
+        AuthMiddleware::handle();
+
+        $user = Authenticator::getUser();
+        $isAdmin = ($user['role'] ?? null) === 'admin';
+
+        echo $this->renderView('admin/dashboard.php', [
+            'title'   => 'Accueil',
+            'isAdmin' => $isAdmin,
+            'user'    => $user,
+        ]);
     }
 
 
