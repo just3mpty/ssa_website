@@ -16,7 +16,7 @@ Translate::load(default: 'fr', page: basename($_SERVER['SCRIPT_NAME'], '.php'));
         <ul>
             <li><a href="/" class="active"><?= Translate::t('nav_home') ?></a></li>
             <li><a href="/projet"><?= Translate::t('nav_project') ?></a></li>
-            <li><a href="/participer"><?= Translate::t('nav_participer') ?></a></li>
+            <li><a href="/events"><?= Translate::t('nav_participer') ?></a></li>
             <li><a href="/actualites"><?= Translate::t('nav_actualites') ?></a></li>
             <li><a href="galerie"><?= Translate::t('nav_galerie') ?></a></li>
             <li><a href="/apropos"><?= Translate::t('nav_apropos') ?></a></li>
