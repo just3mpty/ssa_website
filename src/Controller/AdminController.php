@@ -9,37 +9,45 @@ use CapsuleLib\Service\Database\SqliteConnection;
 use CapsuleLib\Http\Middleware\AuthMiddleware;
 use CapsuleLib\Security\Authenticator;
 
-/**
- * Contrôleur principal du site.
- *
- * Gère les pages publiques statiques telles que l'accueil, les actualités, la galerie, etc.
- * Chaque méthode correspond à une route définie dans `config/routes.php`.
- */
 class AdminController extends AbstractController
 {
-
-    public function login(): void
+    /**
+     * GET /login
+     * Affiche le formulaire de connexion
+     */
+    public function loginForm(): void
     {
-        $error = null;
-
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $pdo = SqliteConnection::getInstance();
-            $success = Authenticator::login($pdo, $_POST['username'], $_POST['password']);
-
-            if ($success) {
-                header('Location: /dashboard');
-                exit;
-            }
-
-            $error = "Identifiants incorrects.";
-        }
-
         echo $this->renderView('admin/login.php', [
             'title' => 'Connexion',
-            'error' => $error
+            'error' => null,
         ]);
     }
 
+    /**
+     * POST /login
+     * Traite la soumission du formulaire de connexion
+     */
+    public function loginSubmit(): void
+    {
+        $pdo = SqliteConnection::getInstance();
+        $success = Authenticator::login($pdo, $_POST['username'], $_POST['password']);
+
+        if ($success) {
+            header('Location: /dashboard');
+            exit;
+        }
+
+        // Si erreur, ré-affiche formulaire avec message
+        echo $this->renderView('admin/login.php', [
+            'title' => 'Connexion',
+            'error' => 'Identifiants incorrects.',
+        ]);
+    }
+
+    /**
+     * GET /dashboard
+     * Tableau de bord protégé (admin)
+     */
     public function dashboard(): void
     {
         AuthMiddleware::handle();
@@ -54,6 +62,9 @@ class AdminController extends AbstractController
         ]);
     }
 
+    /**
+     * GET /logout
+     */
     public function logout(): void
     {
         Authenticator::logout();

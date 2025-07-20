@@ -11,27 +11,37 @@ use CapsuleLib\Security\Authenticator;
 class EventController extends AbstractController
 {
     // /events : Public
+    // GET /events
     public function listEvents(): void
     {
         $pdo = SqliteConnection::getInstance();
         $eventModel = new Event($pdo);
         $events = $eventModel->upcoming();
 
-        // Vérifie rôle pour le bouton
         $isAdmin = false;
         if (Authenticator::isAuthenticated()) {
             $user = Authenticator::getUser();
             $isAdmin = ($user['role'] ?? '') === 'admin';
         }
 
-        echo $this->renderView('admin/dashboard.php', [
-            'events' => $events,
+        echo $this->renderView('pages/events.php', [
+            'events'  => $events,
             'isAdmin' => $isAdmin,
         ]);
     }
 
-    // /events/create : Admin only
-    public function createEvent(): void
+    // GET /events/create
+    public function createForm(): void
+    {
+        AuthMiddleware::requireRole('admin');
+        echo $this->renderView('admin/create_event.php', [
+            'errors' => [],
+            'data'   => ['titre' => '', 'description' => '', 'date_event' => '', 'lieu' => ''],
+        ]);
+    }
+
+    // POST /events/create
+    public function createSubmit(): void
     {
         AuthMiddleware::requireRole('admin');
 
@@ -40,52 +50,39 @@ class EventController extends AbstractController
 
         $errors = [];
         $data = [
-            'titre' => '',
-            'description' => '',
-            'date_event' => '',
-            'lieu' => '',
+            'titre' => trim($_POST['titre'] ?? ''),
+            'description' => trim($_POST['description'] ?? ''),
+            'date_event' => $_POST['date_event'] ?? '',
+            'lieu' => trim($_POST['lieu'] ?? ''),
         ];
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // CSRF CHECK (à ajouter si tu implémentes un CsrfTokenManager)
-            // if (!CsrfTokenManager::verify($_POST['csrf_token'])) { ... }
+        foreach ($data as $key => $val) {
+            if ($val === '') $errors[$key] = 'Ce champ est obligatoire.';
+        }
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/', $data['date_event'])) {
+            $errors['date_event'] = "Format date/heure invalide";
+        }
 
-            // Sanitize/Validate
-            $data = [
-                'titre' => trim($_POST['titre'] ?? ''),
-                'description' => trim($_POST['description'] ?? ''),
-                'date_event' => $_POST['date_event'] ?? '',
-                'lieu' => trim($_POST['lieu'] ?? ''),
-            ];
-            foreach ($data as $key => $val) {
-                if ($val === '') $errors[$key] = 'Ce champ est obligatoire.';
-            }
-            // Validate format date
-            if (!preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/', $data['date_event'])) {
-                $errors['date_event'] = "Format date/heure invalide";
-            }
-
-            if (empty($errors)) {
-                $user = Authenticator::getUser();
-                $eventModel->create([
-                    ...$data,
-                    'date_event' => str_replace('T', ' ', $data['date_event']), // format SQL DATETIME
-                    'image' => null,
-                    'author_id' => $user['id'],
-                ]);
-                header('Location: /events');
-                exit;
-            }
+        if (empty($errors)) {
+            $user = Authenticator::getUser();
+            $eventModel->create([
+                ...$data,
+                'date_event' => str_replace('T', ' ', $data['date_event']),
+                'image'      => null,
+                'author_id'  => $user['id'],
+            ]);
+            header('Location: /events');
+            exit;
         }
 
         echo $this->renderView('admin/create_event.php', [
             'errors' => $errors,
-            'data' => $data,
+            'data'   => $data,
         ]);
     }
 
-    // /events/edit/{id} : Admin only
-    public function editEvent($id): void
+    // GET /events/edit/{id}
+    public function editForm($id): void
     {
         AuthMiddleware::requireRole('admin');
 
@@ -99,40 +96,70 @@ class EventController extends AbstractController
             return;
         }
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $eventModel->update($id, [
-                'titre' => $_POST['titre'],
-                'description' => $_POST['description'],
-                'date_event' => $_POST['date_event'],
-                'lieu' => $_POST['lieu'],
-                'image' => null,
-            ]);
-            header('Location: /events');
-            exit;
-        }
-
         echo $this->renderView('pages/edit_event.php', [
             'event' => $event,
+            'errors' => [],
         ]);
     }
+    // POST /events/edit/{id}
+    public function editSubmit($id): void
+    {
+        AuthMiddleware::requireRole('admin');
 
-    // /events/delete/{id} : Admin only (POST recommandé)
-    public function deleteEvent($id): void
+        $pdo = SqliteConnection::getInstance();
+        $eventModel = new Event($pdo);
+        $event = $eventModel->find($id);
+
+        if (!$event) {
+            http_response_code(404);
+            echo "Événement introuvable";
+            return;
+        }
+
+        $data = [
+            'titre' => trim($_POST['titre'] ?? ''),
+            'description' => trim($_POST['description'] ?? ''),
+            'date_event' => $_POST['date_event'] ?? '',
+            'lieu' => trim($_POST['lieu'] ?? ''),
+            'image' => null,
+        ];
+
+        $errors = [];
+        foreach (['titre', 'description', 'date_event', 'lieu'] as $field) {
+            if ($data[$field] === '') $errors[$field] = 'Ce champ est obligatoire.';
+        }
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/', $data['date_event'])) {
+            $errors['date_event'] = "Format date/heure invalide";
+        }
+
+        if ($errors) {
+            // Redisplay the form with errors and previous data
+            echo $this->renderView('pages/edit_event.php', [
+                'event'  => array_merge($event, $data),
+                'errors' => $errors,
+            ]);
+            return;
+        }
+
+        $eventModel->update($id, [
+            ...$data,
+            'date_event' => str_replace('T', ' ', $data['date_event']),
+        ]);
+        header('Location: /events');
+        exit;
+    }
+
+
+    // POST /events/delete/{id}
+    public function deleteSubmit($id): void
     {
         AuthMiddleware::requireRole('admin');
 
         $pdo = SqliteConnection::getInstance();
         $eventModel = new Event($pdo);
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $eventModel->delete($id);
-            header('Location: /events');
-            exit;
-        }
-
-        // Option : affiche une page de confirmation
-        echo $this->renderView('pages/delete_event.php', [
-            'eventId' => $id,
-        ]);
+        $eventModel->delete($id);
+        header('Location: /events');
+        exit;
     }
 }
