@@ -1,4 +1,4 @@
-<section class="news">
+<section id="news" class="news">
     <h2>Actualités</h2>
     <div class="filters">
         <button class="filter-btn" data-filter="all">Toutes</button>

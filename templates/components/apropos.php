@@ -1,5 +1,5 @@
 <div class="background">
-    <section class="about">
+    <section id="about" class="about">
         <div class="text">
             <h2>Qui sommes nous ?</h2>
             <h3>Le groupe "Sécurité Sociale de l'Alimentation" (SSA)</h3>

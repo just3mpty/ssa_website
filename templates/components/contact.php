@@ -1,5 +1,5 @@
 <div class="background">
-    <section class="contact">
+    <section id="contact" class="contact">
         <h2>Contactez-nous</h2>
         <p>Pour toute question sur la Sécurité Sociale de l’Alimentation au Pays de Morlaix, contactez l’association ULAMIR CPIE.</p>
 

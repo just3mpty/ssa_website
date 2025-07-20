@@ -13,6 +13,10 @@
     box-sizing: border-box;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 body {
     font-family: "Open Sans", sans-serif;
     background-color: var(--background);
@@ -396,6 +400,11 @@ body {
             flex-direction: column;
             gap: 15px;
             padding: 30px;
+
+            & .no-events {
+                font-style: italic;
+                color: var(--grey);
+            }
 
             & h2 {
                 font-size: 30px;

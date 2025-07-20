@@ -9,10 +9,10 @@ return  [
 
 
     // NAVIGATION
-    'nav_title'       => 'Sécurité Sociale de l’Alimentation – Pays de Morlaix',
+    'nav_title'        => 'Sécurité Sociale de l’Alimentation – Pays de Morlaix',
     'nav_home'         => 'Accueil',
     'nav_project'      => 'Le projet SSA',
-    'nav_participer'   => 'Participer',
+    'nav_agenda'       => 'Agenda',
     'nav_actualites'   => 'Actualités',
     'nav_galerie'      => 'Galerie',
     'nav_apropos'      => 'À propos',
