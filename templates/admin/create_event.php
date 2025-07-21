@@ -1,7 +1,7 @@
-<!-- templates/pages/create_event.php -->
 <section class="form-section">
     <h2>Créer un événement</h2>
     <form method="post" action="/events/create" autocomplete="off" class="event-form">
+        <?= \CapsuleLib\Security\CsrfTokenManager::insertInput(); ?>
         <label>
             Titre<br>
             <input type="text" name="titre" required maxlength="100" autofocus>

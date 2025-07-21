@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use CapsuleLib\Framework\ViewController;
 use CapsuleLib\Security\Authenticator;
+use CapsuleLib\Security\CsrfTokenManager;
 use CapsuleLib\Http\Middleware\AuthMiddleware;
 use PDO;
 
@@ -28,6 +29,7 @@ class AdminController extends ViewController
 
     public function loginSubmit(): void
     {
+        CsrfTokenManager::requireValidToken();
         $success = Authenticator::login(
             $this->pdo,
             $_POST['username'] ?? '',

@@ -7,6 +7,7 @@ namespace App\Controller;
 use CapsuleLib\Framework\ViewController;
 use CapsuleLib\Http\Middleware\AuthMiddleware;
 use CapsuleLib\Security\Authenticator;
+use CapsuleLib\Security\CsrfTokenManager;
 use App\Service\EventService;
 
 class EventController extends ViewController
@@ -34,6 +35,7 @@ class EventController extends ViewController
 
     public function createSubmit(): void
     {
+        CsrfTokenManager::requireValidToken();
         AuthMiddleware::requireRole('admin');
         $result = $this->eventService->create($_POST, Authenticator::getUser());
         if (!empty($result['errors'])) {
@@ -64,6 +66,7 @@ class EventController extends ViewController
 
     public function editSubmit($id): void
     {
+        CsrfTokenManager::requireValidToken();
         AuthMiddleware::requireRole('admin');
         $event = $this->eventService->find((int)$id);
         if (!$event) {
