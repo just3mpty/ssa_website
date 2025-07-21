@@ -11,7 +11,6 @@
 <?= $this->renderComponent('apropos.php') ?>
 <?= $this->renderComponent('actualites.php') ?>
 <div class="separator"></div>
-<?= var_dump($events) ?>
 <section id="agenda" class="agenda">
     <h2>Agenda</h2>
     <p>Retrouvez nos événements à venir :</p>
