@@ -5,16 +5,19 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use CapsuleLib\Framework\ViewController;
-use CapsuleLib\Service\Database\SqliteConnection;
-use CapsuleLib\Http\Middleware\AuthMiddleware;
 use CapsuleLib\Security\Authenticator;
+use CapsuleLib\Http\Middleware\AuthMiddleware;
+use PDO;
 
 class AdminController extends ViewController
 {
-    /**
-     * GET /login
-     * Affiche le formulaire de connexion
-     */
+    private PDO $pdo;
+
+    public function __construct(PDO $pdo)
+    {
+        $this->pdo = $pdo;
+    }
+
     public function loginForm(): void
     {
         echo $this->renderView('admin/login.php', [
@@ -23,35 +26,28 @@ class AdminController extends ViewController
         ]);
     }
 
-    /**
-     * POST /login
-     * Traite la soumission du formulaire de connexion
-     */
     public function loginSubmit(): void
     {
-        $pdo = SqliteConnection::getInstance();
-        $success = Authenticator::login($pdo, $_POST['username'], $_POST['password']);
+        $success = Authenticator::login(
+            $this->pdo,
+            $_POST['username'] ?? '',
+            $_POST['password'] ?? ''
+        );
 
         if ($success) {
             header('Location: /dashboard');
             exit;
         }
 
-        // Si erreur, ré-affiche formulaire avec message
         echo $this->renderView('admin/login.php', [
             'title' => 'Connexion',
             'error' => 'Identifiants incorrects.',
         ]);
     }
 
-    /**
-     * GET /dashboard
-     * Tableau de bord protégé (admin)
-     */
     public function dashboard(): void
     {
         AuthMiddleware::handle();
-
         $user = Authenticator::getUser();
         $isAdmin = ($user['role'] ?? null) === 'admin';
 
@@ -62,9 +58,6 @@ class AdminController extends ViewController
         ]);
     }
 
-    /**
-     * GET /logout
-     */
     public function logout(): void
     {
         Authenticator::logout();
