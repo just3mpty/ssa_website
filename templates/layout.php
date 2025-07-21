@@ -20,8 +20,8 @@ Translate::load(default: 'fr', page: basename($_SERVER['SCRIPT_NAME'], '.php'));
 
     <title><?= Translate::t('page_title') ?></title>
 
-    <link rel="stylesheet" href="./assets/css/styles.css">
-    <link rel="icon" type="image/png" href="assets/img/logoSSA.png">
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <link rel="icon" type="image/png" href="/assets/img/logoSSA.png">
 </head>
 
 <body>
