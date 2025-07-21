@@ -1,4 +1,6 @@
 const header = document.getElementById("header");
+const hamburger = document.getElementById("hamburger");
+const navbar = document.querySelector(".navbar");
 
 let lastScrollTop = 0;
 window.addEventListener("scroll", () => {
@@ -9,5 +11,22 @@ window.addEventListener("scroll", () => {
         header.classList.remove("hidden");
     }
     lastScrollTop = scrollTop;
-    console.log(lastScrollTop);
 });
+
+hamburger.addEventListener("click", () => {
+    navbar.classList.toggle("visible");
+});
+
+// RESPONSIVE
+const showMobileNav = () => {
+    if (window.innerWidth <= 950) {
+        navbar.classList.add("mobileNav");
+        hamburger.style.display = "flex";
+    } else {
+        hamburger.style.display = "none";
+        navbar.classList.remove("mobileNav");
+    }
+};
+
+window.addEventListener("resize", showMobileNav);
+window.addEventListener("load", showMobileNav);

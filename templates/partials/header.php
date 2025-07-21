@@ -12,7 +12,13 @@ Translate::load(default: 'fr', page: basename($_SERVER['SCRIPT_NAME'], '.php'));
     <a href="/" class="logo-link">
         <img src="/assets/img/logoSSA.png" alt="<?= Translate::t('nav_title') ?>" class="logo">
     </a>
-    <nav>
+    <div id="hamburger" class="hamburger-icon">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <nav class="navbar">
         <ul>
             <li><a href="/"><?= Translate::t('nav_home') ?></a></li>
             <li><a href="/#about"><?= Translate::t('nav_apropos') ?></a></li>
