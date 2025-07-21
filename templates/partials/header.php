@@ -15,7 +15,7 @@ function isActive(string $path): string
 }
 ?>
 
-<header id="header">
+<header id="header" class="<?= isActive('/dashboard') ?> <?= isActive('/login') ?> <?= isActive('/event/create') ?>">
     <a href="/" class="logo-link">
         <img src="assets/img/logoSSA.png" alt="<?= Translate::t('nav_title') ?>" class="logo">
     </a>

@@ -43,6 +43,10 @@ body {
         justify-content: space-between;
         padding: 15px;
 
+        &.active {
+            position: relative;
+        }
+
         &.hidden {
             opacity: 0;
             transform: translateY(-100%);
@@ -364,6 +368,7 @@ body {
                     border-radius: 5px;
                     display: flex;
                     flex-direction: column;
+                    justify-content: space-between;
                     gap: 15px;
 
                     & h3 {
@@ -704,6 +709,41 @@ body {
                 cursor: pointer;
                 max-width: fit-content;
                 font-weight: 600;
+            }
+        }
+    }
+
+    & .admin-dashboard {
+        width: 100%;
+        min-height: 65vh;
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        padding: 30px;
+
+        & ul {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            gap: 15px;
+            flex-wrap: wrap;
+
+            & li {
+                list-style-type: none;
+
+                & a {
+                    padding: 5px 15px;
+                    background: var(--background);
+                    border-radius: 8px;
+                    color: var(--orange);
+                    text-decoration: none;
+                    border: 1px solid var(--orange);
+
+                    &:hover {
+                        background: var(--orange);
+                        color: var(--background);
+                    }
+                }
             }
         }
     }
