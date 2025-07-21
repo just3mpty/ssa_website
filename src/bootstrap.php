@@ -10,6 +10,7 @@ use App\Controller\HomeController;
 use App\Controller\AdminController;
 use App\Controller\EventController;
 
+require dirname(__DIR__) . '/lib/Helpers/h_specialchar.php';
 
 // Instanciation du container
 $container = new Container();

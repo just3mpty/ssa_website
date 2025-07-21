@@ -1,7 +1,7 @@
-<h1><?= htmlspecialchars($title ?? 'Connexion') ?></h1>
+<h1><?= h_specialchar($title ?? 'Connexion') ?></h1>
 
 <?php if (!empty($error)): ?>
-    <p style="color:red"><?= htmlspecialchars($error) ?></p>
+    <p style="color:red"><?= h_specialchar($error) ?></p>
 <?php endif; ?>
 
 <section class="login">

@@ -33,17 +33,61 @@ class EventService
         $data   = $this->sanitize($input);
         $errors = $this->validate($data);
 
+        $imagePath = null;
+        if (isset($_FILES['image']) && $_FILES['image']['error'] !== UPLOAD_ERR_NO_FILE) {
+            $imgResult = $this->handleImageUpload($_FILES['image']);
+            if (isset($imgResult['error'])) {
+                $errors['image'] = $imgResult['error'];
+            } else {
+                $imagePath = $imgResult['path'];
+            }
+        }
+
         if (!empty($errors)) {
             return ['errors' => $errors, 'data' => $data];
         }
 
         $this->eventModel->create([
             ...$data,
-            'date_event' => str_replace('T', ' ', $data['date_event']),
-            'image'      => null, // À gérer si besoin
+            'image'      => $imagePath,
             'author_id'  => $user['id'] ?? null,
         ]);
         return [];
+    }
+
+    // ---- Méthode d'upload sécurisée ----
+    private function handleImageUpload(array $file): array
+    {
+        // Taille max 2 Mo
+        $maxSize = 2 * 1024 * 1024;
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            return ['error' => 'Erreur de téléchargement.'];
+        }
+        if ($file['size'] > $maxSize) {
+            return ['error' => 'Image trop volumineuse (max 2 Mo).'];
+        }
+
+        // Vérification MIME
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->file($file['tmp_name']);
+        $allowed = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+        if (!isset($allowed[$mime])) {
+            return ['error' => 'Format d\'image non autorisé (jpg, png, webp seulement).'];
+        }
+
+        // Génère un nom de fichier unique et sûr
+        $ext = $allowed[$mime];
+        $filename = 'event_' . uniqid('', true) . '.' . $ext;
+        $targetDir = dirname(__DIR__, 2) . '/public/uploads/';
+        if (!is_dir($targetDir)) mkdir($targetDir, 0755, true);
+        $targetPath = $targetDir . $filename;
+
+        if (!move_uploaded_file($file['tmp_name'], $targetPath)) {
+            return ['error' => 'Impossible de sauvegarder l\'image.'];
+        }
+
+        // Retourne le chemin relatif web (pour affichage)
+        return ['path' => '/uploads/' . $filename];
     }
 
     /** Met à jour un événement */
@@ -73,12 +117,10 @@ class EventService
 
     private function sanitize(array $input): array
     {
-        // Adaptable : stricte, mais permissive pour 'description'
-        $fields = ['titre', 'description', 'date_event', 'lieu'];
+        $fields = ['titre', 'description', 'date_event', 'hours', 'lieu'];
         $clean = [];
         foreach ($fields as $field) {
             $value = trim($input[$field] ?? '');
-            // description : tu veux du HTML ou pas ? Ajoute strip_tags si besoin
             $clean[$field] = $field === 'description'
                 ? $value
                 : strip_tags($value);
@@ -89,15 +131,17 @@ class EventService
     private function validate(array $data): array
     {
         $errors = [];
-        foreach (['titre', 'description', 'date_event', 'lieu'] as $field) {
+        foreach (['titre', 'description', 'date_event', 'hours', 'lieu'] as $field) {
             if ($data[$field] === '') $errors[$field] = 'Ce champ est obligatoire.';
         }
-        // Gère le format HTML5 <input type="datetime-local">
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/', $data['date_event'])) {
-            $errors['date_event'] = "Format date/heure invalide (attendu : AAAA-MM-JJTHH:MM)";
+        // Date format : YYYY-MM-DD
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $data['date_event'])) {
+            $errors['date_event'] = "Format date invalide (attendu : AAAA-MM-JJ)";
         }
-        // Optionnel : vérifie que la date n'est pas passée
-        // if (strtotime($data['date_event']) < time()) $errors['date_event'] = "La date doit être future.";
+        // Heure format : HH:MM ou HH:MM:SS
+        if (!preg_match('/^\d{2}:\d{2}(:\d{2})?$/', $data['hours'])) {
+            $errors['hours'] = "Format heure invalide (attendu : HH:MM ou HH:MM:SS)";
+        }
         return $errors;
     }
 }

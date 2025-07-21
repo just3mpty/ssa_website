@@ -21,12 +21,16 @@
             <?php foreach ($events as $event): ?>
                 <article class="event">
                     <div class="date-time">
-                        <p><?= htmlspecialchars($event['date_event']) ?></p>
-                        <p><?= htmlspecialchars($event['hours']) ?></p>
+                        <p><?= h_specialchar($event['date_event']) ?></p>
+                        <p><?= h_specialchar(substr($event['hours'], 0, 5)) ?></p>
                     </div>
                     <div class="description">
-                        <p><?= nl2br(htmlspecialchars($event['description'])) ?></p>
+                        <p><?= nl2br(h_specialchar($event['description'])) ?></p>
                     </div>
+
+                    <?php if (!empty($event['image'])): ?>
+                        <img src="<?= h_specialchar($event['image'], ENT_QUOTES) ?>" alt="Image de l'événement" style="max-width:300px">
+                    <?php endif; ?>
                 </article>
             <?php endforeach; ?>
         <?php endif; ?>
