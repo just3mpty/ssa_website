@@ -14,7 +14,7 @@ use CapsuleLib\Framework\ViewController;
  * Gère les pages publiques statiques telles que l'accueil, les actualités, la galerie, etc.
  * Chaque méthode correspond à une route définie dans `config/routes.php`.
  */
-class MainController extends  ViewController
+class HomeController extends  ViewController
 {
 
     /**

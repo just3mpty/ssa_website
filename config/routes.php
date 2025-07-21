@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-use App\Controller\MainController;
+use App\Controller\HomeController;
 use App\Controller\AdminController;
 use App\Controller\EventController;
 
 return [
     // FRONTEND
-    ['GET', '/', [MainController::class, 'home']],
-    ['GET', '/projet', [MainController::class, 'projet']],
-    ['GET', '/participer', [MainController::class, 'participer']],
-    ['GET', '/galerie', [MainController::class, 'galerie']],
-    ['GET', '/wiki', [MainController::class, 'wiki']],
+    ['GET', '/', [HomeController::class, 'home']],
+    ['GET', '/projet', [HomeController::class, 'projet']],
+    ['GET', '/participer', [HomeController::class, 'participer']],
+    ['GET', '/galerie', [HomeController::class, 'galerie']],
+    ['GET', '/wiki', [HomeController::class, 'wiki']],
 
     // AUTH
     ['GET',  '/login',     [AdminController::class, 'loginForm']],
