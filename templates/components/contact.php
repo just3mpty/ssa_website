@@ -1,3 +1,5 @@
+<!-- #TODO: ADD SECURITY ICI -->
+
 <div class="background">
     <section id="contact" class="contact">
         <h2>Contactez-nous</h2>
