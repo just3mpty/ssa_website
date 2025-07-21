@@ -50,10 +50,9 @@ class Router
 
         foreach ($this->routes[$method] ?? [] as $pattern => $handler) {
             if (preg_match($pattern, $uri, $matches)) {
-                [$controllerClass, $methodName] = $handler;
                 $params = array_filter($matches, fn($k) => !is_int($k), ARRAY_FILTER_USE_KEY);
 
-                $controller = new $controllerClass();
+                [$controller, $methodName] = $handler;
                 $controller->$methodName(...array_values($params));
                 return;
             }
