@@ -1,5 +1,6 @@
 <?php
-// bootstrap.php
+
+declare(strict_types=1);
 
 use CapsuleLib\Framework\Container;
 use CapsuleLib\Router\Router;
