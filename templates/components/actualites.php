@@ -1,3 +1,29 @@
+<?php
+$articles = [
+    [
+        'title' => 'Atelier sur la santé alimentaire',
+        'content' => 'Participez à notre atelier pour découvrir les bienfaits d’une alimentation durable.',
+        'category' => 'sante',
+        'image' => '/assets/img/banner.webp',
+        'link' => 'actualites.html'
+    ],
+    [
+        'title' => 'Rencontre avec les paysans locaux',
+        'content' => 'Échangez avec les producteurs pour une agriculture respectueuse de l’environnement.',
+        'category' => 'environnement',
+        'image' => '/assets/img/banner.webp',
+        'link' => 'actualites.html'
+    ],
+    [
+        'title' => 'Marche citoyenne pour le climat',
+        'content' => 'Joignez-vous à notre mobilisation pour un avenir plus vert.',
+        'category' => 'mobilisation',
+        'image' => '/assets/img/banner.webp',
+        'link' => '/#news'
+    ],
+];
+?>
+
 <section id="news" class="news">
     <h2>Actualités</h2>
     <div class="filters">
@@ -7,23 +33,13 @@
         <button class="filter-btn" data-filter="mobilisation">Mobilisation</button>
     </div>
     <div class="news-grid">
-        <article class="news-item" data-category="sante">
-            <h3>Atelier sur la santé alimentaire</h3>
-            <p>Participez à notre atelier pour découvrir les bienfaits d’une alimentation durable.</p>
-            <img src="/assets/img/banner.webp" alt="illustration event">
-            <a href="actualites.html" class="read-more">Lire plus</a>
-        </article>
-        <article class="news-item" data-category="environnement">
-            <h3>Rencontre avec les paysans locaux</h3>
-            <p>Échangez avec les producteurs pour une agriculture respectueuse de l’environnement.</p>
-            <img src="/assets/img/banner.webp" alt="illustration event">
-            <a href="actualites.html" class="read-more">Lire plus</a>
-        </article>
-        <article class="news-item" data-category="environnement">
-            <h3>Rencontre avec les paysans locaux</h3>
-            <p>Échangez avec les producteurs pour une agriculture respectueuse de l’environnement.</p>
-            <img src="/assets/img/banner.webp" alt="illustration event">
-            <a href="actualites.html" class="read-more">Lire plus</a>
-        </article>
+        <?php foreach ($articles as $article): ?>
+            <article class="news-item" data-category="<?= htmlspecialchars($article['category']) ?>">
+                <h3><?= htmlspecialchars($article['title']) ?></h3>
+                <p><?= htmlspecialchars($article['content']) ?></p>
+                <img src="<?= htmlspecialchars($article['image']) ?>" alt="illustration event">
+                <a href="<?= htmlspecialchars($article['link']) ?>" class="read-more">Lire plus</a>
+            </article>
+        <?php endforeach; ?>
     </div>
 </section>

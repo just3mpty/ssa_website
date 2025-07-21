@@ -2,6 +2,10 @@ const header = document.getElementById("header");
 const hamburger = document.getElementById("hamburger");
 const navbar = document.querySelector(".navbar");
 
+// FILTRE DES ACTUALITES
+const filterButtons = document.querySelectorAll(".filter-btn");
+const articles = document.querySelectorAll(".news-item");
+
 let lastScrollTop = 0;
 window.addEventListener("scroll", () => {
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
@@ -15,6 +19,24 @@ window.addEventListener("scroll", () => {
 
 hamburger.addEventListener("click", () => {
     navbar.classList.toggle("visible");
+});
+
+filterButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+        const filter = button.dataset.filter;
+        filterButtons.forEach((btn) => btn.classList.remove("active-filter"));
+        button.classList.add("active-filter");
+
+        articles.forEach((article) => {
+            const category = article.dataset.category;
+
+            if (filter === "all" || category === filter) {
+                article.style.display = "flex";
+            } else {
+                article.style.display = "none";
+            }
+        });
+    });
 });
 
 // RESPONSIVE

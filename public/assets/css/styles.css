@@ -431,25 +431,28 @@ body {
 
                 & .filter-btn {
                     padding: 5px 15px;
-                    border: 1px solid #657d8d;
-                    background-color: #fff;
-                    color: #657d8d;
-                    border-radius: 5px;
+                    background-color: var(--background);
+                    color: var(--blue);
+                    border-radius: 8px;
+                    border: 1px solid var(--orange);
                     cursor: pointer;
                     transition: background-color 0.3s;
 
-                    &.active,
+                    &.active-filter {
+                        background: var(--orange);
+                        color: var(--background);
+                    }
+
                     &:hover {
                         background-color: var(--orange);
-                        color: var(--blue);
-                        border-color: var(--orange);
+                        color: var(--background);
                     }
                 }
             }
 
             & .news-grid {
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                grid-template-columns: repeat(3, minmax(300px, 500px));
                 gap: 15px;
 
                 .news-item {
@@ -530,6 +533,7 @@ body {
 
                     & .date-time {
                         width: 33%;
+                        max-width: 100px;
                         aspect-ratio: 1/1;
                         background: #ffb55025;
                         border-radius: 8px;

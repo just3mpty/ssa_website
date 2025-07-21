@@ -5,7 +5,7 @@
     <div class="cta-buttons">
         <a href="projet.html" class="btn primary">En savoir plus</a>
         <a href="participer.html" class="btn secondary">Participer</a>
-        <a href="contact.html" class="btn secondary">Contact</a>
+        <a href="/#contact" class="btn secondary">Contact</a>
     </div>
 </section>
 <?= $this->renderComponent('apropos.php') ?>
