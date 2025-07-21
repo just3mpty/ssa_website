@@ -11,6 +11,7 @@
 <?= $this->renderComponent('apropos.php') ?>
 <?= $this->renderComponent('actualites.php') ?>
 <div class="separator"></div>
+<?= var_dump($events) ?>
 <section id="agenda" class="agenda">
     <h2>Agenda</h2>
     <p>Retrouvez nos événements à venir :</p>
@@ -22,7 +23,7 @@
                 <article class="event">
                     <div class="date-time">
                         <p><?= htmlspecialchars($event['date_event']) ?></p>
-                        <p>17:00</p>
+                        <p><?= htmlspecialchars($event['hours']) ?></p>
                     </div>
                     <div class="description">
                         <p><?= nl2br(htmlspecialchars($event['description'])) ?></p>

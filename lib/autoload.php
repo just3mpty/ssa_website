@@ -25,7 +25,7 @@ const ALIASES = [
  * @throws Exception Si le namespace racine est invalide ou si le fichier cible n’existe pas.
  */
 spl_autoload_register(function (string $class): void {
-    // Exemple : CapsuleLib\Controller\AbstractController
+    // Exemple : CapsuleLib\Controller\ViewController
     $namespaceParts = explode('\\', $class);
     $rootNamespace = $namespaceParts[0];
 
