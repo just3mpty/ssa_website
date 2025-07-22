@@ -1,8 +1,5 @@
 #!/bin/bash
 set -e
-chmod -R a+rX lib/
-chmod -R a+rX templates/
-chmod -R a+rX src/
 
 # Init DB si absente
 if [ ! -f /var/www/html/data/database.sqlite ]; then
