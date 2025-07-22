@@ -14,11 +14,11 @@ CREATE TABLE IF NOT EXISTS events (
     date_event  DATE NOT NULL,    -- stocke YYYY-MM-DD mais utilise seulement MM-DD côté app ou requête
     hours       TIME NOT NULL,    -- juste HH:MM:SS
     lieu        TEXT,
-    image       TEXT,
     created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
     author_id   INTEGER NOT NULL,
     FOREIGN KEY(author_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
 -- Table pour les messages de contact
 CREATE TABLE IF NOT EXISTS contacts (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,16 +27,6 @@ CREATE TABLE IF NOT EXISTS contacts (
     message    TEXT NOT NULL,
     ip         TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
--- Table pour les événements/agenda
-CREATE TABLE IF NOT EXISTS events (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    titre       TEXT NOT NULL,
-    description TEXT NOT NULL,
-    date_event  DATETIME NOT NULL,
-    lieu        TEXT,
-    created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 INSERT INTO users (username, password_hash, role, email) 
