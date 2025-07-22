@@ -6,8 +6,24 @@ namespace CapsuleLib\Security;
 
 use PDO;
 
+/**
+ * Classe d’authentification utilisateur.
+ *
+ * Gère la connexion/déconnexion et la vérification d'état d'authentification.
+ * Stocke les données essentielles de session pour l’utilisateur connecté.
+ */
 class Authenticator
 {
+    /**
+     * Tente de connecter un utilisateur avec un nom d'utilisateur et un mot de passe.
+     *
+     * Vérifie le mot de passe hashé en base, initialise la session sécurisée.
+     *
+     * @param PDO    $pdo      Instance PDO connectée à la base de données.
+     * @param string $username Nom d'utilisateur soumis.
+     * @param string $password Mot de passe clair soumis.
+     * @return bool  True si authentification réussie, false sinon.
+     */
     public static function login(PDO $pdo, string $username, string $password): bool
     {
         $stmt = $pdo->prepare("SELECT * FROM users WHERE username = :username");
@@ -27,17 +43,21 @@ class Authenticator
         return false;
     }
 
+    /**
+     * Déconnecte l'utilisateur courant en détruisant la session.
+     *
+     * Vide la session, supprime le cookie et détruit la session serveur.
+     *
+     * @return void
+     */
     public static function logout(): void
     {
-        // S'assurer que la session est démarrée
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
         }
 
-        // Vider toutes les données de session
         $_SESSION = [];
 
-        // Supprimer le cookie de session si existant
         if (ini_get('session.use_cookies')) {
             $params = session_get_cookie_params();
             setcookie(
@@ -51,15 +71,24 @@ class Authenticator
             );
         }
 
-        // Détruire la session serveur
         session_destroy();
     }
 
+    /**
+     * Indique si un utilisateur est authentifié (session active).
+     *
+     * @return bool True si utilisateur connecté, false sinon.
+     */
     public static function isAuthenticated(): bool
     {
         return isset($_SESSION['admin']);
     }
 
+    /**
+     * Force la vérification d'authentification et redirige vers /login si non connecté.
+     *
+     * @return void
+     */
     public static function requireAuth(): void
     {
         if (!self::isAuthenticated()) {
@@ -68,6 +97,11 @@ class Authenticator
         }
     }
 
+    /**
+     * Retourne les données utilisateur de la session, ou null si non connecté.
+     *
+     * @return array<string, mixed>|null Tableau associatif des infos utilisateur ou null.
+     */
     public static function getUser(): ?array
     {
         return $_SESSION['admin'] ?? null;

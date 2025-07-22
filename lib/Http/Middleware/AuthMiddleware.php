@@ -1,45 +1,59 @@
 <?php
-#
+
 declare(strict_types=1);
 
-#te
 namespace CapsuleLib\Http\Middleware;
 
 use CapsuleLib\Security\Authenticator;
 
 /**
- * Middleware d’authentification : bloque l’accès si non connecté.
+ * Middleware d’authentification.
  *
- * À inclure en haut de chaque contrôleur/route sensible :
- *     AuthMiddleware::handle();
+ * Garantit que l’utilisateur est connecté avant d’accéder à une route ou un contrôleur protégé.
+ * Utiliser au début de chaque contrôleur ou route nécessitant une authentification.
+ *
+ * Exemple d’usage :
+ * ```
+ * AuthMiddleware::handle();
+ * ```
  */
 class AuthMiddleware
 {
     /**
-     * Bloque l’accès si l’utilisateur n’est pas authentifié (admin).
-     * Redirige vers /login.
+     * Vérifie que l’utilisateur est authentifié.
+     * 
+     * Si non authentifié, redirige vers la page de connexion (/login) et stoppe l’exécution.
      *
      * @return void
      */
     public static function handle(): void
     {
-        // S’assurer que la session est démarrée
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
         }
 
-        // Si non authentifié, redirige vers login
         if (!Authenticator::isAuthenticated()) {
             header('Location: /login');
             exit;
         }
-        // Sinon, l’exécution continue
     }
 
+    /**
+     * Vérifie que l’utilisateur a un rôle spécifique.
+     *
+     * Si non connecté ou rôle non autorisé, redirige vers /login et stoppe l’exécution.
+     *
+     * @param string $role Rôle requis (ex : 'admin')
+     * @return void
+     */
     public static function requireRole(string $role): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
+
         $user = Authenticator::getUser();
+
         if (!$user || ($user['role'] ?? null) !== $role) {
             header('Location: /login');
             exit;

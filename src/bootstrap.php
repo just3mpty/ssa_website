@@ -13,25 +13,36 @@ use App\Controller\EventController;
 
 require_once dirname(__DIR__) . '/lib/Helper/html_secure.php';
 
-// Instanciation du container
+/**
+ * Configuration de l'injection de dépendances et définition des routes.
+ *
+ * Cette configuration :
+ * - Initialise le container DI avec les services et contrôleurs.
+ * - Définit la table des routes HTTP avec leurs handlers associés.
+ * - Instancie et prépare un routeur pour dispatcher les requêtes.
+ *
+ * @return Router Le routeur configuré prêt à dispatcher la requête HTTP courante.
+ */
+
+// Instanciation du container d'injection de dépendances
 $container = new DIContainer();
 
-// Définition des dépendances
+// Définition des dépendances de base (ex : PDO)
 $container->set(
     'pdo',
     fn() => MariaDBConnection::getInstance()
 );
 
-// Public Container
+// Définition des services et contrôleurs publics
 $container->set('eventRepository', fn($c) => new EventRepository($c->get('pdo')));
 $container->set('eventService', fn($c) => new EventService($c->get('eventRepository')));
 $container->set('homeController', fn($c) => new HomeController($c->get('eventService')));
 $container->set('eventController', fn($c) => new EventController($c->get('eventService')));
 
-// Admin Container
+// Définition du contrôleur admin (accès restreint)
 $container->set('adminController', fn($c) => new AdminController($c->get('pdo')));
 
-// Table des routes : instances et méthodes
+// Déclaration des routes : méthode HTTP, chemin, et handler (contrôleur + méthode)
 $routes = [
     ['GET',  '/',             [$container->get('homeController'), 'home']],
     ['GET',  '/projet',       [$container->get('homeController'), 'projet']],
@@ -51,7 +62,7 @@ $routes = [
     ['POST',  '/events/delete/{id}',    [$container->get('eventController'), 'deleteSubmit']],
 ];
 
-// Instancie le router
+// Instanciation et configuration du routeur HTTP
 $router = new Router();
 foreach ($routes as [$method, $path, $handler]) {
     $router->{strtolower($method)}($path, $handler);
@@ -61,5 +72,5 @@ $router->setNotFoundHandler(function () {
     echo "404 Not Found";
 });
 
-// On retourne le router prêt à dispatcher
+// Retourne l'instance du routeur prêt à dispatcher la requête
 return $router;

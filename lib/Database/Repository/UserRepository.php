@@ -7,17 +7,44 @@ namespace CapsuleLib\Database\Repository;
 use CapsuleLib\Database\Repository\BaseRepository;
 use CapsuleLib\DTO\UserDTO;
 
+/**
+ * Repository pour la gestion des utilisateurs.
+ * 
+ * Étend BaseRepository pour ajouter des méthodes spécifiques au domaine utilisateur :
+ * - Recherche par ID, nom d’utilisateur, email
+ * - Vérification d’existence pour unicité
+ * - Hydratation d’objets UserDTO
+ */
 class UserRepository extends BaseRepository
 {
+    /**
+     * @var string Nom de la table utilisateur.
+     */
     protected string $table = 'users';
+
+    /**
+     * @var string Clé primaire de la table.
+     */
     protected string $primaryKey = 'id';
 
+    /**
+     * Recherche un utilisateur par son identifiant.
+     *
+     * @param int $id Identifiant utilisateur.
+     * @return UserDTO|null Objet UserDTO ou null si non trouvé.
+     */
     public function findById(int $id): ?UserDTO
     {
         $row = $this->find($id);
         return $row ? $this->hydrate($row) : null;
     }
 
+    /**
+     * Recherche un utilisateur par son nom d’utilisateur.
+     *
+     * @param string $username Nom d’utilisateur.
+     * @return UserDTO|null Objet UserDTO ou null si non trouvé.
+     */
     public function findByUsername(string $username): ?UserDTO
     {
         $row = $this->queryOne("SELECT * FROM {$this->table} WHERE username = :username", [
@@ -26,6 +53,12 @@ class UserRepository extends BaseRepository
         return $row ? $this->hydrate($row) : null;
     }
 
+    /**
+     * Recherche un utilisateur par son email.
+     *
+     * @param string $email Adresse email.
+     * @return UserDTO|null Objet UserDTO ou null si non trouvé.
+     */
     public function findByEmail(string $email): ?UserDTO
     {
         $row = $this->queryOne("SELECT * FROM {$this->table} WHERE email = :email", [
@@ -34,13 +67,23 @@ class UserRepository extends BaseRepository
         return $row ? $this->hydrate($row) : null;
     }
 
+    /**
+     * Récupère tous les utilisateurs.
+     *
+     * @return UserDTO[] Liste d’objets UserDTO.
+     */
     public function allUsers(): array
     {
         $rows = $this->all();
         return array_map([$this, 'hydrate'], $rows);
     }
 
-    // --- Helpers d’unicité (utiles pour UserService) ---
+    /**
+     * Vérifie l’existence d’un nom d’utilisateur.
+     *
+     * @param string $username Nom d’utilisateur.
+     * @return bool True si le nom existe, false sinon.
+     */
     public function existsUsername(string $username): bool
     {
         $stmt = $this->pdo->prepare("SELECT 1 FROM {$this->table} WHERE username = :username");
@@ -48,6 +91,12 @@ class UserRepository extends BaseRepository
         return (bool)$stmt->fetchColumn();
     }
 
+    /**
+     * Vérifie l’existence d’une adresse email.
+     *
+     * @param string $email Adresse email.
+     * @return bool True si l’email existe, false sinon.
+     */
     public function existsEmail(string $email): bool
     {
         $stmt = $this->pdo->prepare("SELECT 1 FROM {$this->table} WHERE email = :email");
@@ -56,7 +105,10 @@ class UserRepository extends BaseRepository
     }
 
     /**
-     * Hydrate un UserDTO à partir d'un array SQL.
+     * Hydrate un objet UserDTO à partir d’un tableau associatif de données SQL.
+     *
+     * @param array<string,mixed> $data Ligne SQL.
+     * @return UserDTO Objet UserDTO construit.
      */
     private function hydrate(array $data): UserDTO
     {

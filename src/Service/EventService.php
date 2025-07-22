@@ -6,28 +6,56 @@ namespace App\Service;
 
 use App\Repository\EventRepository;
 
+/**
+ * Service de gestion métier des événements.
+ *
+ * Encapsule la logique de création, mise à jour, suppression et validation
+ * des événements, en déléguant la persistance au repository.
+ */
 class EventService
 {
     private EventRepository $eventRepository;
 
+    /**
+     * Constructeur.
+     *
+     * @param EventRepository $eventRepository Instance du repository d’événements.
+     */
     public function __construct(EventRepository $eventRepository)
     {
         $this->eventRepository = $eventRepository;
     }
 
-    /** Récupère tous les événements à venir */
+    /**
+     * Récupère tous les événements à venir.
+     *
+     * @return array[] Liste d’événements (DTO ou tableau associatif).
+     */
     public function getUpcoming(): array
     {
         return $this->eventRepository->upcoming();
     }
 
-    /** Récupère un événement par son ID */
+    /**
+     * Récupère un événement par son ID.
+     *
+     * @param int $id Identifiant de l’événement.
+     * @return array|null Données de l’événement ou null si non trouvé.
+     */
     public function find(int $id): ?array
     {
         return $this->eventRepository->find($id);
     }
 
-    /** Crée un événement à partir de données de formulaire + user */
+    /**
+     * Crée un nouvel événement à partir des données du formulaire et de l’utilisateur.
+     *
+     * Effectue la sanitation et la validation des données.
+     *
+     * @param array $input Données brutes issues du formulaire.
+     * @param array $user  Données utilisateur, doit contenir au minimum un identifiant.
+     * @return array Tableau contenant 'errors' (tableau associatif champ => message) si erreurs, sinon vide.
+     */
     public function create(array $input, array $user): array
     {
         $data   = $this->sanitize($input);
@@ -44,7 +72,15 @@ class EventService
         return [];
     }
 
-    /** Met à jour un événement */
+    /**
+     * Met à jour un événement existant.
+     *
+     * Effectue la sanitation et la validation des données.
+     *
+     * @param int $id Identifiant de l’événement à mettre à jour.
+     * @param array $input Données mises à jour issues du formulaire.
+     * @return array Tableau contenant 'errors' si erreurs, sinon vide.
+     */
     public function update(int $id, array $input): array
     {
         $data   = $this->sanitize($input);
@@ -56,19 +92,31 @@ class EventService
 
         $this->eventRepository->update($id, [
             ...$data,
+            // Remplacement du 'T' ISO par espace si présent (convention date SQL)
             'date_event' => str_replace('T', ' ', $data['date_event']),
         ]);
         return [];
     }
 
-    /** Supprime un événement */
+    /**
+     * Supprime un événement par son ID.
+     *
+     * @param int $id Identifiant de l’événement à supprimer.
+     * @return void
+     */
     public function delete(int $id): void
     {
         $this->eventRepository->delete($id);
     }
 
-    /** --------- Validation / sanitation interne --------- */
-
+    /**
+     * Nettoie et prépare les données brutes du formulaire.
+     *
+     * Trim et strip_tags sauf pour la description qui conserve son contenu.
+     *
+     * @param array $input Données brutes.
+     * @return array Données nettoyées.
+     */
     private function sanitize(array $input): array
     {
         $fields = ['titre', 'description', 'date_event', 'hours', 'lieu'];
@@ -82,17 +130,27 @@ class EventService
         return $clean;
     }
 
+    /**
+     * Valide les données nettoyées.
+     *
+     * Vérifie la présence obligatoire des champs et le format date/heure.
+     *
+     * @param array $data Données nettoyées.
+     * @return array Tableau associatif champ => message d’erreur, vide si valide.
+     */
     private function validate(array $data): array
     {
         $errors = [];
         foreach (['titre', 'description', 'date_event', 'hours', 'lieu'] as $field) {
-            if ($data[$field] === '') $errors[$field] = 'Ce champ est obligatoire.';
+            if ($data[$field] === '') {
+                $errors[$field] = 'Ce champ est obligatoire.';
+            }
         }
-        // Date format : YYYY-MM-DD
+        // Format date attendu : YYYY-MM-DD
         if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $data['date_event'])) {
             $errors['date_event'] = "Format date invalide (attendu : AAAA-MM-JJ)";
         }
-        // Heure format : HH:MM ou HH:MM:SS
+        // Format heure attendu : HH:MM ou HH:MM:SS
         if (!preg_match('/^\d{2}:\d{2}(:\d{2})?$/', $data['hours'])) {
             $errors['hours'] = "Format heure invalide (attendu : HH:MM ou HH:MM:SS)";
         }

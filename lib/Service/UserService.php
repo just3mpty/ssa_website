@@ -4,23 +4,43 @@ declare(strict_types=1);
 
 namespace CapsuleLib\Service;
 
-use CapsuleLib\Repository\UserRepository;
+use CapsuleLib\Database\Repository\UserRepository;
 use CapsuleLib\DTO\UserDTO;
-
 use RuntimeException;
 
+/**
+ * Service métier pour la gestion des utilisateurs.
+ *
+ * Fournit des méthodes pour créer, mettre à jour, récupérer et vérifier
+ * les utilisateurs via le UserRepository.
+ */
 class UserService
 {
     private UserRepository $userRepository;
 
+    /**
+     * Constructeur injectant un UserRepository.
+     *
+     * @param UserRepository $userRepository Instance du repository utilisateur.
+     */
     public function __construct(UserRepository $userRepository)
     {
         $this->userRepository = $userRepository;
     }
 
     /**
-     * Crée un nouvel utilisateur (avec hash sécurisé).
-     * Lève une exception si username ou email existe déjà.
+     * Crée un nouvel utilisateur avec un mot de passe hashé.
+     *
+     * Vérifie que le nom d’utilisateur et l’email n’existent pas déjà,
+     * sinon lève une RuntimeException.
+     *
+     * @param string $username Nom d’utilisateur souhaité.
+     * @param string $password Mot de passe en clair.
+     * @param string $email Adresse email.
+     * @param string $role Rôle utilisateur (défaut 'employee').
+     * @return int ID de l’utilisateur créé.
+     *
+     * @throws RuntimeException si username ou email existe déjà.
      */
     public function createUser(string $username, string $password, string $email, string $role = 'employee'): int
     {
@@ -40,7 +60,11 @@ class UserService
     }
 
     /**
-     * Met à jour le mot de passe d'un utilisateur (avec hash).
+     * Met à jour le mot de passe d’un utilisateur (hash sécurisé).
+     *
+     * @param int $userId ID de l’utilisateur.
+     * @param string $newPassword Nouveau mot de passe en clair.
+     * @return bool Succès de la mise à jour.
      */
     public function updatePassword(int $userId, string $newPassword): bool
     {
@@ -49,7 +73,10 @@ class UserService
     }
 
     /**
-     * Vérifie si l'utilisateur a le rôle admin.
+     * Vérifie si un utilisateur a le rôle d’administrateur.
+     *
+     * @param UserDTO $user Objet utilisateur.
+     * @return bool True si rôle admin, false sinon.
      */
     public function isAdmin(UserDTO $user): bool
     {
@@ -57,7 +84,10 @@ class UserService
     }
 
     /**
-     * Retourne un utilisateur DTO par username.
+     * Récupère un utilisateur par son nom d’utilisateur.
+     *
+     * @param string $username Nom d’utilisateur.
+     * @return UserDTO|null DTO utilisateur ou null si non trouvé.
      */
     public function getUserByUsername(string $username): ?UserDTO
     {
@@ -65,7 +95,10 @@ class UserService
     }
 
     /**
-     * Retourne un utilisateur DTO par id.
+     * Récupère un utilisateur par son ID.
+     *
+     * @param int $id ID utilisateur.
+     * @return UserDTO|null DTO utilisateur ou null si non trouvé.
      */
     public function getUserById(int $id): ?UserDTO
     {
@@ -73,7 +106,9 @@ class UserService
     }
 
     /**
-     * Retourne tous les utilisateurs (tableau de DTO).
+     * Récupère tous les utilisateurs.
+     *
+     * @return UserDTO[] Tableau d’objets DTO utilisateurs.
      */
     public function getAllUsers(): array
     {
