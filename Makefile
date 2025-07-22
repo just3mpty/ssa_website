@@ -1,42 +1,33 @@
 PROJECT_NAME := ssa_website
-SRC_DIR := $(CURDIR)
-DEST_DIR := /var/www/$(PROJECT_NAME)
-BOOT_SCRIPT := $(DEST_DIR)/deploy_apache.sh
 
-# Liste des fichiers ignorés
-RSYNC_EXCLUDES := --exclude '.git/' \
-                  --exclude 'node_modules/' \
-                  --exclude '*.sqlite*~' \
-                  --exclude '*.swp' \
-                  --exclude '*.log' \
-                  --exclude '.DS_Store'
+.PHONY: all build up down logs exec bash init-db prune
 
-.PHONY: all deploy run-dev init-db 
+all: build up
 
-all: deploy
+## 🔨 Build l'image Docker (php + apache + deps)
+build:
+	docker compose build
 
-## 📦 Copie le projet vers /var/www/
-deploy:
-	@echo "📦 Synchronisation du projet vers $(DEST_DIR)..."
-	sudo mkdir -p $(DEST_DIR)
-	sudo rsync -av --delete $(RSYNC_EXCLUDES) $(SRC_DIR)/ $(DEST_DIR)/
+## 🚀 Lance les services (detached)
+up:
+	docker compose up -d
 
-	@echo "🔑 Rend le script exécutable..."
-	@if [ -f $(BOOT_SCRIPT) ]; then sudo chmod +x $(BOOT_SCRIPT); fi
+## ⏹️ Arrête les conteneurs
+down:
+	docker compose down
 
-	@echo "🚀 Configuration Apache..."
-	@if [ -f $(BOOT_SCRIPT) ]; then sudo $(BOOT_SCRIPT); fi
+## 📋 Affiche les logs
+logs:
+	docker compose logs -f
 
+## 🐚 Ouvre un shell bash dans le conteneur web
+bash:
+	docker compose exec web bash
 
-## 👁️ Surveille les changements avec inotifywait et redeploy automatiquement
-run-dev:
-	@echo "👀 Surveillance active (Ctrl+C pour quitter)..."
-	@command -v inotifywait >/dev/null || (echo "⛔ inotify-tools requis. Install avec : sudo dnf install inotify-tools" && exit 1)
-	while inotifywait -r -e modify,create,delete $(SRC_DIR); do \
-		$(MAKE) deploy; \
-	done
+## 💻 Lance un shell dans le conteneur web (user shell par défaut)
+exec:
+	docker compose exec web sh
 
-## 🧪 Init DB locale
-deploy-db:
-	@echo "🧪 Init base SQLite..."
-	@bash ./init_db.sh
+## 🧪 Init DB (via le conteneur pour être reproductible !)
+init-db:
+	docker compose run --rm web bash -c "sqlite3 /var/www/html/data/database.sqlite < /var/www/html/migrations/tables.sql"
