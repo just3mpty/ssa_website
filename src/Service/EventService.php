@@ -4,27 +4,27 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Model\Event;
+use App\Repository\EventRepository;
 
 class EventService
 {
-    private Event $eventModel;
+    private EventRepository $eventRepository;
 
-    public function __construct(Event $eventModel)
+    public function __construct(EventRepository $eventRepository)
     {
-        $this->eventModel = $eventModel;
+        $this->eventRepository = $eventRepository;
     }
 
     /** Récupère tous les événements à venir */
     public function getUpcoming(): array
     {
-        return $this->eventModel->upcoming();
+        return $this->eventRepository->upcoming();
     }
 
     /** Récupère un événement par son ID */
     public function find(int $id): ?array
     {
-        return $this->eventModel->find($id);
+        return $this->eventRepository->find($id);
     }
 
     /** Crée un événement à partir de données de formulaire + user */
@@ -37,7 +37,7 @@ class EventService
             return ['errors' => $errors, 'data' => $data];
         }
 
-        $this->eventModel->create([
+        $this->eventRepository->create([
             ...$data,
             'author_id'  => $user['id'] ?? null,
         ]);
@@ -54,7 +54,7 @@ class EventService
             return ['errors' => $errors, 'data' => $data];
         }
 
-        $this->eventModel->update($id, [
+        $this->eventRepository->update($id, [
             ...$data,
             'date_event' => str_replace('T', ' ', $data['date_event']),
         ]);
@@ -64,7 +64,7 @@ class EventService
     /** Supprime un événement */
     public function delete(int $id): void
     {
-        $this->eventModel->delete($id);
+        $this->eventRepository->delete($id);
     }
 
     /** --------- Validation / sanitation interne --------- */

@@ -5,7 +5,7 @@ declare(strict_types=1);
 use CapsuleLib\Framework\Container;
 use CapsuleLib\Service\Database\MariaDBConnection;
 use CapsuleLib\Router\Router;
-use App\Model\Event;
+use App\Repository\EventRepository;
 use App\Service\EventService;
 use App\Controller\HomeController;
 use App\Controller\AdminController;
@@ -23,8 +23,8 @@ $container->set(
 );
 
 // Public Container
-$container->set('eventModel', fn($c) => new Event($c->get('pdo')));
-$container->set('eventService', fn($c) => new EventService($c->get('eventModel')));
+$container->set('eventRepository', fn($c) => new EventRepository($c->get('pdo')));
+$container->set('eventService', fn($c) => new EventService($c->get('eventRepository')));
 $container->set('homeController', fn($c) => new HomeController($c->get('eventService')));
 $container->set('eventController', fn($c) => new EventController($c->get('eventService')));
 

@@ -9,7 +9,6 @@ services:
       - ./src:/var/www/html/src:Z
       - ./lib:/var/www/html/lib:Z
       - ./templates:/var/www/html/templates:Z
-      - ./logs:/var/www/html/logs:Z
     environment:
       - APACHE_RUN_USER=www-data
       - APACHE_RUN_GROUP=www-data

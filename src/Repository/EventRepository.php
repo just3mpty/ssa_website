@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Model;
+namespace App\Repository;
 
-use CapsuleLib\Framework\BaseModel;
+use CapsuleLib\Repository\BaseRepository;
 use PDO;
 
-class Event extends BaseModel
+class EventRepository extends BaseRepository
 {
     protected string $table = 'events';
     protected string $primaryKey = 'id';

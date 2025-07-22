@@ -9,7 +9,7 @@ declare(strict_types=1);
  *
  * Exemple :
  * - 'CapsuleLib\Controller\X' → 'lib/Controller/X.php'
- * - 'App\Model\Y' → 'src/Model/Y.php'
+ * - 'App\Repository\Y' → 'src/Repository/Y.php'
  */
 const ALIASES = [
     'CapsuleLib' => 'lib',

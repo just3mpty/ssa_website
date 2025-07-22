@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace CapsuleLib\Framework;
+namespace CapsuleLib\Repository;
 
 use PDO;
 
 /**
- * BaseModel ultra-générique (CRUD minimaliste).
+ * BaseRepository ultra-générique (CRUD minimaliste).
  * - 100% indépendant du métier.
- * - À étendre dans tes modèles métier (ex: EventModel).
+ * - À étendre dans tes modèles métier (ex: EventRepository).
  * - Compatible SQLite, MySQL, etc.
  */
-abstract class BaseModel
+abstract class BaseRepository
 {
     protected PDO $pdo;
     protected string $table;      // Nom de la table (à définir dans la sous-classe)
