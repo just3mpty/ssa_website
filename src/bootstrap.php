@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CapsuleLib\Framework\Container;
+use CapsuleLib\Service\Database\MariaDBConnection;
 use CapsuleLib\Router\Router;
 use App\Model\Event;
 use App\Service\EventService;
@@ -18,10 +19,7 @@ $container = new Container();
 // Définition des dépendances
 $container->set(
     'pdo',
-    fn() =>
-    new PDO('sqlite:' . __DIR__ . '/../data/database.sqlite', null, null, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    ])
+    fn() => MariaDBConnection::getInstance()
 );
 
 // Public Container
