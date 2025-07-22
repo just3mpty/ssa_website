@@ -36,7 +36,6 @@ CREATE TABLE IF NOT EXISTS events (
     description TEXT NOT NULL,
     date_event  DATETIME NOT NULL,
     lieu        TEXT,
-    image       TEXT, -- chemin du fichier image lié, si besoin
     created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

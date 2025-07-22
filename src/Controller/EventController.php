@@ -21,7 +21,10 @@ class EventController extends ViewController
 
     public function listEvents(): void
     {
-        //$events = $this->eventService->getUpcoming();
+        $events = $this->eventService->getUpcoming();
+        echo $this->renderView('pages/home.php', [
+            'events' => $events,
+        ]);
     }
 
     public function createForm(): void

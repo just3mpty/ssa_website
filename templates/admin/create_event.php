@@ -1,4 +1,7 @@
 <section class="form-section">
+    <br><br>
+    <br><br>
+    <br><br>
     <h2>Créer un événement</h2>
     <form method="post" action="/events/create" enctype="multipart/form-data" autocomplete="off" class="event-form">
         <?= \CapsuleLib\Security\CsrfTokenManager::insertInput(); ?>
@@ -22,10 +25,6 @@
             Lieu
         </label>
         <input type="text" name="lieu" required maxlength="100">
-        <label>
-            Image
-        </label>
-        <input type="file" name="image" accept="image/*">
         <button type="submit">Créer</button>
     </form>
 </section>
