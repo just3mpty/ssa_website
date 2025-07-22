@@ -36,6 +36,5 @@ bash-db:
 bash-web:
 	$(DC) exec web bash
 
-# --- (Ajoute ici d'autres outils, ex : adminer) ---
 
 .PHONY: up down logs db-purge restart pma pma-stop open-pma open-web bash-db bash-web
