@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CapsuleLib\Repository;
+namespace CapsuleLib\Database\Repository;
 
 use PDO;
 

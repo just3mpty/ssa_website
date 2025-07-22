@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
-use CapsuleLib\Repository\BaseRepository;
 use App\Dto\EventDTO;
+use CapsuleLib\Database\Repository\BaseRepository;
 use PDO;
 
 class EventRepository extends BaseRepository

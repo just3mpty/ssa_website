@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CapsuleLib\Service\Database;
+namespace CapsuleLib\Database\Connection;
 
 use PDO;
 use PDOException;

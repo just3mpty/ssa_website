@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use CapsuleLib\Framework\ViewController;
+use CapsuleLib\Core\RenderController;
 use CapsuleLib\Security\Authenticator;
 use CapsuleLib\Security\CsrfTokenManager;
 use CapsuleLib\Http\Middleware\AuthMiddleware;
 use PDO;
 
-class AdminController extends ViewController
+class AdminController extends RenderController
 {
     private PDO $pdo;
 

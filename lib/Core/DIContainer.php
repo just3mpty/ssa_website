@@ -1,8 +1,8 @@
 <?php
 
-namespace CapsuleLib\Framework;
+namespace CapsuleLib\Core;
 
-class Container
+class DIContainer
 {
     private array $factories = [];
     private array $instances = [];

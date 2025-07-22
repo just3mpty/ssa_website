@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CapsuleLib\Framework;
+namespace CapsuleLib\Core;
 
 /**
  * Classe de base pour tous les contrôleurs.
@@ -13,7 +13,7 @@ namespace CapsuleLib\Framework;
  *
  * @version 1.0
  */
-abstract class ViewController
+abstract class RenderController
 {
     /**
      * Rend une vue HTML avec un layout global.

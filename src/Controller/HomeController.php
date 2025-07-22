@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use CapsuleLib\Framework\ViewController;
 use App\Service\EventService;
+use CapsuleLib\Core\RenderController;
 
-class HomeController extends ViewController
+class HomeController extends RenderController
 {
     private EventService $eventService;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CapsuleLib\Http\SecureHeaders;
 
-require dirname(__DIR__) . '/lib/autoload.php';
+require dirname(__DIR__) . '/lib/Autoload.php';
 
 ini_set('session.cookie_httponly', '1');
 //ini_set('session.cookie_secure', '1'); // uniquement si tu es en HTTPS

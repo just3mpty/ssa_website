@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-use CapsuleLib\Framework\Container;
-use CapsuleLib\Service\Database\MariaDBConnection;
-use CapsuleLib\Router\Router;
+use CapsuleLib\Core\DIContainer;
+use CapsuleLib\Routing\Router;
+use CapsuleLib\Database\Connection\MariaDBConnection;
 use App\Repository\EventRepository;
 use App\Service\EventService;
 use App\Controller\HomeController;
 use App\Controller\AdminController;
 use App\Controller\EventController;
 
-require dirname(__DIR__) . '/lib/Helpers/h_specialchar.php';
+require dirname(__DIR__) . '/lib/Utils/h_specialchar.php';
 
 // Instanciation du container
-$container = new Container();
+$container = new DIContainer();
 
 // Définition des dépendances
 $container->set(

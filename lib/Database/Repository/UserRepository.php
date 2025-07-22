@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace CapsuleLib\Repository;
+namespace CapsuleLib\Database\Repository;
 
-use CapsuleLib\Repository\BaseRepository;
+use CapsuleLib\Database\Repository\BaseRepository;
 use CapsuleLib\DTO\UserDTO;
 
 class UserRepository extends BaseRepository

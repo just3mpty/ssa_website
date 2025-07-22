@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use CapsuleLib\Framework\ViewController;
 use CapsuleLib\Http\Middleware\AuthMiddleware;
 use CapsuleLib\Security\Authenticator;
 use CapsuleLib\Security\CsrfTokenManager;
 use App\Service\EventService;
+use CapsuleLib\Core\RenderController;
 
-class EventController extends ViewController
+class EventController extends RenderController
 {
     private EventService $eventService;
 
