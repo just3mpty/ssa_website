@@ -452,7 +452,7 @@ body {
 
             & .news-grid {
                 display: grid;
-                grid-template-columns: repeat(3, minmax(300px, 500px));
+                grid-template-columns: repeat(auto-fit, minmax(300px, 500px));
                 gap: 15px;
 
                 .news-item {
@@ -810,6 +810,10 @@ body {
             gap: 15px;
             width: 25%;
 
+            @media screen and (max-width: 950px) {
+                width: 100%;
+            }
+
             & input {
                 padding: 15px;
                 border: 1px solid var(--grey);
@@ -844,12 +848,25 @@ body {
         flex-direction: column;
         padding: 30px;
 
+        @media screen and (max-width: 950px) {
+            padding: 15px;
+            padding-top: 100px;
+            align-items: flex-start;
+        }
+
         & ul {
             display: flex;
             align-items: center;
             flex: 1;
             gap: 15px;
             flex-wrap: wrap;
+
+            @media screen and (max-width: 950px) {
+                flex-direction: column;
+                align-items: flex-start;
+                justify-content: center;
+                gap: 30px;
+            }
 
             & li {
                 list-style-type: none;
