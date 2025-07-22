@@ -1,48 +1,36 @@
-<?php
-
-declare(strict_types=1);
-
-use App\Lang\Translate;
-use CapsuleLib\Security\Authenticator;
-
-Translate::load(default: 'fr', page: basename($_SERVER['SCRIPT_NAME'], '.php'));
-?>
-
 <header id="header">
     <a href="/" class="logo-link">
-        <img src="/assets/img/logoSSA.png" alt="<?= Translate::t('nav_title') ?>" class="logo">
+        <img src="/assets/img/logoSSA.png" alt="<?= secure_html($str['nav_title']) ?>" class="logo">
     </a>
+
     <div id="hamburger" class="hamburger-icon">
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
+        <span></span><span></span><span></span><span></span>
     </div>
 
     <nav class="navbar">
         <ul>
-            <li><a href="/"><?= Translate::t('nav_home') ?></a></li>
-            <li><a href="/#about"><?= Translate::t('nav_apropos') ?></a></li>
-            <li><a href="/#news"><?= Translate::t('nav_actualites') ?></a></li>
-            <li><a href="/#agenda"><?= Translate::t('nav_agenda') ?></a></li>
-            <li><a href="/projet"><?= Translate::t('nav_project') ?></a></li>
-            <li><a href="/galerie"><?= Translate::t('nav_galerie') ?></a></li>
-            <li><a href="/#contact"><?= Translate::t('nav_contact') ?></a></li>
+            <li><a href="/"><?= secure_html($str['nav_home']) ?></a></li>
+            <li><a href="/#about"><?= secure_html($str['nav_apropos']) ?></a></li>
+            <li><a href="/#news"><?= secure_html($str['nav_actualites']) ?></a></li>
+            <li><a href="/#agenda"><?= secure_html($str['nav_agenda']) ?></a></li>
+            <li><a href="/projet"><?= secure_html($str['nav_project']) ?></a></li>
+            <li><a href="/galerie"><?= secure_html($str['nav_galerie']) ?></a></li>
+            <li><a href="/#contact"><?= secure_html($str['nav_contact']) ?></a></li>
 
             <li>
                 <form method="get" action="">
                     <select name="lang" id="lang-switch" onchange="this.form.submit()">
                         <option value="fr" <?= ($_SESSION['lang'] ?? 'fr') === 'fr' ? 'selected' : '' ?>>
-                            <?= Translate::t('lang_fr') ?>
+                            <?= secure_html($str['lang_fr']) ?>
                         </option>
                         <option value="br" <?= ($_SESSION['lang'] ?? 'fr') === 'br' ? 'selected' : '' ?>>
-                            <?= Translate::t('lang_br') ?>
+                            <?= secure_html($str['lang_br']) ?>
                         </option>
                     </select>
                 </form>
             </li>
 
-            <?php if (Authenticator::isAuthenticated()): ?>
+            <?php if (\CapsuleLib\Security\Authenticator::isAuthenticated()): ?>
                 <li><a class="icons" href="/dashboard">
                         <img src="/assets/icons/dashboard.svg" alt="Dashboard icon">
                     </a></li>

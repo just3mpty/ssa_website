@@ -1,39 +1,49 @@
+<?php
+
+/** @var array<string, string> $str */ ?>
+
 <section class="hero">
     <div class="overlay"></div>
-    <h1>Sécurité Sociale de l’Alimentation – Pays de Morlaix</h1>
-    <p class="slogan">Pour un droit fondamental et universel à une alimentation saine et durable.</p>
+    <h1><?= secure_html($str['hero_title']) ?></h1>
+    <p class="slogan"><?= secure_html($str['hero_slogan']) ?></p>
     <div class="cta-buttons">
-        <a href="projet.html" class="btn primary">En savoir plus</a>
-        <a href="participer.html" class="btn secondary">Participer</a>
-        <a href="/#contact" class="btn secondary">Contact</a>
+        <a href="/projet" class="btn primary"><?= secure_html($str['hero_cta_more']) ?></a>
+        <a href="/participer" class="btn secondary"><?= secure_html($str['hero_cta_participate']) ?></a>
+        <a href="/#contact" class="btn secondary"><?= secure_html($str['hero_cta_contact']) ?></a>
     </div>
 </section>
-<?= $this->renderComponent('apropos.php') ?>
-<?= $this->renderComponent('actualites.php') ?>
+
+<?= $this->renderComponent('apropos.php', ['str' => $str]) ?>
+<?= $this->renderComponent('actualites.php', ['str' => $str]) ?>
+
 <div class="separator"></div>
+
 <section id="agenda" class="agenda">
     <h2>Agenda</h2>
-    <p>Retrouvez nos événements à venir :</p>
+    <p><?= secure_html($str['agenda_intro']) ?></p>
+
     <div class="events">
         <?php if (empty($events)): ?>
-            <p class="no-events">Aucun événement à venir.</p>
+            <p class="no-events"><?= secure_html($str['no_upcoming_events']) ?></p>
         <?php else: ?>
             <?php foreach ($events as $event): ?>
                 <article class="event">
                     <div class="date-time">
-                        <p><?= h_specialchar($event->date_event) ?></p>
-                        <p><?= h_specialchar(substr($event->hours, 0, 5)) ?></p>
+                        <p><?= secure_html($event->date_event) ?></p>
+                        <p><?= secure_html(substr($event->hours, 0, 5)) ?></p>
                     </div>
                     <div class="description">
-                        <h3><?= htmlspecialchars($event->titre) ?></h3>
-                        <p><?= nl2br(h_specialchar($event->description)) ?></p>
+                        <h3><?= secure_html($event->titre) ?></h3>
+                        <p><?= nl2br(secure_html($event->description)) ?></p>
                     </div>
                 </article>
             <?php endforeach; ?>
         <?php endif; ?>
     </div>
 </section>
+
 <div class="separator"></div>
-<?= $this->renderComponent('partenaires.php') ?>
+
+<?= $this->renderComponent('partenaires.php', ['str' => $str]) ?>
 <div class="separator"></div>
-<?= $this->renderComponent('contact.php') ?>
+<?= $this->renderComponent('contact.php', ['str' => $str]) ?>

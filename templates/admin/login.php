@@ -1,16 +1,24 @@
-<h1><?= h_specialchar($title ?? 'Connexion') ?></h1>
+<?php
+
+/** @var array<string, string> $str */
+?>
+
+<h1><?= secure_html($title ?? $str['login_title']) ?></h1>
 
 <?php if (!empty($error)): ?>
-    <p style="color:red"><?= h_specialchar($error) ?></p>
+    <p style="color:red"><?= secure_html($error) ?></p>
 <?php endif; ?>
 
 <section class="login">
     <form method="POST">
         <?= \CapsuleLib\Security\CsrfTokenManager::insertInput(); ?>
-        <label>Nom d'utilisateur :</label>
-        <input name="username" required />
-        <label>Mot de passe : </label>
-        <input name="password" type="password" required />
-        <button type="submit">Se connecter</button>
+
+        <label for="username"><?= secure_html($str['login_username']) ?></label>
+        <input id="username" name="username" required />
+
+        <label for="password"><?= secure_html($str['login_password']) ?></label>
+        <input id="password" name="password" type="password" required />
+
+        <button type="submit"><?= secure_html($str['login_submit']) ?></button>
     </form>
 </section>

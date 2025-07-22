@@ -1,30 +1,46 @@
-<!-- #TODO: ADD SECURITY ICI -->
+<?php
+
+/** @var array<string, string> $str */
+?>
 
 <div class="background">
     <section id="contact" class="contact">
-        <h2>Contactez-nous</h2>
-        <p>Pour toute question sur la Sécurité Sociale de l’Alimentation au Pays de Morlaix, contactez l’association ULAMIR CPIE.</p>
+        <h2><?= secure_html($str['contact_title']) ?></h2>
+        <p><?= secure_html($str['contact_intro']) ?></p>
 
         <div class="infos">
             <div class="contact-info">
-                <h3>Nos coordonnées</h3>
-                <p><strong>Adresse :</strong> 1 rue de quelque chose, 29000 Breizh</p>
-                <p><strong>Téléphone :</strong> <a href="tel:+33298675154">01 23 45 67 89</a></p>
-                <p><strong>Email :</strong> <a href="mailto:g.gabilletcpie@gmail.com">g.gabilletcpie@gmail.com</a> | <a href="mailto:nicolas@buzuk.bzh">nicolas@buzuk.bzh</a></p>
-                <!-- <p><strong>SIRET :</strong> 300 79 63 489 000 11</p>
-                <p><strong>Code APE :</strong> 9004Z</p> -->
+                <h3><?= secure_html($str['contact_coords_title']) ?></h3>
+
+                <p><strong><?= secure_html($str['contact_address_label']) ?></strong>
+                    <?= secure_html($str['contact_address']) ?>
+                </p>
+
+                <p><strong><?= secure_html($str['contact_phone_label']) ?></strong>
+                    <a href="tel:+33298675154"><?= secure_html($str['contact_phone']) ?></a>
+                </p>
+
+                <p><strong><?= secure_html($str['contact_email_label']) ?></strong>
+                    <a href="mailto:g.gabilletcpie@gmail.com"><?= secure_html($str['contact_email1']) ?></a> |
+                    <a href="mailto:nicolas@buzuk.bzh"><?= secure_html($str['contact_email2']) ?></a>
+                </p>
             </div>
+
             <div class="contact-form">
-                <h3>Envoyez-nous un message</h3>
-                <form id="contact-form">
-                    <label for="name">Nom</label>
+                <h3><?= secure_html($str['contact_form_title']) ?></h3>
+
+                <form id="contact-form" method="post" action="/contact-handler.php">
+                    <label for="name"><?= secure_html($str['contact_form_name']) ?></label>
                     <input type="text" id="name" name="name" required>
-                    <label for="email">Email</label>
+
+                    <label for="email"><?= secure_html($str['contact_form_email']) ?></label>
                     <input type="email" id="email" name="email" required>
-                    <label for="message">Message</label>
+
+                    <label for="message"><?= secure_html($str['contact_form_message']) ?></label>
                     <textarea id="message" name="message" rows="5" required></textarea>
-                    <div class="g-recaptcha" data-sitekey="YOUR_RECAPTCHA_SITE_KEY"></div>
-                    <button type="submit" class="btn primary">Envoyer</button>
+
+
+                    <button type="submit" class="btn primary"><?= secure_html($str['contact_form_submit']) ?></button>
                 </form>
             </div>
         </div>
