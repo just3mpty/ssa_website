@@ -29,6 +29,9 @@ open-pma:
 open-web:
 	xdg-open http://localhost:8080
 
+open-doc:
+	xdg-open doc.md
+
 # --- (Facultatif) Bash dans les containers ---
 bash-db:
 	$(DC) exec db bash
@@ -37,4 +40,4 @@ bash-web:
 	$(DC) exec web bash
 
 
-.PHONY: up down logs db-purge restart pma pma-stop open-pma open-web bash-db bash-web
+.PHONY: up down logs db-purge restart pma pma-stop open-pma open-web open-doc bash-db bash-web
