@@ -42,7 +42,7 @@ class Translate
      * @param string $page    Nom du fichier spécifique à charger (sans extension)
      * @return void
      */
-    public static function load(string $default = 'fr', string $page = 'common'): void
+    public static function detect_and_load(string $default = 'fr', string $page = 'common'): void
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
@@ -75,7 +75,7 @@ class Translate
      * @param string $key Clé de la chaîne traduite
      * @return string Texte traduit ou la clé en fallback
      */
-    public static function t(string $key): string
+    public static function action(string $key): string
     {
         return self::$lang[$key] ?? $key;
     }

@@ -11,7 +11,7 @@ use App\Controller\HomeController;
 use App\Controller\AdminController;
 use App\Controller\EventController;
 
-require dirname(__DIR__) . '/lib/Utils/h_specialchar.php';
+require_once dirname(__DIR__) . '/lib/Helper/html_secure.php';
 
 // Instanciation du container
 $container = new DIContainer();
