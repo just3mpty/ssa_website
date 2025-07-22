@@ -99,9 +99,13 @@ class TranslationLoader
             'login_password',
             'login_submit',
 
-            // --- Dashboard ---
-            'dashboard_title',
+            // --- Admin/Dashboard ---
             'welcome',
+            'dashboard_title',
+            'admin_manage_events',
+            'admin_contacts',
+            'admin_create_event',
+            'logout',
 
             // --- Événements : création ---
             'create_event_title',
@@ -111,12 +115,6 @@ class TranslationLoader
             'create_event_label_time',
             'create_event_label_place',
             'create_event_submit',
-
-            // --- Admin
-            'admin_manage_events',
-            'admin_contacts',
-            'admin_create_event',
-            'logout'
         ];
 
         $out = [];
