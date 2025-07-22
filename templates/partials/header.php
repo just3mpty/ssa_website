@@ -16,6 +16,7 @@ Translate::load(default: 'fr', page: basename($_SERVER['SCRIPT_NAME'], '.php'));
         <span></span>
         <span></span>
         <span></span>
+        <span></span>
     </div>
 
     <nav class="navbar">

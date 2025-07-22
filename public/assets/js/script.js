@@ -44,6 +44,10 @@ const showMobileNav = () => {
     if (window.innerWidth <= 950) {
         navbar.classList.add("mobileNav");
         hamburger.style.display = "flex";
+
+        hamburger.addEventListener("click", () => {
+            hamburger.classList.toggle("open");
+        });
     } else {
         hamburger.style.display = "none";
         navbar.classList.remove("mobileNav");
