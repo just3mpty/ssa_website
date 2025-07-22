@@ -21,12 +21,12 @@
             <?php foreach ($events as $event): ?>
                 <article class="event">
                     <div class="date-time">
-                        <p><?= h_specialchar($event['date_event']) ?></p>
-                        <p><?= h_specialchar(substr($event['hours'], 0, 5)) ?></p>
+                        <p><?= h_specialchar($event->date_event) ?></p>
+                        <p><?= h_specialchar(substr($event->hours, 0, 5)) ?></p>
                     </div>
                     <div class="description">
-                        <h3><?= htmlspecialchars($event['titre']) ?></h3>
-                        <p><?= nl2br(h_specialchar($event['description'])) ?></p>
+                        <h3><?= htmlspecialchars($event->titre) ?></h3>
+                        <p><?= nl2br(h_specialchar($event->description)) ?></p>
                     </div>
                 </article>
             <?php endforeach; ?>
