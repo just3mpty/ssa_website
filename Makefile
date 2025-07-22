@@ -1,33 +1,41 @@
-PROJECT_NAME := ssa_website
+DC = docker compose
 
-.PHONY: all build up down logs exec bash init-db prune
-
-all: build up
-
-## 🔨 Build l'image Docker (php + apache + deps)
-build:
-	docker compose build
-
-## 🚀 Lance les services (detached)
+# --- Commandes principales ---
 up:
-	docker compose up -d
+	$(DC) up -d
 
-## ⏹️ Arrête les conteneurs
 down:
-	docker compose down
+	$(DC) down
 
-## 📋 Affiche les logs
 logs:
-	docker compose logs -f
+	$(DC) logs -f
 
-## 🐚 Ouvre un shell bash dans le conteneur web
-bash:
-	docker compose exec web bash
+db-purge:
+	$(DC) down -v
 
-## 💻 Lance un shell dans le conteneur web (user shell par défaut)
-exec:
-	docker compose exec web sh
+restart: down up
 
-## 🧪 Init DB (via le conteneur pour être reproductible !)
-init-db:
-	docker compose run --rm web bash -c "sqlite3 /var/www/html/data/database.sqlite < /var/www/html/migrations/tables.sql"
+# --- Lancer seulement phpMyAdmin (avec dépendances) ---
+pma:
+	$(DC) up -d pma
+
+pma-stop:
+	$(DC) stop pma
+
+# --- Accès rapides ---
+open-pma:
+	xdg-open http://localhost:8081
+
+open-web:
+	xdg-open http://localhost:8080
+
+# --- (Facultatif) Bash dans les containers ---
+bash-db:
+	$(DC) exec db bash
+
+bash-web:
+	$(DC) exec web bash
+
+# --- (Ajoute ici d'autres outils, ex : adminer) ---
+
+.PHONY: up down logs db-purge restart pma pma-stop open-pma open-web bash-db bash-web

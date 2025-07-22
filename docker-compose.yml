@@ -32,5 +32,16 @@ services:
       - db_data:/var/lib/mysql
       - ./docker:/docker-entrypoint-initdb.d:ro,z
 
+  pma:
+    image: phpmyadmin:latest
+    ports:
+      - "8081:80"
+    environment:
+      - PMA_HOST=db
+      - PMA_USER=admin
+      - PMA_PASSWORD=admin
+    depends_on:
+      - db
+
 volumes:
   db_data:
