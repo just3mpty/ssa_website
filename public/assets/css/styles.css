@@ -451,11 +451,14 @@ body {
             }
 
             & .news-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(300px, 500px));
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
                 gap: 15px;
 
                 .news-item {
+                    flex: 1;
+                    min-width: 300px;
                     background-color: #b8b8b850;
                     padding: 15px;
                     border-radius: 5px;
