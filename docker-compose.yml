@@ -1,0 +1,17 @@
+services:
+  web:
+    build: .
+    container_name: ssa_web
+    ports:
+      - "8080:80"
+    volumes:
+      - ./public:/var/www/html/public:Z
+      - ./src:/var/www/html/src:Z
+      - ./lib:/var/www/html/lib:Z
+      - ./templates:/var/www/html/templates:Z
+      - ./data:/var/www/html/data:Z
+      - ./logs:/var/www/html/logs:Z
+    environment:
+      - APACHE_RUN_USER=www-data
+      - APACHE_RUN_GROUP=www-data
+    working_dir: /var/www/html/public
