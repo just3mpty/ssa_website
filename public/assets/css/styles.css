@@ -870,4 +870,52 @@ body {
             }
         }
     }
+
+    /* CREATION D'EVENT */
+    & .form-section {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 15px;
+        padding: 30px;
+        padding-top: 120px;
+
+        & form {
+            display: flex;
+            flex-direction: column;
+            width: 50%;
+            gap: 15px;
+
+            @media screen and (max-width: 950px) {
+                width: 100%;
+            }
+
+            & input {
+                padding: 5px 15px;
+                border: 1px solid var(--grey);
+                border-radius: 8px;
+                background-color: #b8b8b825;
+                transition: border-color 0.3s;
+                outline: none;
+
+                &:focus {
+                    border: 1px solid var(--orange);
+                }
+            }
+            & textarea {
+                resize: vertical;
+            }
+
+            & button {
+                all: unset;
+                padding: 15px 30px;
+                background: var(--orange);
+                color: var(--background);
+                border-radius: 8px;
+                cursor: pointer;
+                max-width: fit-content;
+                font-weight: 600;
+            }
+        }
+    }
 }
