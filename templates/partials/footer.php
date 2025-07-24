@@ -14,7 +14,7 @@
             </p>
             <p><?= secure_html($str['footer_siret']) ?></p>
         </div>
-        <img src="/assets/img/logoSSA.png" alt="SSA logo">
+        <img src="/assets/img/logo.svg" alt="SSA logo">
     </div>
     <p class="copyright"><?= secure_html($str['footer_copyright']) ?></p>
 </footer>

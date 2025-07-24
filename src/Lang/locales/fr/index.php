@@ -42,7 +42,7 @@ return  [
     'nav_agenda'       => 'Agenda',
     'nav_actualites'   => 'Actualités',
     'nav_galerie'      => 'Galerie',
-    'nav_apropos'      => 'À propos',
+    'nav_apropos'      => 'Qui sommes-nous ?',
     'nav_contact'      => 'Contact',
     'nav_wiki'         => 'Wiki SSA',
 

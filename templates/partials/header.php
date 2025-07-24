@@ -1,6 +1,6 @@
 <header id="header">
     <a href="/" class="logo-link">
-        <img src="/assets/img/logoSSA.png" alt="<?= secure_html($str['nav_title']) ?>" class="logo">
+        <img src="/assets/img/logo.svg" alt="<?= secure_html($str['nav_title']) ?>" class="logo">
     </a>
 
     <div id="hamburger" class="hamburger-icon">

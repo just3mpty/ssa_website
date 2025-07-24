@@ -11,6 +11,8 @@ return [
     'about_axes'             => 'Linennoù labour :',
     'about_axes_1'           => 'deskiñ ha kreskiñ skiant-prenet izili ar strollad ;',
     'about_axes_2'           => 'desachañ an dud ouzh ur boued yac\'h ha padus',
+    'about_axes_3'           => 'porteuse de la monnaie locale',
+    'about_axes_4'           => 'du Pays de Morlaix, pôle ESS du Pays de Morlaix',
     'about_goal_label'       => 'Pal :',
     'about_goal'             => 'Kevreañ ar raktresoù lec\'hel en-dro d\'ar boued ha kreñvaat ar c\'heverzhioù etre an oberourien.',
     'about_cta'              => 'Gouzout hiroc\'h',
