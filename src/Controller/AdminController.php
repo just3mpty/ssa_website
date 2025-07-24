@@ -43,7 +43,7 @@ class AdminController extends RenderController
      */
     private function getStrings(): array
     {
-        return TranslationLoader::load(defaultLang: 'fr', page: basename($_SERVER['SCRIPT_NAME'], '.php'));
+        return TranslationLoader::load(defaultLang: 'fr');
     }
 
     /**
