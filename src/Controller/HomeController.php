@@ -65,7 +65,10 @@ class HomeController extends RenderController
      */
     public function projet(): void
     {
-        echo $this->renderView('pages/projet.php', ['title' => 'Projet']);
+        echo $this->renderView('pages/projet.php', [
+            'str'    => $this->getStrings(),
+            'events' => $this->eventService->getUpcoming(),
+        ]);
     }
 
     /**
@@ -75,16 +78,9 @@ class HomeController extends RenderController
      */
     public function galerie(): void
     {
-        echo $this->renderView('pages/galerie.php', ['title' => 'Galerie']);
-    }
-
-    /**
-     * Affiche la page "Wiki".
-     *
-     * @return void
-     */
-    public function wiki(): void
-    {
-        echo $this->renderView('pages/wiki.php', ['title' => 'Wiki']);
+        echo $this->renderView('pages/galerie.php', [
+            'str'    => $this->getStrings(),
+            'events' => $this->eventService->getUpcoming(),
+        ]);
     }
 }
