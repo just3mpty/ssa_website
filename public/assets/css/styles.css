@@ -82,6 +82,12 @@ body {
     flex-direction: column;
     min-height: 100vh;
 
+    & h2:not(.about-text h2) {
+        font-size: 30px;
+        color: var(--orange);
+        font-weight: 600;
+    }
+
     /* HEADER */
     & header {
         background-color: var(--background);
@@ -277,7 +283,7 @@ body {
         }
 
         /* HERO SECTION */
-        .hero {
+        & .hero {
             background: url("../img/banner.webp") no-repeat center/cover;
             background-attachment: fixed;
             color: var(--background);
@@ -318,6 +324,7 @@ body {
                 margin-bottom: 20px;
                 z-index: 1;
                 position: relative;
+                text-shadow: 2px 2px 5px #00000050;
 
                 @media screen and (max-width: 950px) {
                     font-size: 30px;
@@ -330,6 +337,7 @@ body {
                 margin-bottom: 30px;
                 z-index: 1;
                 position: relative;
+                text-shadow: 2px 2px 5px #00000050;
             }
 
             & .cta-buttons {
@@ -380,6 +388,17 @@ body {
             }
         }
 
+        & .ssaProject-hero {
+            background: url("/assets/img/projetssa.webp") no-repeat center/cover;
+            background-attachment: fixed;
+
+            & h1 {
+                max-width: 75%;
+                text-align: center;
+                text-wrap: balance;
+            }
+        }
+
         /* BACKGROUND POUR CLIP PATH WAVES */
         & .background {
             background: var(--background);
@@ -391,7 +410,6 @@ body {
             display: flex;
             align-items: center;
             justify-content: center;
-            /* clip-path: var(--clipPath); */
 
             @media screen and (max-width: 950px) {
                 flex-direction: column;
@@ -451,9 +469,30 @@ body {
                 }
             }
 
+            & .about-text {
+                background: var(--background);
+                clip-path: none;
+                color: var(--blue);
+            }
+
             & .illustration img {
                 width: 100%;
                 padding: 30px;
+            }
+        }
+
+        & .projet-ssa {
+            clip-path: var(--clipPath);
+
+            & .text {
+                clip-path: none;
+            }
+
+            & .projet-ssa-illustration img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                padding: 0;
             }
         }
 
@@ -467,12 +506,6 @@ body {
 
             @media screen and (max-width: 950px) {
                 padding: 15px;
-            }
-
-            & h2 {
-                font-size: 30px;
-                color: var(--orange);
-                font-weight: 600;
             }
 
             & .filters {
@@ -741,6 +774,10 @@ body {
                     }
                 }
             }
+        }
+
+        & .recrutement {
+            padding: 30px;
         }
     }
 
