@@ -41,21 +41,22 @@
     </section>
 </div>
 <!-- Section recrutement -->
-<section class="recrutement">
+<section id="recrutement" class="recrutement">
     <h2>On recrute !</h2>
-    <p>Recherche 100 volontaires pour participer à l'expérimentation Sécurité Sociale de l'Alimentation</p>
+    <p>Nous recherchons 100 volontaires pour participer à l'expérimentation Sécurité Sociale de l'Alimentation.</p>
     <p> La campagne de recrutement des 100 personnes qui participeront à la caisse commune est lancé <strong>jusqu’au 20 septembre.</strong>
-        <br> <br>
         C’est ouvert à toutes et tous, sans conditions de ressources. L’objectif est d’avoir un panel de candidat.e.s le plus représentatif possible de la population du territoire du pays de Morlaix, en terme de niveau de vie et de composition du foyer. Si les candidatures sont trop nombreuses, un tirage au sort sera effectué par catégorie.
-        <br><br>
-        Le dossier de candidature en ligne est à télécharger <a href="">juste ici</a> ou à retrouver sur ce lien : <a href="https://framaforms.org/inscription-ssa-pays-de-morlaix-1750686939" target="_blank">formulaire</a>
-
-        Comment cela se passe concrètement ?
-
-        Les participants auto-déterminent le montant de leur cotisation mensuelle (en se basant sur leur revenu fiscal de référence), et recevront ensuite une allocation en monnaie locale alimentaire (« Buzuk SSA »), à dépenser dans des lieux conventionnés choisis démocratiquement. Chacun cotise selon ses moyens et reçoit 150 buzuks SSA.
     </p>
+    <p>Le dossier de candidature en ligne est à télécharger ci-dessous ou à retrouver sur ce lien : <a href="https://framaforms.org/inscription-ssa-pays-de-morlaix-1750686939" target="_blank">formulaire</a></p>
+    <button id="download">Télécharger</button>
+    <img src="/assets/img/recrutementBanner.png" alt="">
+    <h3>Comment cela se passe concrètement ?</h3>
+    <p>
+        Les participants auto-déterminent le montant de leur cotisation mensuelle (en se basant sur leur revenu fiscal de référence), et recevront ensuite une allocation en monnaie locale alimentaire (« Buzuk SSA »), à dépenser dans des lieux conventionnés choisis démocratiquement. Chacun cotise selon ses moyens et reçoit 150 buzuks SSA.</p>
     <h3>Pour plus d’informations</h3>
-    <p>N’hésitez pas à contacter les membres du collectif sur ssapaysdemorlaix@mailo.com
-
-        ou candidature@mailo.com</p>
+    <p>N’hésitez pas à contacter les membres du collectif sur <a href="mailto:ssapaysdemorlaix@mailo.com">ssapaysdemorlaix@mailo.com</a> ou <a href="mailto:candidature@mailo.com">candidature@mailo.com</a></p>
+    <p>Des temps d’échanges seront organisés entre les participants sélectionnés afin de leur permettre de choisir ensemble les lieux où ils pourront utiliser leur allocation alimentaire.
+        Chaque participant s’engage à participer à une réunion et un atelier collectif par mois.
+        Une réunion d’information aura lieu en septembre. Les participants recevront leur allocation de 150 buzuks SSA à partir du 1er semestre 2026 et pour une durée d’un an.</p>
 </section>
+<div class="separator"></div>

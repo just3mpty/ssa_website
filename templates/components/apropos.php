@@ -19,7 +19,7 @@
             <p><strong><?= secure_html($str['about_goal_label']) ?></strong>
                 <?= secure_html($str['about_goal']) ?>
             </p>
-            <button><?= secure_html($str['about_cta']) ?></button>
+            <a href="/projet" class="btn">En savoir plus</a>
         </div>
         <div class="illustration">
             <img src="/assets/img/logo.svg" alt="<?= secure_attr($str['about_logo_alt']) ?>">

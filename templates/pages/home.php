@@ -8,7 +8,7 @@
     <p class="slogan"><?= secure_html($str['hero_slogan']) ?></p>
     <div class="cta-buttons">
         <a href="/projet" class="btn primary"><?= secure_html($str['hero_cta_more']) ?></a>
-        <a href="/participer" class="btn secondary"><?= secure_html($str['hero_cta_participate']) ?></a>
+        <a href="/projet/#recrutement" class="btn secondary"><?= secure_html($str['hero_cta_participate']) ?></a>
         <a href="/#contact" class="btn secondary"><?= secure_html($str['hero_cta_contact']) ?></a>
     </div>
 </section>

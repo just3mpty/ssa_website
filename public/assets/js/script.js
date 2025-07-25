@@ -1,6 +1,7 @@
 const header = document.getElementById("header");
 const hamburger = document.getElementById("hamburger");
 const navbar = document.querySelector(".navbar");
+const downloadLink = document.getElementById("download");
 
 // FILTRE DES ACTUALITES
 const filterButtons = document.querySelectorAll(".filter-btn");
@@ -38,6 +39,21 @@ filterButtons.forEach((button) => {
         });
     });
 });
+
+// TELECHARGEMENT DE FICHIER
+const handleDownload = () => {
+    const fileUrl = "/assets/files/dossier_de_candidature.pdf";
+    const link = document.createElement("a");
+    link.href = fileUrl;
+    link.download = "dossier_de_candidature.pdf";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+};
+
+if (downloadLink) {
+    downloadLink.addEventListener("click", handleDownload);
+}
 
 // RESPONSIVE
 const showMobileNav = () => {
