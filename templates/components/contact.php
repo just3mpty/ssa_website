@@ -13,16 +13,15 @@
                 <h3><?= secure_html($str['contact_coords_title']) ?></h3>
 
                 <p><strong><?= secure_html($str['contact_address_label']) ?></strong>
-                    <?= secure_html($str['contact_address']) ?>
+                    39 bellevue de la madeleine, 29600 Morlaix
                 </p>
 
                 <p><strong><?= secure_html($str['contact_phone_label']) ?></strong>
-                    <a href="tel:+33298675154"><?= secure_html($str['contact_phone']) ?></a>
+                    <a href="tel:+33615068208">06 15 06 82 08</a>
                 </p>
 
                 <p><strong><?= secure_html($str['contact_email_label']) ?></strong>
-                    <a href="mailto:g.gabilletcpie@gmail.com"><?= secure_html($str['contact_email1']) ?></a> |
-                    <a href="mailto:nicolas@buzuk.bzh"><?= secure_html($str['contact_email2']) ?></a>
+                    <a href="mailto:ssapaysdemorlaix@mailo.com">ssapaysdemorlaix@mailo.com</a>
                 </p>
             </div>
 

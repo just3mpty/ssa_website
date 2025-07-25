@@ -1,15 +1,12 @@
 <footer>
     <div class="footer-infos">
         <div class="infos">
-            <p><?= secure_html($str['footer_address']) ?></p>
+            <p>39 bellevue de la madeleine, 29600 Morlaix</p>
             <p>
-                <?= secure_html($str['footer_tel']) ?> |
+                Tel: 06 15 06 82 08 |
                 Email :
-                <a href="mailto:<?= secure_attr($str['footer_email_1']) ?>">
-                    <?= secure_html($str['footer_email_1']) ?>
-                </a> |
-                <a href="mailto:<?= secure_attr($str['footer_email_2']) ?>">
-                    <?= secure_html($str['footer_email_2']) ?>
+                <a href="mailto:ssapaysdemorlaix@mailo.com">
+                    ssapaysdemorlaix@mailo.com
                 </a>
             </p>
             <p><?= secure_html($str['footer_siret']) ?></p>
