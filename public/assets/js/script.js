@@ -34,6 +34,9 @@ hamburger.addEventListener("click", () => {
 const overlay = document.getElementById("image-overlay");
 const overlayImg = document.getElementById("overlay-img");
 const closeBtn = document.getElementById("close-overlay");
+const prevBtn = document.getElementById("prev-img");
+const nextBtn = document.getElementById("next-img");
+
 const galleryImages = Array.from(
     document.querySelectorAll(".gallery-grid img")
 );
@@ -45,6 +48,22 @@ function showOverlay(index) {
     overlay.classList.add("active");
     overlay.focus();
 }
+
+function showPrev() {
+    if (galleryImages.length === 0) return;
+    currentImgIndex =
+        (currentImgIndex - 1 + galleryImages.length) % galleryImages.length;
+    overlayImg.src = galleryImages[currentImgIndex].src;
+}
+
+function showNext() {
+    if (galleryImages.length === 0) return;
+    currentImgIndex = (currentImgIndex + 1) % galleryImages.length;
+    overlayImg.src = galleryImages[currentImgIndex].src;
+}
+
+prevBtn.addEventListener("click", showPrev);
+nextBtn.addEventListener("click", showNext);
 
 galleryImages.forEach((img, idx) => {
     img.addEventListener("click", () => {
