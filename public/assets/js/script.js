@@ -7,21 +7,6 @@ const downloadLink = document.getElementById("download");
 const filterButtons = document.querySelectorAll(".filter-btn");
 const articles = document.querySelectorAll(".news-item");
 
-let lastScrollTop = 0;
-window.addEventListener("scroll", () => {
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    if (scrollTop > lastScrollTop && scrollTop > 100) {
-        header.classList.add("hidden");
-    } else {
-        header.classList.remove("hidden");
-    }
-    lastScrollTop = scrollTop;
-});
-
-hamburger.addEventListener("click", () => {
-    navbar.classList.toggle("visible");
-});
-
 filterButtons.forEach((button) => {
     button.addEventListener("click", () => {
         const filter = button.dataset.filter;
@@ -38,6 +23,57 @@ filterButtons.forEach((button) => {
             }
         });
     });
+});
+
+// OUVERTURE DU MENU MOBILE
+hamburger.addEventListener("click", () => {
+    navbar.classList.toggle("visible");
+});
+
+// OUVERTURE DE L'OVERLAY IMAGES
+const overlay = document.getElementById("image-overlay");
+const overlayImg = document.getElementById("overlay-img");
+const closeBtn = document.getElementById("close-overlay");
+const galleryImages = Array.from(
+    document.querySelectorAll(".gallery-grid img")
+);
+let currentImgIndex = -1;
+
+function showOverlay(index) {
+    currentImgIndex = index;
+    overlayImg.src = galleryImages[currentImgIndex].src;
+    overlay.classList.add("active");
+    overlay.focus();
+}
+
+galleryImages.forEach((img, idx) => {
+    img.addEventListener("click", () => {
+        showOverlay(idx);
+    });
+});
+
+overlay.addEventListener("click", (e) => {
+    if (e.target === overlay || e.target === closeBtn) {
+        overlay.classList.remove("active");
+        overlayImg.src = "";
+        currentImgIndex = -1;
+    }
+});
+
+overlay.addEventListener("keydown", (e) => {
+    if (!overlay.classList.contains("active")) return;
+    if (e.key === "ArrowRight") {
+        currentImgIndex = (currentImgIndex + 1) % galleryImages.length;
+        overlayImg.src = galleryImages[currentImgIndex].src;
+    } else if (e.key === "ArrowLeft") {
+        currentImgIndex =
+            (currentImgIndex - 1 + galleryImages.length) % galleryImages.length;
+        overlayImg.src = galleryImages[currentImgIndex].src;
+    } else if (e.key === "Escape") {
+        overlay.classList.remove("active");
+        overlayImg.src = "";
+        currentImgIndex = -1;
+    }
 });
 
 // TELECHARGEMENT DE FICHIER

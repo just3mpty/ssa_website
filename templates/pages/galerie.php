@@ -1,7 +1,7 @@
 <?php
 $pictures = [];
 for ($i = 1; $i <= 191; $i++) {
-    $pictures[] = "/assets/img/gallery/image_" . $i . ".jpg";
+    $pictures[] = "/assets/img/gallery/image_" . $i . ".webp";
 }
 ?>
 
@@ -20,3 +20,9 @@ for ($i = 1; $i <= 191; $i++) {
         <?php endforeach; ?>
     </div>
 </section>
+
+<!-- Overlay -->
+<div class="galleryOverlay" id="image-overlay" tabindex="-1">
+    <span class="close-btn" id="close-overlay">&times;</span>
+    <img id="overlay-img" src="" alt="Image en grand">
+</div>
