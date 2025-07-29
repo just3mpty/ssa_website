@@ -25,7 +25,7 @@
         <?= $viewContent ?>
     </main>
     <?php require dirname(__DIR__) . '/templates/partials/footer.php'; ?>
-    <script src="/assets/js/script.js"></script>
+    <script src="/assets/js/script.js" defer></script>
 </body>
 
 </html>

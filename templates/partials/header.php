@@ -3,8 +3,8 @@
         <img src="/assets/img/logo.svg" alt="<?= secure_html($str['nav_title']) ?>" class="logo">
     </a>
 
-    <div id="hamburger" class="hamburger-icon">
-        <span></span><span></span><span></span><span></span>
+    <div class="hamburger">
+        <span class="line"></span><span class="line"></span><span class="line"></span><span class="line"></span>
     </div>
 
     <nav class="navbar">

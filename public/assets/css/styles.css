@@ -108,8 +108,7 @@ body {
         align-items: center;
         justify-content: space-between;
         padding: 15px;
-
-        &.active {
+        px &.active {
             position: relative;
         }
 
@@ -134,7 +133,7 @@ body {
             }
         }
 
-        & .hamburger-icon {
+        & .hamburger {
             width: 30px;
             height: 30px;
             position: fixed;
@@ -142,11 +141,15 @@ body {
             right: 15px;
             cursor: pointer;
             z-index: 2;
-            display: flex;
+            display: none;
             flex-direction: column;
             gap: 5px;
 
-            & span {
+            @media screen and (max-width: 950px) {
+                display: flex;
+            }
+
+            & span.line {
                 display: block;
                 position: absolute;
                 height: 2px;
@@ -913,7 +916,7 @@ body {
                 font-size: 3rem;
                 color: white;
                 cursor: pointer;
-                z-index: 1001;
+                z-index: 100;
             }
         }
     }

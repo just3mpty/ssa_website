@@ -1,5 +1,5 @@
 const header = document.getElementById("header");
-const hamburger = document.getElementById("hamburger");
+const hamburger = document.querySelector(".hamburger");
 const navbar = document.querySelector(".navbar");
 const downloadLink = document.getElementById("download");
 
@@ -28,6 +28,7 @@ filterButtons.forEach((button) => {
 // OUVERTURE DU MENU MOBILE
 hamburger.addEventListener("click", () => {
     navbar.classList.toggle("visible");
+    hamburger.classList.toggle("open");
 });
 
 // OUVERTURE DE L'OVERLAY IMAGES
@@ -115,13 +116,10 @@ const showMobileNav = () => {
     if (window.innerWidth <= 950) {
         navbar.classList.add("mobileNav");
         hamburger.style.display = "flex";
-
-        hamburger.addEventListener("click", () => {
-            hamburger.classList.toggle("open");
-        });
     } else {
         hamburger.style.display = "none";
         navbar.classList.remove("mobileNav");
+        hamburger.classList.remove("open");
     }
 };
 
