@@ -410,9 +410,13 @@ body {
         /* BACKGROUND POUR CLIP PATH WAVES */
         & .background {
             background: var(--background);
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            justify-content: center;
         }
 
-        /* ABOUT */
+        /* SECTION ABOUT */
         & .about {
             width: 100%;
             display: flex;
@@ -435,7 +439,7 @@ body {
                 display: flex;
                 flex-direction: column;
                 gap: 15px;
-                color: var(--background);
+                color: var(--blue);
                 background: var(--orange);
                 clip-path: var(--clipPath);
 
@@ -449,15 +453,23 @@ body {
                 }
 
                 ul {
-                    padding-left: 15px;
+                    /* padding-left: 15px; */
+                    display: flex;
+                    flex-direction: column;
+                    gap: 15px;
+
                     li {
-                        list-style-type: "- ";
+                        list-style-type: none;
                     }
                 }
 
                 a {
-                    color: var(--blue);
+                    color: var(--orange);
                     font-weight: 600;
+                    padding: 5px 15px;
+                    text-decoration: none;
+                    background: var(--blue);
+                    border-radius: 8px;
                 }
 
                 a.btn,
@@ -467,7 +479,7 @@ body {
                     outline: none;
                     border: none;
                     border-radius: 5px;
-                    background: var(--background);
+                    background: var(--blue);
                     color: var(--orange);
                     text-transform: uppercase;
                     font-weight: 700;
@@ -496,18 +508,41 @@ body {
             }
         }
 
+        /* PAGE PROJET SSA */
         & .projet-ssa {
             clip-path: var(--clipPath);
+            align-items: flex-start;
+            height: 100vh;
+
+            @media screen and (max-width: 950px) {
+                clip-path: none;
+            }
+
+            & .projet-ssa-illustration,
+            & .text {
+                height: 100%;
+            }
 
             & .text {
                 clip-path: none;
             }
 
-            & .projet-ssa-illustration img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-                padding: 0;
+            & .projet-ssa-illustration {
+                position: relative;
+                transition: 2s ease;
+                background: url("/assets/img/banner.webp") no-repeat
+                    center/cover;
+            }
+        }
+
+        & .dessin {
+            width: 50%;
+            border-radius: 8px;
+            box-shadow: #00000015;
+            margin: 0 auto;
+
+            @media screen and (max-width: 950px) {
+                width: calc(100% - 30px);
             }
         }
 
@@ -598,7 +633,7 @@ body {
             }
         }
 
-        /* EVENEMENTS */
+        /* SECTION EVENEMENTS */
         & .agenda {
             display: flex;
             flex-direction: column;
@@ -636,6 +671,12 @@ body {
                     padding: 5px;
                     background: #b8b8b825;
                     border-radius: 10px;
+                    position: relative;
+                    overflow: hidden;
+
+                    &:hover button {
+                        transform: translateX(0);
+                    }
 
                     & .date-time {
                         width: 33%;
@@ -661,11 +702,62 @@ body {
                             font-weight: 700;
                         }
                     }
+                    & .description {
+                        flex: 2;
+                    }
+
+                    & button {
+                        all: unset;
+                        aspect-ratio: 1/1;
+                        height: 100%;
+                        position: absolute;
+                        top: 0;
+                        bottom: 0;
+                        right: 0;
+                        background: var(--orange);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        border-radius: 8px 0 0 8px;
+                        transform: translateX(100%);
+                        transition: 0.2s ease;
+                        cursor: pointer;
+
+                        @media screen and (max-width: 950px) {
+                            top: 0;
+                            right: 0;
+                            padding: 5px;
+                            bottom: unset;
+                            height: fit-content;
+                            width: fit-content;
+                            background: transparent;
+                            transform: translateX(0);
+                        }
+
+                        &:hover svg {
+                            transform: scale(1.25);
+                        }
+
+                        & svg {
+                            width: 30px;
+                            height: 30px;
+                            border: none;
+                            transition: 0.2s;
+
+                            & path {
+                                stroke: var(--background);
+
+                                @media screen and (max-width: 950px) {
+                                    stroke: var(--orange);
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
 
-        /* PARTENAIRES */
+        /* SECTION PARTENAIRES */
         & .partenaires {
             width: 100%;
             display: flex;
@@ -696,7 +788,7 @@ body {
             }
         }
 
-        /* CONTACT */
+        /* SECTION CONTACT */
         & .contact {
             padding: 30px;
             display: flex;
@@ -791,6 +883,7 @@ body {
             }
         }
 
+        /* SECTION RECRUTEMENT */
         & .recrutement {
             padding: 30px;
             display: flex;
@@ -823,6 +916,7 @@ body {
             }
         }
 
+        /* PAGE GALLERIE */
         & .gallery {
             padding: 30px;
             padding-top: 120px;
@@ -841,7 +935,7 @@ body {
 
             & .gallery-grid {
                 display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                grid-template-columns: repeat(5, minmax(200px, 1fr));
                 gap: 5px;
                 row-gap: 5px;
 
@@ -863,8 +957,25 @@ body {
                     }
                 }
             }
+
+            & .gallery-pagination {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 15px;
+
+                & a.prev-page,
+                & a.next-page {
+                    padding: 5px 15px;
+                    background: var(--orange);
+                    color: var(--background);
+                    border-radius: 8px;
+                    text-decoration: none;
+                }
+            }
         }
 
+        /* OVERLAY D'IMAGE PAGE GALLERIE */
         #image-overlay {
             position: fixed;
             top: 0;
@@ -1021,6 +1132,7 @@ body {
         }
     }
 
+    /* DASHBOARD ADMIN */
     & .admin-dashboard {
         width: 100%;
         min-height: 65vh;

@@ -3,6 +3,18 @@ const hamburger = document.querySelector(".hamburger");
 const navbar = document.querySelector(".navbar");
 const downloadLink = document.getElementById("download");
 
+// MASQUER LE HEADER AU SCROLL
+let lastScroll = window.scrollY;
+
+window.addEventListener("scroll", () => {
+    if (window.scrollY > lastScroll && window.scrollY > 20) {
+        header.classList.add("hidden");
+    } else {
+        header.classList.remove("hidden");
+    }
+    lastScroll = window.scrollY;
+});
+
 // FILTRE DES ACTUALITES
 const filterButtons = document.querySelectorAll(".filter-btn");
 const articles = document.querySelectorAll(".news-item");
@@ -119,7 +131,6 @@ const showMobileNav = () => {
     } else {
         hamburger.style.display = "none";
         navbar.classList.remove("mobileNav");
-        hamburger.classList.remove("open");
     }
 };
 

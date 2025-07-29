@@ -3,12 +3,23 @@ $pictures = [];
 for ($i = 1; $i <= 191; $i++) {
     $pictures[] = "/assets/img/gallery/image_" . $i . ".webp";
 }
+
+$imagesPerPage = 25;
+$totalImages = count($pictures);
+$totalPages = ceil($totalImages / $imagesPerPage);
+
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$page = min($page, $totalPages);
+
+$startIndex = ($page - 1) * $imagesPerPage;
+$picturesPage = array_slice($pictures, $startIndex, $imagesPerPage);
+
 ?>
 
 <section class="gallery" id="gallery">
     <h2>Galerie</h2>
     <div class="gallery-grid">
-        <?php foreach ($pictures as $img): ?>
+        <?php foreach ($picturesPage as $img): ?>
             <picture>
                 <img
                     src="<?php echo htmlspecialchars($img); ?>"
@@ -19,6 +30,17 @@ for ($i = 1; $i <= 191; $i++) {
             </picture>
         <?php endforeach; ?>
     </div>
+
+    <!-- Pagination controls -->
+    <nav class="gallery-pagination" style="margin-top:2rem;display:flex;justify-content:center;gap:1rem;">
+        <?php if ($page > 1): ?>
+            <a href="?page=<?php echo $page - 1; ?>" class="prev-page">&larr; Précédent</a>
+        <?php endif; ?>
+        <span>Page <?php echo $page; ?> / <?php echo $totalPages; ?></span>
+        <?php if ($page < $totalPages): ?>
+            <a href="?page=<?php echo $page + 1; ?>" class="next-page">Suivant &rarr;</a>
+        <?php endif; ?>
+    </nav>
 </section>
 
 <!-- Overlay -->

@@ -3,6 +3,7 @@
     <h1>Expérimentation d'une caisse de l'alimentation sur le Pays de Morlaix</h1>
     <p class="slogan">Une base de connaissances collaborative sur la Sécurité Sociale de l’Alimentation.</p>
 </section>
+
 <!-- Section textuelle & explications -->
 <div class="background">
     <section id="about" class="about">
@@ -22,9 +23,7 @@
         </div>
     </section>
     <section class="about projet-ssa">
-        <div class="illustration projet-ssa-illustration">
-            <img src="/assets/img/banner.webp" alt="<?= secure_attr($str['about_logo_alt']) ?>">
-        </div>
+        <div class="illustration projet-ssa-illustration"></div>
         <div class="text">
             <p><strong><?= secure_html($str['about_goal_label']) ?></strong>
                 C'est une initiative locale qui s'inspire d'un projet de société : celui de mettre en place une sécurité sociale de l'alimentation !
@@ -39,7 +38,9 @@
             <button>Rejoindre</button>
         </div>
     </section>
+    <img class="dessin" src="/assets/img/illustration_projet_ssa.png" alt="Illustration du projet SSA">
 </div>
+
 <!-- Section recrutement -->
 <section id="recrutement" class="recrutement">
     <h2>On recrute !</h2>
