@@ -8,6 +8,7 @@ use CapsuleLib\Database\Connection\MariaDBConnection;
 use App\Repository\EventRepository;
 use App\Service\EventService;
 use App\Controller\HomeController;
+use App\Controller\DashboardController;
 use App\Controller\AdminController;
 use App\Controller\EventController;
 
@@ -41,6 +42,7 @@ $container->set('eventController', fn($c) => new EventController($c->get('eventS
 
 // Définition du contrôleur admin (accès restreint)
 $container->set('adminController', fn($c) => new AdminController($c->get('pdo')));
+$container->set('dashboardController', fn() => new DashboardController());
 
 // Déclaration des routes : méthode HTTP, chemin, et handler (contrôleur + méthode)
 $routes = [
@@ -49,10 +51,15 @@ $routes = [
     ['GET',  '/galerie',      [$container->get('homeController'), 'galerie']],
     ['GET',  '/wiki',         [$container->get('homeController'), 'wiki']],
 
-    ['GET',  '/login',        [$container->get('adminController'), 'loginForm']],
-    ['POST', '/login',        [$container->get('adminController'), 'loginSubmit']],
-    ['GET',  '/dashboard',    [$container->get('adminController'), 'dashboard']],
-    ['GET',  '/logout',       [$container->get('adminController'), 'logout']],
+    // Auth
+    ['GET', '/login',        [$container->get('adminController'), 'loginForm']],
+    ['POST', '/login',       [$container->get('adminController'), 'loginSubmit']],
+    ['GET', '/logout',       [$container->get('adminController'), 'logout']],
+
+    // Dashboard pages
+    ['GET', '/dashboard/home',  [$container->get('dashboardController'), 'home']],
+    ['GET', '/dashboard/account', [$container->get('dashboardController'), 'account']],
+    ['GET', '/dashboard/users',   [$container->get('dashboardController'), 'users']],
 
     ['GET',   '/events',                [$container->get('eventController'), 'listEvents']],
     ['GET',   '/events/create',         [$container->get('eventController'), 'createForm']],

@@ -81,7 +81,7 @@ class AdminController extends RenderController
         );
 
         if ($success) {
-            header('Location: /dashboard');
+            header('Location: ../dashboard/home');
             exit;
         }
 
@@ -101,23 +101,6 @@ class AdminController extends RenderController
      *
      * @return void
      */
-    public function dashboard(): void
-    {
-        AuthMiddleware::handle();
-
-        $user = Authenticator::getUser();
-        $isAdmin = ($user['role'] ?? null) === 'admin';
-
-        echo $this->renderView('admin/dashboard.php', [
-            'title'    => 'Accueil',
-            'isAdmin'  => $isAdmin,
-            'user'     => $user,
-            'isDashboard' => true,
-            'username' => $user['username'] ?? '',
-            'str'      => $this->getStrings(),
-        ]);
-    }
-
     /**
      * Déconnecte l'utilisateur, détruit la session et redirige vers la page de login.
      *
