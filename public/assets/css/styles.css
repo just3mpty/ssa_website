@@ -232,8 +232,7 @@ body {
                 & li a {
                     text-decoration: none;
                     color: var(--blue);
-                    font-family: "Roboto", sans-serif;
-                    font-weight: 300;
+                    font-weight: 400;
                     transition: color 0.2s;
 
                     &:hover,
