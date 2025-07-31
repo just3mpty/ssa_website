@@ -32,7 +32,7 @@ class DashboardController extends RenderController
             ['title' => 'Utilisateurs',   'url' => 'users',    'icon' => 'users'],
             ['title' => 'Mes articles',   'url' => 'articles', 'icon' => 'articles'],
             ['title' => 'Mon compte',     'url' => 'account',  'icon' => 'account'],
-            ['title' => 'Déconnexion',    'url' => 'logout',               'icon' => 'logout'],
+            ['title' => 'Déconnexion',    'url' => '../logout',               'icon' => 'logout'],
         ];
         return  $links;
     }
