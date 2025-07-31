@@ -9,6 +9,9 @@
         <label for="description"><?= secure_html($str['create_event_label_desc']) ?></label>
         <textarea name="description" id="description" required rows="4" maxlength="1000"></textarea>
 
+        <label for="resume"><?= secure_html($str['create_event_label_desc']) ?></label>
+        <textarea name="resume" id="resume" required rows="4" maxlength="1000"></textarea>
+
         <label for="date_event"><?= secure_html($str['create_event_label_date']) ?></label>
         <input type="date" name="date_event" id="date_event" required>
 

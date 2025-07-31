@@ -34,7 +34,7 @@
                     </div>
                     <div class="description">
                         <h3><?= secure_html($event->titre) ?></h3>
-                        <p><?= nl2br(secure_html($event->description)) ?></p>
+                        <p><?= nl2br(secure_html($event->resume)) ?></p>
                     </div>
                     <button>
                         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

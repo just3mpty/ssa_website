@@ -119,7 +119,7 @@ class EventService
      */
     private function sanitize(array $input): array
     {
-        $fields = ['titre', 'description', 'date_event', 'hours', 'lieu'];
+        $fields = ['titre', 'description', 'date_event', 'hours', 'lieu', 'resume'];
         $clean = [];
         foreach ($fields as $field) {
             $value = trim($input[$field] ?? '');
