@@ -20,12 +20,17 @@
 </head>
 
 <body>
-    <?php require dirname(__DIR__) . '/templates/partials/header.php'; ?>
+    <?php if (!empty($showHeader)): ?>
+        <?php require dirname(__DIR__) . '/templates/partials/header.php'; ?>
+    <?php endif; ?>
     <main>
         <?= $viewContent ?>
     </main>
-    <?php require dirname(__DIR__) . '/templates/partials/footer.php'; ?>
-    <script src="/assets/js/script.js" defer></script>
+
+    <?php if (!empty($showFooter)): ?>
+        <?php require dirname(__DIR__) . '/templates/partials/footer.php'; ?>
+        <script src="/assets/js/script.js" defer></script>
+    <?php endif; ?>
 </body>
 
 </html>

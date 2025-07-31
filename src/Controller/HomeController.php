@@ -54,6 +54,8 @@ class HomeController extends RenderController
     {
         echo $this->renderView('pages/home.php', [
             'str'    => $this->getStrings(),
+            'showHeader' => true,
+            'showFooter' => true,
             'events' => $this->eventService->getUpcoming(),
         ]);
     }
@@ -67,6 +69,8 @@ class HomeController extends RenderController
     {
         echo $this->renderView('pages/projet.php', [
             'str'    => $this->getStrings(),
+            'showHeader' => true,
+            'showFooter' => true,
             'events' => $this->eventService->getUpcoming(),
         ]);
     }
@@ -79,6 +83,8 @@ class HomeController extends RenderController
     public function galerie(): void
     {
         echo $this->renderView('pages/galerie.php', [
+            'showHeader' => true,
+            'showFooter' => true,
             'str'    => $this->getStrings(),
             'events' => $this->eventService->getUpcoming(),
         ]);

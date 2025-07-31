@@ -54,6 +54,8 @@ class AdminController extends RenderController
     public function loginForm(): void
     {
         echo $this->renderView('admin/login.php', [
+            'showHeader' => true,
+            'showFooter' => true,
             'title' => 'Connexion',
             'error' => null,
             'str'   => $this->getStrings(),
@@ -85,6 +87,8 @@ class AdminController extends RenderController
 
         echo $this->renderView('admin/login.php', [
             'title' => 'Connexion',
+            'showHeader' => true,
+            'showFooter' => true,
             'error' => 'Identifiants incorrects.',
             'str'   => $this->getStrings(),
         ]);
