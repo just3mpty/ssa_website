@@ -13,5 +13,6 @@
         </div>
         <img src="/assets/img/logo.svg" alt="SSA logo">
     </div>
-    <p class="copyright"><?= secure_html($str['footer_copyright']) ?></p>
 </footer>
+
+<?= $this->renderComponent('copyright.php', ['str' => $str]) ?>
