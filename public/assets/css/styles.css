@@ -1128,11 +1128,8 @@ body {
     /* DASHBOARD ADMIN */
     & .admin-dashboard {
         width: 100%;
-        min-height: 65vh;
+        height: 100vh;
         display: flex;
-        align-items: center;
-        flex-direction: column;
-        padding: 30px;
 
         @media screen and (max-width: 950px) {
             padding: 15px;
@@ -1140,34 +1137,51 @@ body {
             align-items: flex-start;
         }
 
-        & ul {
+        & aside {
+            height: 100%;
+            width: 25%;
+            max-width: 300px;
+            background: var(--blue);
+            padding: 30px;
             display: flex;
-            align-items: center;
-            flex: 1;
-            gap: 15px;
-            flex-wrap: wrap;
+            flex-direction: column;
+            gap: 30px;
 
-            @media screen and (max-width: 950px) {
-                flex-direction: column;
-                align-items: flex-start;
-                justify-content: center;
-                gap: 30px;
+            & h2 {
+                width: 100%;
+                border-bottom: 1px solid var(--grey);
+                color: var(--background);
             }
 
-            & li {
-                list-style-type: none;
+            & ul {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
 
-                & a {
-                    padding: 5px 15px;
-                    background: var(--background);
-                    border-radius: 8px;
-                    color: var(--orange);
-                    text-decoration: none;
-                    border: 1px solid var(--orange);
+                & li {
+                    width: 100%;
+                    list-style-type: none;
 
-                    &:hover {
-                        background: var(--orange);
+                    & a {
+                        all: unset;
                         color: var(--background);
+                        text-align: center;
+                        display: flex;
+                        align-items: center;
+                        gap: 15px;
+                        transition: 0.2s;
+                        cursor: pointer;
+
+                        &:hover {
+                            color: var(--orange);
+                        }
+
+                        & img {
+                            width: 15px;
+                            height: 15px;
+                            object-fit: contain;
+                        }
                     }
                 }
             }

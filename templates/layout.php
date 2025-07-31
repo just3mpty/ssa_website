@@ -23,6 +23,9 @@
     <?php if (!empty($showHeader)): ?>
         <?php require dirname(__DIR__) . '/templates/partials/header.php'; ?>
     <?php endif; ?>
+    <?php if (!empty($isDashboard)): ?>
+        <?php require dirname(__DIR__) . '/templates/partials/sidenav.php'; ?>
+    <?php endif; ?>
     <main>
         <?= $viewContent ?>
     </main>

@@ -112,6 +112,7 @@ class AdminController extends RenderController
             'title'    => 'Accueil',
             'isAdmin'  => $isAdmin,
             'user'     => $user,
+            'isDashboard' => true,
             'username' => $user['username'] ?? '',
             'str'      => $this->getStrings(),
         ]);
