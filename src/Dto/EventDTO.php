@@ -34,10 +34,12 @@ class EventDTO
     public function __construct(
         public readonly int $id,
         public readonly string $titre,
-        public readonly string $description,
+        public readonly string $resume,
+        public readonly ?string $description,
         public readonly string $date_event,
         public readonly string $hours,
         public readonly ?string $lieu,
+        public readonly ?string $image,
         public readonly string $created_at,
         public readonly int $author_id,
     ) {}

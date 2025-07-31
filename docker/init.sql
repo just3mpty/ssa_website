@@ -10,7 +10,8 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS events (
     id          INT AUTO_INCREMENT PRIMARY KEY,
     titre       VARCHAR(255) NOT NULL,
-    description TEXT NOT NULL,
+    resume      TEXT NOT NULL,
+    description TEXT,
     date_event  DATE NOT NULL,
     hours       TIME NOT NULL,
     lieu        VARCHAR(255),

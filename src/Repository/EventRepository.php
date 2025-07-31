@@ -127,9 +127,11 @@ class EventRepository extends BaseRepository
         return new EventDTO(
             id: (int)$data['id'],
             titre: $data['titre'],
+            resume: $data['resume'],
             description: $data['description'],
             date_event: $data['date_event'],
             hours: $data['hours'],
+            image: $data['image'],
             lieu: $data['lieu'] ?? null,
             created_at: $data['created_at'],
             author_id: (int)$data['author_id'],
