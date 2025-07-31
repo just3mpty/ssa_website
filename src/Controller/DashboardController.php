@@ -25,6 +25,18 @@ class DashboardController extends RenderController
         return TranslationLoader::load(defaultLang: 'fr');
     }
 
+    private function getLinks(): array
+    {
+        $links = [
+            ['title' => 'Accueil',        'url' => 'home',                'icon' => 'home'],
+            ['title' => 'Utilisateurs',   'url' => 'users',    'icon' => 'users'],
+            ['title' => 'Mes articles',   'url' => 'articles', 'icon' => 'articles'],
+            ['title' => 'Mon compte',     'url' => 'account',  'icon' => 'account'],
+            ['title' => 'Déconnexion',    'url' => 'logout',               'icon' => 'logout'],
+        ];
+        return  $links;
+    }
+
     /**
      * Page d'accueil du dashboard admin.
      */
@@ -33,13 +45,6 @@ class DashboardController extends RenderController
         AuthMiddleware::handle();
         $user = Authenticator::getUser();
         $isAdmin = ($user['role'] ?? null) === 'admin';
-        $links = [
-            ['title' => 'Mon compte',     'url' => 'account',  'icon' => 'account'],
-            ['title' => 'Utilisateurs',   'url' => 'users',    'icon' => 'users'],
-            ['title' => 'Mes articles',   'url' => 'articles', 'icon' => 'articles'],
-            ['title' => 'Accueil',        'url' => 'index',                'icon' => 'home'],
-            ['title' => 'Déconnexion',    'url' => 'logout',               'icon' => 'logout'],
-        ];
 
 
         // $dashboardContent = $this->renderComponent('dashboard/home.php', [...]); // Si tu utilises des composants partiels
@@ -47,7 +52,7 @@ class DashboardController extends RenderController
         echo $this->renderView('dashboard/home.php', [
             'title'    => 'Dashboard',
             'isDashboard' => true,
-            'links' => $links,
+            'links' => $this->getLinks(),
             'user'     => $user,
             'isAdmin'  => $isAdmin,
             'username' => $user['username'] ?? '',
@@ -65,22 +70,17 @@ class DashboardController extends RenderController
         $user = Authenticator::getUser();
         $isAdmin = ($user['role'] ?? null) === 'admin';
 
-        $links = [
-            ['title' => 'Mon compte',     'url' => 'account',  'icon' => 'account'],
-            ['title' => 'Utilisateurs',   'url' => 'users',    'icon' => 'users'],
-            ['title' => 'Mes articles',   'url' => 'articles', 'icon' => 'articles'],
-            ['title' => 'Accueil',        'url' => 'index',                'icon' => 'home'],
-            ['title' => 'Déconnexion',    'url' => 'logout',               'icon' => 'logout'],
-        ];
+
+        $this->getLinks();
 
         echo $this->renderView('dashboard/home.php', [
             'title'    => 'Mon compte',
             'isDashboard' => true,
             'user'     => $user,
-            'links' => $links,
+            'links' => $this->getLinks(),
             'isAdmin'  => $isAdmin,
             'username' => $user['username'] ?? '',
-            'dashboardContent' => $this->renderComponent('account.php', [
+            'dashboardContent' => $this->renderComponent('dash_account.php', [
                 'user' => $user,
                 'str'  => $this->getStrings(),
             ]),
@@ -95,21 +95,14 @@ class DashboardController extends RenderController
     {
         AuthMiddleware::requireRole('admin');
 
-        $links = [
-            ['title' => 'Mon compte',     'url' => 'account',  'icon' => 'account'],
-            ['title' => 'Utilisateurs',   'url' => 'users',    'icon' => 'users'],
-            ['title' => 'Mes articles',   'url' => 'articles', 'icon' => 'articles'],
-            ['title' => 'Accueil',        'url' => 'index',                'icon' => 'home'],
-            ['title' => 'Déconnexion',    'url' => 'logout',               'icon' => 'logout'],
-        ];
         // Récupérer la liste des users, etc.
         // $users = ...;
         echo $this->renderView('dashboard/home.php', [
             'title'    => 'Utilisateurs',
             'isDashboard' => true,
-            'links' => $links,
+            'links' => $this->getLinks(),
             'isAdmin'  => true,
-            'dashboardContent' => $this->renderComponent('users.php', [
+            'dashboardContent' => $this->renderComponent('dash_users.php', [
                 // 'users' => $users,
                 'str' => $this->getStrings(),
             ]),
@@ -124,11 +117,12 @@ class DashboardController extends RenderController
     {
         AuthMiddleware::handle();
         $user = Authenticator::getUser();
-        echo $this->renderView('admin/dashboard.php', [
+        echo $this->renderView('dashboard/home.php', [
             'title'    => 'Mes articles',
             'isDashboard' => true,
+            'links' => $this->getLinks(),
             'user'     => $user,
-            'dashboardContent' => $this->renderComponent('dashboard/articles.php', [
+            'dashboardContent' => $this->renderComponent('dash_articles.php', [
                 // 'articles' => $articles,
                 'str' => $this->getStrings(),
             ]),

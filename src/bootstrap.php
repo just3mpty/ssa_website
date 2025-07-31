@@ -60,6 +60,7 @@ $routes = [
     ['GET', '/dashboard/home',  [$container->get('dashboardController'), 'home']],
     ['GET', '/dashboard/account', [$container->get('dashboardController'), 'account']],
     ['GET', '/dashboard/users',   [$container->get('dashboardController'), 'users']],
+    ['GET', '/dashboard/articles',   [$container->get('dashboardController'), 'articles']],
 
     ['GET',   '/events',                [$container->get('eventController'), 'listEvents']],
     ['GET',   '/events/create',         [$container->get('eventController'), 'createForm']],
