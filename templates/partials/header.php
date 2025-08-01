@@ -31,7 +31,7 @@
             </li>
 
             <?php if (\CapsuleLib\Security\Authenticator::isAuthenticated()): ?>
-                <li><a class="icons" href="/dashboard">
+                <li><a class="icons" href="/dashboard/home">
                         <img src="/assets/icons/dashboard.svg" alt="Dashboard icon">
                     </a></li>
                 <li><a class="icons" href="/logout">

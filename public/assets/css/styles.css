@@ -68,6 +68,11 @@
     box-sizing: border-box;
 }
 
+@font-face {
+    font-family: "lacapsule";
+    src: url("/assets/fonts/outfit.ttf");
+}
+
 html {
     scroll-behavior: smooth;
 }
@@ -86,6 +91,7 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    font-family: "lacapsule";
 
     & h2:not(.about-text h2) {
         font-size: 30px;
@@ -796,6 +802,7 @@ body {
             gap: 30px;
             background: var(--orange);
             color: var(--background);
+            text-shadow: 2px 2px 2px #00000020;
             clip-path: var(--clipPath);
 
             @media screen and (max-width: 950px) {
@@ -815,6 +822,7 @@ body {
                 align-items: center;
                 flex-direction: column;
                 gap: 30px;
+                margin-bottom: 100px;
 
                 & .contact-info,
                 & .contact-form {
@@ -873,6 +881,7 @@ body {
                         padding: 15px 30px;
                         background: var(--background);
                         color: var(--orange);
+                        text-shadow: none;
                         border-radius: 8px;
                         cursor: pointer;
                         max-width: fit-content;
@@ -1228,23 +1237,22 @@ body {
                             color: var(--green);
                         }
                     }
+                }
+            }
+            & button {
+                all: unset;
+                padding: 5px 15px;
+                background: var(--blue);
+                color: var(--background);
+                border-radius: 8px;
+                cursor: pointer;
+                max-width: fit-content;
+                font-weight: 600;
+                transition: background-color 0.3s;
 
-                    & button {
-                        all: unset;
-                        padding: 5px 15px;
-                        background: var(--blue);
-                        color: var(--background);
-                        border-radius: 8px;
-                        cursor: pointer;
-                        max-width: fit-content;
-                        font-weight: 600;
-                        transition: background-color 0.3s;
-
-                        &:hover {
-                            background-color: #536a7750;
-                            color: var(--blue);
-                        }
-                    }
+                &:hover {
+                    background-color: #536a7750;
+                    color: var(--blue);
                 }
             }
         }
@@ -1259,9 +1267,10 @@ body {
                 width: 100%; /* Full width */
                 height: 100%; /* Full height */
                 overflow: auto; /* Enable scroll if needed */
-                background-color: rgb(0,0,0); /* Fallback color */
-                background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+                background-color: rgb(0, 0, 0); /* Fallback color */
+                background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
             }
+            background: red;
         }
     }
 
