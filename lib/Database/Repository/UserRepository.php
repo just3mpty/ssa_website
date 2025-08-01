@@ -6,6 +6,7 @@ namespace CapsuleLib\Database\Repository;
 
 use CapsuleLib\Database\Repository\BaseRepository;
 use CapsuleLib\DTO\UserDTO;
+use PDO;
 
 /**
  * Repository pour la gestion des utilisateurs.
@@ -26,6 +27,11 @@ class UserRepository extends BaseRepository
      * @var string Clé primaire de la table.
      */
     protected string $primaryKey = 'id';
+
+    public function __construct(PDO $pdo)
+    {
+        parent::__construct($pdo);
+    }
 
     /**
      * Recherche un utilisateur par son identifiant.

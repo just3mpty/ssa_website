@@ -49,7 +49,9 @@
         C’est ouvert à toutes et tous, sans conditions de ressources. L’objectif est d’avoir un panel de candidat.e.s le plus représentatif possible de la population du territoire du pays de Morlaix, en terme de niveau de vie et de composition du foyer. Si les candidatures sont trop nombreuses, un tirage au sort sera effectué par catégorie.
     </p>
     <p>Le dossier de candidature en ligne est à télécharger ci-dessous ou à retrouver sur ce lien : <a href="https://framaforms.org/inscription-ssa-pays-de-morlaix-1750686939" target="_blank">formulaire</a></p>
+
     <button id="download">Télécharger</button>
+
     <img src="/assets/img/recrutementBanner.png" alt="">
     <h3>Comment cela se passe concrètement ?</h3>
     <p>

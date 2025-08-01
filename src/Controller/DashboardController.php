@@ -8,6 +8,7 @@ use CapsuleLib\Core\RenderController;
 use CapsuleLib\Security\Authenticator;
 use CapsuleLib\Http\Middleware\AuthMiddleware;
 use App\Lang\TranslationLoader;
+use CapsuleLib\Service\UserService;
 
 /**
  * Contrôleur dédié au tableau de bord admin (structure, sous-pages, widgets).
@@ -15,6 +16,23 @@ use App\Lang\TranslationLoader;
  */
 class DashboardController extends RenderController
 {
+
+    /**
+     * Service d'accès et manipulation des événements.
+     */
+    private UserService $userService;
+
+    /**
+     * Constructeur.
+     *
+     * @param EventService $eventService Service pour manipuler les événements.
+     */
+    public function __construct(UserService $userService)
+    {
+        $this->userService = $userService;
+    }
+
+
     /**
      * Charge les chaînes de traduction pour la page courante.
      *
@@ -94,16 +112,16 @@ class DashboardController extends RenderController
     public function users(): void
     {
         AuthMiddleware::requireRole('admin');
+        $users = $this->userService->getAllUsers();
 
         // Récupérer la liste des users, etc.
-        // $users = ...;
         echo $this->renderView('dashboard/home.php', [
             'title'    => 'Utilisateurs',
             'isDashboard' => true,
             'links' => $this->getLinks(),
             'isAdmin'  => true,
             'dashboardContent' => $this->renderComponent('dash_users.php', [
-                // 'users' => $users,
+                'users' => $users,
                 'str' => $this->getStrings(),
             ]),
             'str'      => $this->getStrings(),

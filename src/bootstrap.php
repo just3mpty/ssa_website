@@ -11,6 +11,8 @@ use App\Controller\HomeController;
 use App\Controller\DashboardController;
 use App\Controller\AdminController;
 use App\Controller\EventController;
+use CapsuleLib\Database\Repository\UserRepository;
+use CapsuleLib\Service\UserService;
 
 require_once dirname(__DIR__) . '/lib/Helper/html_secure.php';
 
@@ -39,10 +41,14 @@ $container->set('eventRepository', fn($c) => new EventRepository($c->get('pdo'))
 $container->set('eventService', fn($c) => new EventService($c->get('eventRepository')));
 $container->set('homeController', fn($c) => new HomeController($c->get('eventService')));
 $container->set('eventController', fn($c) => new EventController($c->get('eventService')));
+$container->set('userRepository', fn($c) => new UserRepository($c->get('pdo')));
+
+// Définition des services et contrôleurs privés (ex : authentification)
+$container->set('userService', fn($c) => new UserService($c->get('userRepository')));
 
 // Définition du contrôleur admin (accès restreint)
 $container->set('adminController', fn($c) => new AdminController($c->get('pdo')));
-$container->set('dashboardController', fn() => new DashboardController());
+$container->set('dashboardController', fn($c) => new DashboardController($c->get('userService')));
 
 // Déclaration des routes : méthode HTTP, chemin, et handler (contrôleur + méthode)
 $routes = [
