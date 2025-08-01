@@ -136,3 +136,14 @@ const showMobileNav = () => {
 
 window.addEventListener("resize", showMobileNav);
 window.addEventListener("load", showMobileNav);
+
+
+// DISPLAY FORM
+
+document.addEventListener('DOMContentLoaded', function () {
+    btn = document.getElementById("changePasswordBtn");
+    btn.addEventListener('click', () => {
+        console.log("Button clicked");
+        // updatePasswordForm.style.display = "block";
+    });
+});
