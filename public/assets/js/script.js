@@ -2,6 +2,7 @@ const header = document.getElementById("header");
 const hamburger = document.querySelector(".hamburger");
 const navbar = document.querySelector(".navbar");
 const downloadLink = document.getElementById("download");
+const changePassword = document.getElementById("changePasswordBtn");
 
 // MASQUER LE HEADER AU SCROLL
 let lastScroll = window.scrollY;
@@ -145,13 +146,10 @@ const showMobileNav = () => {
 window.addEventListener("resize", showMobileNav);
 window.addEventListener("load", showMobileNav);
 
-
 // DISPLAY FORM
 
-document.addEventListener('DOMContentLoaded', function () {
-    btn = document.getElementById("changePasswordBtn");
-    btn.addEventListener('click', () => {
+if (changePassword) {
+    changePassword.addEventListener("click", () => {
         console.log("Button clicked");
-        // updatePasswordForm.style.display = "block";
     });
-});
+}
