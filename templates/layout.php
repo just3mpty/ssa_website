@@ -29,8 +29,8 @@
 
     <?php if (!empty($showFooter)): ?>
         <?php require dirname(__DIR__) . '/templates/partials/footer.php'; ?>
-        <script src="/assets/js/script.js" defer></script>
     <?php endif; ?>
+    <script src="/assets/js/script.js" defer></script>
 </body>
 
 </html>

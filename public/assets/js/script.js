@@ -38,11 +38,12 @@ filterButtons.forEach((button) => {
 });
 
 // OUVERTURE DU MENU MOBILE
-hamburger.addEventListener("click", () => {
-    navbar.classList.toggle("visible");
-    hamburger.classList.toggle("open");
-});
-
+if (hamburger && navbar) {
+    hamburger.addEventListener("click", () => {
+        navbar.classList.toggle("visible");
+        hamburger.classList.toggle("open");
+    });
+}
 // OUVERTURE DE L'OVERLAY IMAGES
 const overlay = document.getElementById("image-overlay");
 const overlayImg = document.getElementById("overlay-img");
@@ -75,8 +76,10 @@ function showNext() {
     overlayImg.src = galleryImages[currentImgIndex].src;
 }
 
-prevBtn.addEventListener("click", showPrev);
-nextBtn.addEventListener("click", showNext);
+if (prevBtn && nextBtn) {
+    prevBtn.addEventListener("click", showPrev);
+    nextBtn.addEventListener("click", showNext);
+}
 
 galleryImages.forEach((img, idx) => {
     img.addEventListener("click", () => {
@@ -84,29 +87,32 @@ galleryImages.forEach((img, idx) => {
     });
 });
 
-overlay.addEventListener("click", (e) => {
-    if (e.target === overlay || e.target === closeBtn) {
-        overlay.classList.remove("active");
-        overlayImg.src = "";
-        currentImgIndex = -1;
-    }
-});
+if (overlay && closeBtn) {
+    overlay.addEventListener("click", (e) => {
+        if (e.target === overlay || e.target === closeBtn) {
+            overlay.classList.remove("active");
+            overlayImg.src = "";
+            currentImgIndex = -1;
+        }
+    });
 
-overlay.addEventListener("keydown", (e) => {
-    if (!overlay.classList.contains("active")) return;
-    if (e.key === "ArrowRight") {
-        currentImgIndex = (currentImgIndex + 1) % galleryImages.length;
-        overlayImg.src = galleryImages[currentImgIndex].src;
-    } else if (e.key === "ArrowLeft") {
-        currentImgIndex =
-            (currentImgIndex - 1 + galleryImages.length) % galleryImages.length;
-        overlayImg.src = galleryImages[currentImgIndex].src;
-    } else if (e.key === "Escape") {
-        overlay.classList.remove("active");
-        overlayImg.src = "";
-        currentImgIndex = -1;
-    }
-});
+    overlay.addEventListener("keydown", (e) => {
+        if (!overlay.classList.contains("active")) return;
+        if (e.key === "ArrowRight") {
+            currentImgIndex = (currentImgIndex + 1) % galleryImages.length;
+            overlayImg.src = galleryImages[currentImgIndex].src;
+        } else if (e.key === "ArrowLeft") {
+            currentImgIndex =
+                (currentImgIndex - 1 + galleryImages.length) %
+                galleryImages.length;
+            overlayImg.src = galleryImages[currentImgIndex].src;
+        } else if (e.key === "Escape") {
+            overlay.classList.remove("active");
+            overlayImg.src = "";
+            currentImgIndex = -1;
+        }
+    });
+}
 
 // TELECHARGEMENT DE FICHIER
 const handleDownload = () => {
@@ -125,12 +131,14 @@ if (downloadLink) {
 
 // RESPONSIVE
 const showMobileNav = () => {
+    if (!navbar || !hamburger) return;
     if (window.innerWidth <= 950) {
         navbar.classList.add("mobileNav");
         hamburger.style.display = "flex";
     } else {
         hamburger.style.display = "none";
         navbar.classList.remove("mobileNav");
+        hamburger.classList.remove("open");
     }
 };
 

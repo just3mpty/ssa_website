@@ -1196,7 +1196,6 @@ body {
             padding: 30px;
 
             & .wrapper {
-                /* border: 1px solid red; */
                 border-radius: 8px;
                 overflow: hidden;
 
