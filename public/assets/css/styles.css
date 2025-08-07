@@ -1196,7 +1196,8 @@ body {
             }
         }
 
-        & .users {
+        & .users,
+        & .articles {
             flex: 2;
             height: 100%;
             display: flex;
@@ -1215,7 +1216,8 @@ body {
                     border-spacing: 0;
 
                     & th {
-                        background: lightgrey;
+                        background: var(--blue);
+                        color: var(--background);
                         padding: 15px;
                         text-align: left;
                     }
@@ -1237,9 +1239,13 @@ body {
                             color: var(--green);
                         }
                     }
+                    & tr:nth-child(even) {
+                        background: #b8b8b825;
+                    }
                 }
             }
-            & button {
+            & button,
+            & a {
                 all: unset;
                 padding: 5px 15px;
                 background: var(--blue);

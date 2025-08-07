@@ -27,7 +27,7 @@
                         <td class="<?= $user->role ?>">
                             <p><?php echo htmlspecialchars($user->role); ?></p>
                         </td>
-                        <td><?php echo htmlspecialchars($user->created_at) ?></td>
+                        <td><?php echo htmlspecialchars((new DateTime($user->created_at))->format('d/m/Y')) ?></td>
                         <td><button>Gérer</button></td>
                     </tr>
                 <?php endforeach; ?>

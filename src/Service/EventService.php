@@ -110,6 +110,31 @@ class EventService
     }
 
     /**
+     * Récupère tous les événements/articles (admin/dashboard).
+     *
+     * @return EventDTO[]
+     */
+    public function getAll(): array
+    {
+        $rows = $this->eventRepository->all();
+        return array_map(function ($row) {
+            // On hydrate comme dans EventRepository
+            return new \App\Dto\EventDTO(
+                id: (int)$row['id'],
+                titre: $row['titre'],
+                resume: $row['resume'],
+                description: $row['description'] ?? null,
+                date_event: $row['date_event'],
+                hours: $row['hours'],
+                lieu: $row['lieu'] ?? null,
+                image: $row['image'] ?? null,
+                created_at: $row['created_at'],
+                author_id: (int)$row['author_id'],
+            );
+        }, $rows);
+    }
+
+    /**
      * Nettoie et prépare les données brutes du formulaire.
      *
      * Trim et strip_tags sauf pour la description qui conserve son contenu.
