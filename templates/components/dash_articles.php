@@ -23,11 +23,11 @@
                             <td><?= htmlspecialchars($article->titre) ?></td>
                             <td><?= htmlspecialchars($article->resume) ?></td>
                             <td><?= htmlspecialchars((new DateTime($article->date_event))->format('d/m/Y')) ?></td>
-                            <td><?= htmlspecialchars($article->author_id) ?></td>
-                            <td>
+                            <td><?= htmlspecialchars($article->author) ?></td>
+                            <td class="buttons">
                                 <a href="/events/edit/<?= $article->id ?>">Modifier</a>
                                 <form action="/events/delete/<?= $article->id ?>" method="POST" style="display:inline;" onsubmit="return confirm('Supprimer cet article ?');">
-                                    <button type="submit">Supprimer</button>
+                                    <button style="background-color: #ED7F7F;" type="submit">Supprimer</button>
                                 </form>
                             </td>
                         </tr>

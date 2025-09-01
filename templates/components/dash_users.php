@@ -36,6 +36,17 @@
     </div>
 
     <div class="popup">
+        <form method="POST" action="/dashboard/users">
+            <input type="text" name="username" placeholder="Nom d'utilisateur" required>
+            <input type="password" name="password" placeholder="Mot de passe" required>
+            <input type="email" name="email" placeholder="Email" required>
 
+            <select name="role">
+                <option value="employee">Employé</option>
+                <option value="admin">Admin</option>
+            </select>
+
+            <button type="submit">Créer l'utilisateur</button>
+        </form>
     </div>
 </section>

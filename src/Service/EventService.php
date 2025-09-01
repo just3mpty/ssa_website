@@ -130,6 +130,7 @@ class EventService
                 image: $row['image'] ?? null,
                 created_at: $row['created_at'],
                 author_id: (int)$row['author_id'],
+                author: $row['author']
             );
         }, $rows);
     }

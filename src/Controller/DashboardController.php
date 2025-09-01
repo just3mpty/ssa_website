@@ -90,8 +90,6 @@ class DashboardController extends RenderController
         AuthMiddleware::handle();
         $user = Authenticator::getUser();
         $isAdmin = ($user['role'] ?? null) === 'admin';
-        
-
 
         $this->getLinks();
 
@@ -116,6 +114,18 @@ class DashboardController extends RenderController
     public function users(): void
     {
         AuthMiddleware::requireRole('admin');
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $username = $_POST['username'] ?? null;
+            $password = $_POST['password'] ?? null;
+            $email    = $_POST['email'] ?? null;
+            $role     = $_POST['role'] ?? 'employee';
+
+            if ($username && $password && $email) {
+                $this->userService->createUser($username, $password, $email, $role);
+            }
+        }
+
         $users = $this->userService->getAllUsers();
 
         // Récupérer la liste des users, etc.
@@ -140,16 +150,22 @@ class DashboardController extends RenderController
         AuthMiddleware::handle();
         $user = Authenticator::getUser();
         $articles = $this->eventService->getAll();
+
+        foreach ($articles as &$article) {
+            $author = $this->userService->getUserById($article->author_id);
+            $article->author = $author->username ?? 'Inconnu';
+        }
+
         echo $this->renderView('dashboard/home.php', [
-            'title'    => 'Mes articles',
-            'isDashboard' => true,
-            'links' => $this->getLinks(),
-            'user'     => $user,
-            'dashboardContent' => $this->renderComponent('dash_articles.php', [
-                'articles' => $articles,
-                'str' => $this->getStrings(),
+            'title'             => 'Mes articles',
+            'isDashboard'       => true,
+            'links'             => $this->getLinks(),
+            'user'              => $user,
+            'dashboardContent'  => $this->renderComponent('dash_articles.php', [
+                'articles'      => $articles,
+                'str'           => $this->getStrings(),
             ]),
-            'str'      => $this->getStrings(),
+            'str'               => $this->getStrings(),
         ]);
     }
 

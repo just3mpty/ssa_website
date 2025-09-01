@@ -135,6 +135,7 @@ class EventRepository extends BaseRepository
             lieu: $data['lieu'] ?? null,
             created_at: $data['created_at'],
             author_id: (int)$data['author_id'],
+            author: $data['author']
         );
     }
 }

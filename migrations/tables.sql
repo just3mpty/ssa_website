@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS events (
     lieu        TEXT,
     created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
     author_id   INTEGER NOT NULL,
+    author      TEXT,
     FOREIGN KEY(author_id) REFERENCES users(id) ON DELETE CASCADE
 );
 

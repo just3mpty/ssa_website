@@ -1208,6 +1208,7 @@ body {
             & .wrapper {
                 border-radius: 8px;
                 overflow: hidden;
+                overflow-y: scroll;
 
                 & table {
                     width: 100%;
@@ -1242,6 +1243,12 @@ body {
                     & tr:nth-child(even) {
                         background: #b8b8b825;
                     }
+
+                    & .buttons {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 5px;
+                    }
                 }
             }
             & button,
@@ -1252,34 +1259,15 @@ body {
                 color: var(--background);
                 border-radius: 8px;
                 cursor: pointer;
-                max-width: fit-content;
                 font-weight: 600;
                 transition: background-color 0.3s;
+                text-align: center;
 
                 &:hover {
                     background-color: #536a7750;
                     color: var(--blue);
                 }
             }
-        }
-
-        & .account {
-<<<<<<< HEAD
-=======
-            .modal {
-                display: none; /* Hidden by default */
-                position: fixed; /* Stay in place */
-                z-index: 1; /* Sit on top */
-                left: 0;
-                top: 0;
-                width: 100%; /* Full width */
-                height: 100%; /* Full height */
-                overflow: auto; /* Enable scroll if needed */
-                background-color: rgb(0, 0, 0); /* Fallback color */
-                background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
-            }
-            background: red;
->>>>>>> 7231300f0e1958b5b50c839c8878c4ef8b54d289
         }
     }
 

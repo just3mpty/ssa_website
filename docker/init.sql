@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS events (
     image       VARCHAR(255),
     created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
     author_id   INT NOT NULL,
+    author      VARCHAR(255),
     FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
