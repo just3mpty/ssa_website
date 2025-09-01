@@ -2,7 +2,7 @@ const header = document.getElementById("header");
 const hamburger = document.querySelector(".hamburger");
 const navbar = document.querySelector(".navbar");
 const downloadLink = document.getElementById("download");
-const changePassword = document.getElementById("changePasswordBtn");
+const changePassword = document.getElementById("submit-update-password");
 
 // MASQUER LE HEADER AU SCROLL
 let lastScroll = window.scrollY;
@@ -146,10 +146,20 @@ const showMobileNav = () => {
 window.addEventListener("resize", showMobileNav);
 window.addEventListener("load", showMobileNav);
 
-// DISPLAY FORM
-
+// UPDATE PASSWORD
+/*
 if (changePassword) {
     changePassword.addEventListener("click", () => {
-        console.log("Button clicked");
+        const newPassword = prompt("Entrez votre nouveau mot de passe :");
+        if (newPassword) {
+            alert("Mot de passe mis à jour avec succès !");
+            // Ici, vous pouvez ajouter la logique pour mettre à jour le mot de passe côté serveur
+            updatePassword($user['id'], newPassword);
+        } else {
+            alert("Mot de passe non modifié.");
+        }
     });
 }
+if (changePassword) {
+    console.log($user['id']);
+};*/

@@ -87,6 +87,7 @@ class DashboardController extends RenderController
         AuthMiddleware::handle();
         $user = Authenticator::getUser();
         $isAdmin = ($user['role'] ?? null) === 'admin';
+        
 
 
         $this->getLinks();
