@@ -9,6 +9,7 @@ use CapsuleLib\Security\Authenticator;
 use CapsuleLib\Http\Middleware\AuthMiddleware;
 use App\Lang\TranslationLoader;
 use CapsuleLib\Service\UserService;
+use App\Service\EventService;
 
 /**
  * Contrôleur dédié au tableau de bord admin (structure, sous-pages, widgets).
@@ -21,15 +22,17 @@ class DashboardController extends RenderController
      * Service d'accès et manipulation des événements.
      */
     private UserService $userService;
+    private EventService $eventService;
 
     /**
      * Constructeur.
      *
      * @param EventService $eventService Service pour manipuler les événements.
      */
-    public function __construct(UserService $userService)
+    public function __construct(UserService $userService, EventService $eventService)
     {
         $this->userService = $userService;
+        $this->eventService = $eventService;
     }
 
 
@@ -93,17 +96,17 @@ class DashboardController extends RenderController
         $this->getLinks();
 
         echo $this->renderView('dashboard/home.php', [
-            'title'    => 'Mon compte',
-            'isDashboard' => true,
-            'user'     => $user,
-            'links' => $this->getLinks(),
-            'isAdmin'  => $isAdmin,
-            'username' => $user['username'] ?? '',
+            'title'            => 'Mon compte',
+            'isDashboard'      => true,
+            'user'             => $user,
+            'links'            => $this->getLinks(),
+            'isAdmin'          => $isAdmin,
+            'username'         => $user['username'] ?? '',
             'dashboardContent' => $this->renderComponent('dash_account.php', [
-                'user' => $user,
-                'str'  => $this->getStrings(),
+                'user'         => $user,
+                'str'          => $this->getStrings(),
             ]),
-            'str'      => $this->getStrings(),
+            'str'              => $this->getStrings(),
         ]);
     }
 
@@ -136,13 +139,14 @@ class DashboardController extends RenderController
     {
         AuthMiddleware::handle();
         $user = Authenticator::getUser();
+        $articles = $this->eventService->getAll();
         echo $this->renderView('dashboard/home.php', [
             'title'    => 'Mes articles',
             'isDashboard' => true,
             'links' => $this->getLinks(),
             'user'     => $user,
             'dashboardContent' => $this->renderComponent('dash_articles.php', [
-                // 'articles' => $articles,
+                'articles' => $articles,
                 'str' => $this->getStrings(),
             ]),
             'str'      => $this->getStrings(),

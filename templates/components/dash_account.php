@@ -17,6 +17,7 @@
             <button type="submit" id="submit-update-password">Mettre à jour</button>
         </form>
     </div>
+<<<<<<< HEAD
     
     <?php
         // Supposons que $user['id'] est défini et identifié
@@ -40,5 +41,8 @@
             }
         }
     ?>
+=======
+>>>>>>> 7231300f0e1958b5b50c839c8878c4ef8b54d289
+
 
 </section>

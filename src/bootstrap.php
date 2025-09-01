@@ -48,7 +48,7 @@ $container->set('userService', fn($c) => new UserService($c->get('userRepository
 
 // Définition du contrôleur admin (accès restreint)
 $container->set('adminController', fn($c) => new AdminController($c->get('pdo')));
-$container->set('dashboardController', fn($c) => new DashboardController($c->get('userService')));
+$container->set('dashboardController', fn($c) => new DashboardController($c->get('userService'), $c->get('eventService')));
 
 // Déclaration des routes : méthode HTTP, chemin, et handler (contrôleur + méthode)
 $routes = [

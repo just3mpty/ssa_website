@@ -68,6 +68,11 @@
     box-sizing: border-box;
 }
 
+@font-face {
+    font-family: "lacapsule";
+    src: url("/assets/fonts/outfit.ttf");
+}
+
 html {
     scroll-behavior: smooth;
 }
@@ -86,6 +91,7 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    font-family: "lacapsule";
 
     & h2:not(.about-text h2) {
         font-size: 30px;
@@ -796,6 +802,7 @@ body {
             gap: 30px;
             background: var(--orange);
             color: var(--background);
+            text-shadow: 2px 2px 2px #00000020;
             clip-path: var(--clipPath);
 
             @media screen and (max-width: 950px) {
@@ -815,6 +822,7 @@ body {
                 align-items: center;
                 flex-direction: column;
                 gap: 30px;
+                margin-bottom: 100px;
 
                 & .contact-info,
                 & .contact-form {
@@ -873,6 +881,7 @@ body {
                         padding: 15px 30px;
                         background: var(--background);
                         color: var(--orange);
+                        text-shadow: none;
                         border-radius: 8px;
                         cursor: pointer;
                         max-width: fit-content;
@@ -1187,7 +1196,8 @@ body {
             }
         }
 
-        & .users {
+        & .users,
+        & .articles {
             flex: 2;
             height: 100%;
             display: flex;
@@ -1206,7 +1216,8 @@ body {
                     border-spacing: 0;
 
                     & th {
-                        background: lightgrey;
+                        background: var(--blue);
+                        color: var(--background);
                         padding: 15px;
                         text-align: left;
                     }
@@ -1228,28 +1239,47 @@ body {
                             color: var(--green);
                         }
                     }
-
-                    & button {
-                        all: unset;
-                        padding: 5px 15px;
-                        background: var(--blue);
-                        color: var(--background);
-                        border-radius: 8px;
-                        cursor: pointer;
-                        max-width: fit-content;
-                        font-weight: 600;
-                        transition: background-color 0.3s;
-
-                        &:hover {
-                            background-color: #536a7750;
-                            color: var(--blue);
-                        }
+                    & tr:nth-child(even) {
+                        background: #b8b8b825;
                     }
+                }
+            }
+            & button,
+            & a {
+                all: unset;
+                padding: 5px 15px;
+                background: var(--blue);
+                color: var(--background);
+                border-radius: 8px;
+                cursor: pointer;
+                max-width: fit-content;
+                font-weight: 600;
+                transition: background-color 0.3s;
+
+                &:hover {
+                    background-color: #536a7750;
+                    color: var(--blue);
                 }
             }
         }
 
         & .account {
+<<<<<<< HEAD
+=======
+            .modal {
+                display: none; /* Hidden by default */
+                position: fixed; /* Stay in place */
+                z-index: 1; /* Sit on top */
+                left: 0;
+                top: 0;
+                width: 100%; /* Full width */
+                height: 100%; /* Full height */
+                overflow: auto; /* Enable scroll if needed */
+                background-color: rgb(0, 0, 0); /* Fallback color */
+                background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+            }
+            background: red;
+>>>>>>> 7231300f0e1958b5b50c839c8878c4ef8b54d289
         }
     }
 
