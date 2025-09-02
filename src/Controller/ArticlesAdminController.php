@@ -19,63 +19,107 @@ final class ArticlesAdminController extends RenderController
         return TranslationLoader::load(defaultLang: 'fr');
     }
 
+    /** TODO: factoriser dans un LinkProvider commun au dashboard */
+    private function links(): array
+    {
+        return [
+            ['title' => 'Accueil',      'url' => '/dashboard/home',     'icon' => 'home'],
+            ['title' => 'Utilisateurs', 'url' => '/dashboard/users',    'icon' => 'users'],
+            ['title' => 'Mes articles', 'url' => '/dashboard/articles', 'icon' => 'articles'],
+            ['title' => 'Mon compte',   'url' => '/dashboard/account',  'icon' => 'account'],
+            ['title' => 'Déconnexion',  'url' => '/logout',             'icon' => 'logout'],
+        ];
+    }
+
     private function renderDash(string $title, string $component, array $vars = []): void
     {
         AuthMiddleware::requireRole('admin');
+
         echo $this->renderView('dashboard/home.php', [
             'title'            => $title,
             'isDashboard'      => true,
             'isAdmin'          => true,
-            // injecte tes links/str si besoin selon ton layout
+            'links'            => $this->links(),
             'dashboardContent' => $this->renderComponent($component, $vars + ['str' => $this->str()]),
             'str'              => $this->str(),
         ]);
     }
 
+    /** Normalise un id provenant du routeur (array|scalar) */
+    private function normId(string|int|array $param): int
+    {
+        if (\is_array($param)) {
+            return (int)($param['id'] ?? 0);
+        }
+        return (int)$param;
+    }
+
+    /* ---------- Listing ---------- */
+
     public function index(): void
     {
         AuthMiddleware::requireRole('admin');
-        $list = $this->articles->getAll(); // pas seulement "upcoming" pour l’admin
+
+        $list = $this->articles->getAll();
         $this->renderDash('Articles', 'dash_articles.php', [
             'articles'      => $list,
             'createUrl'     => '/dashboard/articles/create',
-            'editBaseUrl'   => '/dashboard/articles/edit/',
-            'deleteBaseUrl' => '/dashboard/articles/delete/',
+            'editBaseUrl'   => '/dashboard/articles/edit',
+            'deleteBaseUrl' => '/dashboard/articles/delete',
+            'csrf'          => \CapsuleLib\Security\CsrfTokenManager::getToken(),
         ]);
     }
 
+    /* ---------- Create ---------- */
+
     public function createForm(): void
     {
+        AuthMiddleware::requireRole('admin');
+
+        // Réaffiche les erreurs/data PRG si présents
+        $errors = $_SESSION['errors'] ?? null;
+        unset($_SESSION['errors']);
+        $data   = $_SESSION['data']   ?? null;
+        unset($_SESSION['data']);
+
         $this->renderDash('Créer un article', 'dash_article_form.php', [
             'action'  => '/dashboard/articles/create',
-            'article' => null,
+            'article' => $data ?? null,
+            'errors'  => $errors,
+            'csrf'    => CsrfTokenManager::getToken(),
         ]);
     }
 
     public function createSubmit(): void
     {
         AuthMiddleware::requireRole('admin');
+
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
             header('Location: /dashboard/articles', true, 303);
             return;
         }
         CsrfTokenManager::requireValidToken();
 
-        $result = $this->articles->create($_POST, /* current user */ $_SESSION['admin'] ?? []);
+        // même logique : on délègue au service puis PRG
+        $result = $this->articles->create($_POST, $_SESSION['admin'] ?? []);
         if (!empty($result['errors'])) {
             $_SESSION['errors'] = $result['errors'];
             $_SESSION['data']   = $result['data'] ?? $_POST;
             header('Location: /dashboard/articles/create', true, 303);
             return;
         }
+
         $_SESSION['flash'] = 'Article créé.';
         header('Location: /dashboard/articles', true, 303);
     }
 
-    public function editForm(array $params): void
+    /* ---------- Edit ---------- */
+
+    public function editForm(string|array $params): void
     {
         AuthMiddleware::requireRole('admin');
-        $id = (int)($params['id'] ?? 0);
+
+        $id = $this->normId($params);
         $article = $this->articles->find($id);
         if (!$article) {
             http_response_code(404);
@@ -83,6 +127,7 @@ final class ArticlesAdminController extends RenderController
             return;
         }
 
+        // Réaffiche les erreurs/data PRG si présents
         $prefill = $_SESSION['data'] ?? [];
         unset($_SESSION['data']);
         $errors  = $_SESSION['errors'] ?? null;
@@ -90,21 +135,23 @@ final class ArticlesAdminController extends RenderController
 
         $this->renderDash('Modifier un article', 'dash_article_form.php', [
             'action'  => "/dashboard/articles/edit/{$id}",
-            'article' => array_replace($article, $prefill),
+            'article' => $prefill ? \array_replace($article, $prefill) : $article,
             'errors'  => $errors,
+            'csrf'    => CsrfTokenManager::getToken(),
         ]);
     }
 
-    public function editSubmit(array $params): void
+    public function editSubmit(string|array $params): void
     {
         AuthMiddleware::requireRole('admin');
+
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
             header('Location: /dashboard/articles', true, 303);
             return;
         }
         CsrfTokenManager::requireValidToken();
 
-        $id = (int)($params['id'] ?? 0);
+        $id = $this->normId($params);
         $article = $this->articles->find($id);
         if (!$article) {
             http_response_code(404);
@@ -112,6 +159,7 @@ final class ArticlesAdminController extends RenderController
             return;
         }
 
+        // même logique : on délègue au service, ré-affiche si erreurs, sinon PRG
         $result = $this->articles->update($id, $_POST);
         if (!empty($result['errors'])) {
             $_SESSION['errors'] = $result['errors'];
@@ -124,16 +172,19 @@ final class ArticlesAdminController extends RenderController
         header('Location: /dashboard/articles', true, 303);
     }
 
-    public function deleteSubmit(array $params): void
+    /* ---------- Delete ---------- */
+
+    public function deleteSubmit(string|array $params): void
     {
         AuthMiddleware::requireRole('admin');
+
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
             header('Location: /dashboard/articles', true, 303);
             return;
         }
         CsrfTokenManager::requireValidToken();
 
-        $id = (int)($params['id'] ?? 0);
+        $id = $this->normId($params);
         $this->articles->delete($id);
 
         $_SESSION['flash'] = 'Article supprimé.';
