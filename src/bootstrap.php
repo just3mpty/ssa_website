@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 use CapsuleLib\Core\DIContainer;
 use CapsuleLib\Routing\Router;
-use CapsuleLib\Database\Connection\MariaDBConnection;
+use CapsuleLib\Database\MariaDBConnection;
 use App\Repository\EventRepository;
 use App\Service\EventService;
 use App\Controller\HomeController;
 use App\Controller\DashboardController;
 use App\Controller\AdminController;
 use App\Controller\EventController;
-use CapsuleLib\Database\Repository\UserRepository;
+use CapsuleLib\Repository\UserRepository;
 use CapsuleLib\Service\UserService;
 
 require_once dirname(__DIR__) . '/lib/Helper/html_secure.php';

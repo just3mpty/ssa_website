@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Dto\EventDTO;
-use CapsuleLib\Database\Repository\BaseRepository;
+use CapsuleLib\Repository\BaseRepository;
 use PDO;
 
 /**
