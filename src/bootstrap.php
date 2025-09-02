@@ -99,12 +99,7 @@ $routes = [
     ['GET',  '/dashboard/articles',         [$dc, 'articles']],
 
     // Articles
-    ['GET',   '/articles',             [$ec, 'listArticles']],
-    ['GET',   '/articles/create',      [$ec, 'createForm']],
-    ['POST',  '/articles/create',      [$ec, 'createSubmit']],
-    ['GET',   '/articles/edit/{id}',   [$ec, 'editForm']],
-    ['POST',  '/articles/edit/{id}',   [$ec, 'editSubmit']],
-    ['POST',  '/articles/delete/{id}', [$ec, 'deleteSubmit']],
+    ['GET',   '/articles',             [$ac, 'listArticles']],
 
     // Dashboard articles (admin)
     ['GET',  '/dashboard/articles',             [$aa, 'index']],

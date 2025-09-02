@@ -232,18 +232,6 @@ final class DashboardController extends RenderController
         header('Location: /dashboard/users', true, 303);
     }
 
-    public function articles(): void
-    {
-        $articles = $this->articleService->getAll();
-        foreach ($articles as &$article) {
-            $author = $this->userService->getUserById($article->author_id);
-            $article->author = $author->username ?? 'Inconnu';
-        }
-        $this->renderDashboard('Mes articles', 'dash_articles.php', [
-            'articles' => $articles,
-        ]);
-    }
-
     public function index(): void
     {
         $this->home();
