@@ -1134,6 +1134,9 @@ body {
         }
     }
 
+    .dashboard-content {
+        width: 100%;
+    }
     /* DASHBOARD ADMIN */
     & .admin-dashboard {
         width: 100%;
@@ -1278,10 +1281,19 @@ body {
         }
 
         & .users {
+            width: 100%;
+            & .wrapper {
+                width: 100%;
+            }
             & form {
+                width: 100%;
                 display: flex;
                 flex-direction: column;
                 border-radius: 8px;
+
+                & table {
+                    width: 100%;
+                }
             }
             & .deleteUser:disabled {
                 background: var(--grey);

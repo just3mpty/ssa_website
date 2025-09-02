@@ -169,6 +169,79 @@ createUser.addEventListener("click", () => {
     });
 });
 
+// UPDATE USER INFO VIA UI (EN TEST)
+document.querySelectorAll(".edit-btn").forEach((button) => {
+    button.addEventListener("click", (e) => {
+        const row = e.target.closest("tr");
+        const userId = row.dataset.userId;
+        const usernameCell = row.querySelector(".username");
+        const emailCell = row.querySelector(".email");
+        const roleCell = row.querySelector(".role");
+        const btn = row.querySelector(".edit-btn");
+
+        if (btn.textContent === "Gérer") {
+            // Passer en mode édition
+            const username = usernameCell.textContent.trim();
+            const email = emailCell.textContent.trim();
+            const role = roleCell.textContent.trim();
+
+            usernameCell.innerHTML = `<input type="text" name="username" value="${username}">`;
+            emailCell.innerHTML = `<input type="email" name="email" value="${email}">`;
+            roleCell.innerHTML = `
+                <select name="role">
+                    <option value="employee" ${
+                        role === "employee" ? "selected" : ""
+                    }>employee</option>
+                    <option value="admin" ${
+                        role === "admin" ? "selected" : ""
+                    }>admin</option>
+                </select>
+            `;
+
+            btn.textContent = "Enregistrer";
+
+            if (!row.querySelector(".cancel-btn")) {
+                const cancelBtn = document.createElement("button");
+                cancelBtn.textContent = "Annuler";
+                cancelBtn.type = "button";
+                cancelBtn.classList.add("cancel-btn");
+                btn.insertAdjacentElement("afterend", cancelBtn);
+
+                cancelBtn.addEventListener("click", () => {
+                    usernameCell.textContent = username;
+                    emailCell.textContent = email;
+                    roleCell.textContent = role;
+                    roleCell.className = `${role}`;
+
+                    btn.textContent = "Gérer";
+                    cancelBtn.remove();
+                });
+            }
+        } else {
+            const newUsername = row.querySelector(
+                'input[name="username"]'
+            ).value;
+            const newEmail = row.querySelector('input[name="email"]').value;
+            const newRole = row.querySelector('select[name="role"]').value;
+
+            const form = document.createElement("form");
+            form.method = "POST";
+            form.action = "/dashboard/users/update";
+
+            form.innerHTML = `
+                <input type="hidden" name="action" value="update">
+                <input type="hidden" name="id" value="${userId}">
+                <input type="hidden" name="username" value="${newUsername}">
+                <input type="hidden" name="email" value="${newEmail}">
+                <input type="hidden" name="role" value="${newRole}">
+            `;
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
+});
+
 // UPDATE PASSWORD
 /*
 if (changePassword) {
