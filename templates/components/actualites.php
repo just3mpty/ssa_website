@@ -42,7 +42,7 @@ $articles = [
             <article class="news-item" data-category="<?= secure_html($article['category']) ?>">
                 <h3><?= secure_html($article['title']) ?></h3>
                 <p><?= secure_html($article['content']) ?></p>
-                <img src="<?= $article['image'] ?>" alt="illustration event">
+                <img src="<?= $article['image'] ?>" alt="illustration article">
                 <a href="<?= secure_url($article['link']) ?>" class="read-more">
                     <?= secure_html($str['read_more']) ?>
                 </a>

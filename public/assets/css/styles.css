@@ -5,61 +5,59 @@
     --orange: #fdb544;
     --blue: #364a6b;
     --grey: #b8b8b8;
-    --clipPath: polygon(
-        100% 0%,
-        0% 0%,
-        0% 93.19%,
-        2% 92.88%,
-        4% 92.59%,
-        6% 92.32%,
-        8% 92.09%,
-        10% 91.9%,
-        12% 91.77%,
-        14% 91.69%,
-        16% 91.67%,
-        18% 91.7%,
-        20% 91.8%,
-        22% 91.95%,
-        24% 92.15%,
-        26% 92.39%,
-        28% 92.66%,
-        30% 92.96%,
-        32% 93.27%,
-        34% 93.58%,
-        36% 93.89%,
-        38% 94.17%,
-        40% 94.43%,
-        42% 94.64%,
-        44% 94.81%,
-        46% 94.93%,
-        48% 94.99%,
-        50% 94.99%,
-        52% 94.94%,
-        54% 94.82%,
-        56% 94.66%,
-        58% 94.44%,
-        60% 94.19%,
-        62% 93.91%,
-        64% 93.61%,
-        66% 93.29%,
-        68% 92.98%,
-        70% 92.68%,
-        72% 92.41%,
-        74% 92.16%,
-        76% 91.96%,
-        78% 91.81%,
-        80% 91.71%,
-        82% 91.67%,
-        84% 91.69%,
-        86% 91.76%,
-        88% 91.89%,
-        90% 92.08%,
-        92% 92.3%,
-        94% 92.57%,
-        96% 92.86%,
-        98% 93.16%,
-        100% 93.48%
-    );
+    --clipPath: polygon(100% 0%,
+            0% 0%,
+            0% 93.19%,
+            2% 92.88%,
+            4% 92.59%,
+            6% 92.32%,
+            8% 92.09%,
+            10% 91.9%,
+            12% 91.77%,
+            14% 91.69%,
+            16% 91.67%,
+            18% 91.7%,
+            20% 91.8%,
+            22% 91.95%,
+            24% 92.15%,
+            26% 92.39%,
+            28% 92.66%,
+            30% 92.96%,
+            32% 93.27%,
+            34% 93.58%,
+            36% 93.89%,
+            38% 94.17%,
+            40% 94.43%,
+            42% 94.64%,
+            44% 94.81%,
+            46% 94.93%,
+            48% 94.99%,
+            50% 94.99%,
+            52% 94.94%,
+            54% 94.82%,
+            56% 94.66%,
+            58% 94.44%,
+            60% 94.19%,
+            62% 93.91%,
+            64% 93.61%,
+            66% 93.29%,
+            68% 92.98%,
+            70% 92.68%,
+            72% 92.41%,
+            74% 92.16%,
+            76% 91.96%,
+            78% 91.81%,
+            80% 91.71%,
+            82% 91.67%,
+            84% 91.69%,
+            86% 91.76%,
+            88% 91.89%,
+            90% 92.08%,
+            92% 92.3%,
+            94% 92.57%,
+            96% 92.86%,
+            98% 93.16%,
+            100% 93.48%);
 }
 
 * {
@@ -114,6 +112,7 @@ body {
         align-items: center;
         justify-content: space-between;
         padding: 15px;
+
         px &.active {
             position: relative;
         }
@@ -121,7 +120,7 @@ body {
         &.hidden {
             opacity: 0;
             transform: translateY(-100%);
-            pointer-events: none;
+            pointer-articles: none;
         }
 
         & .logo-link {
@@ -322,13 +321,11 @@ body {
                 top: 0;
                 right: 0;
                 bottom: 0;
-                background: linear-gradient(
-                    135deg,
-                    var(--green) 0%,
-                    var(--orange) 100%
-                );
+                background: linear-gradient(135deg,
+                        var(--green) 0%,
+                        var(--orange) 100%);
                 opacity: 0.25;
-                pointer-events: none;
+                pointer-articles: none;
             }
 
             & h1 {
@@ -535,8 +532,7 @@ body {
             & .projet-ssa-illustration {
                 position: relative;
                 transition: 2s ease;
-                background: url("/assets/img/banner.webp") no-repeat
-                    center/cover;
+                background: url("/assets/img/banner.webp") no-repeat center/cover;
             }
         }
 
@@ -649,7 +645,7 @@ body {
                 padding: 15px;
             }
 
-            & .no-events {
+            & .no-articles {
                 font-style: italic;
                 color: var(--grey);
             }
@@ -659,7 +655,7 @@ body {
                 color: var(--orange);
             }
 
-            & .events {
+            & .articles {
                 display: flex;
                 flex-direction: column;
                 gap: 15px;
@@ -669,7 +665,7 @@ body {
                     max-width: 100%;
                 }
 
-                & .event {
+                & .article {
                     display: flex;
                     align-items: center;
                     gap: 15px;
@@ -707,6 +703,7 @@ body {
                             font-weight: 700;
                         }
                     }
+
                     & .description {
                         flex: 2;
                     }
@@ -918,6 +915,7 @@ body {
                 &:hover {
                     opacity: 0.75;
                 }
+
                 &:active {
                     transform: scale(0.95);
                 }
@@ -1137,6 +1135,7 @@ body {
     .dashboard-content {
         width: 100%;
     }
+
     /* DASHBOARD ADMIN */
     & .admin-dashboard {
         width: 100%;
@@ -1245,6 +1244,7 @@ body {
                             color: var(--green);
                         }
                     }
+
                     & tr:nth-child(even) {
                         background: #b8b8b825;
                     }
@@ -1262,6 +1262,7 @@ body {
                 background: salmon;
             }
         }
+
         & button,
         & a {
             all: unset;
@@ -1282,9 +1283,11 @@ body {
 
         & .users {
             width: 100%;
+
             & .wrapper {
                 width: 100%;
             }
+
             & form {
                 width: 100%;
                 display: flex;
@@ -1295,6 +1298,7 @@ body {
                     width: 100%;
                 }
             }
+
             & .deleteUser:disabled {
                 background: var(--grey);
                 cursor: not-allowed;
@@ -1348,7 +1352,7 @@ body {
         }
     }
 
-    /* CREATION D'EVENT */
+    /* CREATION D'ARTICLE */
     & .form-section {
         display: flex;
         flex-direction: column;
@@ -1379,6 +1383,7 @@ body {
                     border: 1px solid var(--orange);
                 }
             }
+
             & textarea {
                 resize: vertical;
             }

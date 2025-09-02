@@ -8,7 +8,7 @@ use CapsuleLib\Http\Middleware\AuthMiddleware;
 use CapsuleLib\Security\Authenticator;
 use App\Lang\TranslationLoader;
 use CapsuleLib\Security\CsrfTokenManager;
-use App\Service\EventService;
+use App\Service\ArticleService;
 use CapsuleLib\Core\RenderController;
 
 /**
@@ -19,21 +19,21 @@ use CapsuleLib\Core\RenderController;
  *
  * @package App\Controller
  */
-class EventController extends RenderController
+class ArticleController extends RenderController
 {
     /**
      * Service d'accès et manipulation des événements.
      */
-    private EventService $eventService;
+    private ArticleService $articleService;
 
     /**
      * Constructeur.
      *
-     * @param EventService $eventService Service pour manipuler les événements.
+     * @param ArticleService $articleService Service pour manipuler les événements.
      */
-    public function __construct(EventService $eventService)
+    public function __construct(ArticleService $articleService)
     {
-        $this->eventService = $eventService;
+        $this->articleService = $articleService;
     }
 
     /**
@@ -41,11 +41,11 @@ class EventController extends RenderController
      *
      * @return void
      */
-    public function listEvents(): void
+    public function listArticles(): void
     {
-        $events = $this->eventService->getUpcoming();
+        $articles = $this->articleService->getUpcoming();
         echo $this->renderView('pages/home.php', [
-            'events' => $events,
+            'articles' => $articles,
         ]);
     }
 
@@ -68,9 +68,9 @@ class EventController extends RenderController
     public function createForm(): void
     {
         AuthMiddleware::requireRole('admin');
-        echo $this->renderView('admin/create_event.php', [
+        echo $this->renderView('admin/create_article.php', [
             'errors' => [],
-            'data'   => ['titre' => '', 'description' => '', 'date_event' => '', 'lieu' => ''],
+            'data'   => ['titre' => '', 'description' => '', 'date_article' => '', 'lieu' => ''],
             'str' => $this->getStrings(),
         ]);
     }
@@ -87,10 +87,10 @@ class EventController extends RenderController
     {
         CsrfTokenManager::requireValidToken();
         AuthMiddleware::requireRole('admin');
-        $result = $this->eventService->create($_POST, Authenticator::getUser());
+        $result = $this->articleService->create($_POST, Authenticator::getUser());
 
         if (!empty($result['errors'])) {
-            echo $this->renderView('admin/create_event.php', [
+            echo $this->renderView('admin/create_article.php', [
                 'errors' => $result['errors'],
                 'data'   => $result['data'] ?? $_POST,
                 'str' => $this->getStrings(),
@@ -98,7 +98,7 @@ class EventController extends RenderController
             return;
         }
 
-        header('Location: /events');
+        header('Location: /articles');
         exit;
     }
 
@@ -113,16 +113,16 @@ class EventController extends RenderController
     public function editForm($id): void
     {
         AuthMiddleware::requireRole('admin');
-        $event = $this->eventService->find((int)$id);
+        $article = $this->articleService->find((int)$id);
 
-        if (!$event) {
+        if (!$article) {
             http_response_code(404);
-            echo "Événement introuvable";
+            echo "Article introuvable";
             return;
         }
 
-        echo $this->renderView('pages/edit_event.php', [
-            'event' => $event,
+        echo $this->renderView('pages/edit_article.php', [
+            'article' => $article,
             'errors' => [],
             'str' => $this->getStrings(),
         ]);
@@ -142,26 +142,26 @@ class EventController extends RenderController
     {
         CsrfTokenManager::requireValidToken();
         AuthMiddleware::requireRole('admin');
-        $event = $this->eventService->find((int)$id);
+        $article = $this->articleService->find((int)$id);
 
-        if (!$event) {
+        if (!$article) {
             http_response_code(404);
-            echo "Événement introuvable";
+            echo "Article introuvable";
             return;
         }
 
-        $result = $this->eventService->update($id, $_POST);
+        $result = $this->articleService->update($id, $_POST);
 
         if (!empty($result['errors'])) {
-            echo $this->renderView('pages/edit_event.php', [
-                'event'  => array_merge($event, $result['data']),
+            echo $this->renderView('pages/edit_article.php', [
+                'article'  => array_merge($article, $result['data']),
                 'errors' => $result['errors'],
                 'str' => $this->getStrings(),
             ]);
             return;
         }
 
-        header('Location: /events');
+        header('Location: /articles');
         exit;
     }
 
@@ -176,8 +176,8 @@ class EventController extends RenderController
     public function deleteSubmit($id): void
     {
         AuthMiddleware::requireRole('admin');
-        $this->eventService->delete((int)$id);
-        header('Location: /events');
+        $this->articleService->delete((int)$id);
+        header('Location: /articles');
         exit;
     }
 }

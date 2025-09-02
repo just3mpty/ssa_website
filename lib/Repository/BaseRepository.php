@@ -15,7 +15,7 @@ use PDO;
  * - Exécuter des requêtes préparées (retour unique ou multiples lignes)
  * - Insérer, mettre à jour et supprimer un enregistrement
  *
- * Elle est conçue pour être étendue par des classes métier spécifiques (ex : EventRepository).
+ * Elle est conçue pour être étendue par des classes métier spécifiques (ex : ArticleRepository).
  * Elle ne contient aucune logique métier, elle est indépendante du domaine applicatif.
  *
  * Compatible avec PDO (MySQL, SQLite, etc.).

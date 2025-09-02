@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Repository\EventRepository;
+use App\Repository\ArticleRepository;
 
 /**
  * Service de gestion métier des événements.
@@ -12,18 +12,18 @@ use App\Repository\EventRepository;
  * Encapsule la logique de création, mise à jour, suppression et validation
  * des événements, en déléguant la persistance au repository.
  */
-class EventService
+class ArticleService
 {
-    private EventRepository $eventRepository;
+    private ArticleRepository $articleRepository;
 
     /**
      * Constructeur.
      *
-     * @param EventRepository $eventRepository Instance du repository d’événements.
+     * @param ArticleRepository $articleRepository Instance du repository d’événements.
      */
-    public function __construct(EventRepository $eventRepository)
+    public function __construct(ArticleRepository $articleRepository)
     {
-        $this->eventRepository = $eventRepository;
+        $this->articleRepository = $articleRepository;
     }
 
     /**
@@ -33,7 +33,7 @@ class EventService
      */
     public function getUpcoming(): array
     {
-        return $this->eventRepository->upcoming();
+        return $this->articleRepository->upcoming();
     }
 
     /**
@@ -47,7 +47,7 @@ class EventService
         if ($id <= 0) {
             throw new \InvalidArgumentException('ID doit être positif');
         }
-        return $this->eventRepository->find($id);
+        return $this->articleRepository->find($id);
     }
 
     /**
@@ -68,7 +68,7 @@ class EventService
             return ['errors' => $errors, 'data' => $data];
         }
 
-        $this->eventRepository->create([
+        $this->articleRepository->create([
             ...$data,
             'author_id'  => $user['id'] ?? null,
         ]);
@@ -93,10 +93,10 @@ class EventService
             return ['errors' => $errors, 'data' => $data];
         }
 
-        $this->eventRepository->update($id, [
+        $this->articleRepository->update($id, [
             ...$data,
             // Remplacement du 'T' ISO par espace si présent (convention date SQL)
-            'date_event' => str_replace('T', ' ', $data['date_event']),
+            'date_article' => str_replace('T', ' ', $data['date_article']),
         ]);
         return [];
     }
@@ -109,25 +109,25 @@ class EventService
      */
     public function delete(int $id): void
     {
-        $this->eventRepository->delete($id);
+        $this->articleRepository->delete($id);
     }
 
     /**
      * Récupère tous les événements/articles (admin/dashboard).
      *
-     * @return EventDTO[]
+     * @return ArticleDTO[]
      */
     public function getAll(): array
     {
-        $rows = $this->eventRepository->all();
+        $rows = $this->articleRepository->all();
         return array_map(function ($row) {
-            // On hydrate comme dans EventRepository
-            return new \App\Dto\EventDTO(
+            // On hydrate comme dans ArticleRepository
+            return new \App\Dto\ArticleDTO(
                 id: (int)$row['id'],
                 titre: $row['titre'],
                 resume: $row['resume'],
                 description: $row['description'] ?? null,
-                date_event: $row['date_event'],
+                date_article: $row['date_article'],
                 hours: $row['hours'],
                 lieu: $row['lieu'] ?? null,
                 image: $row['image'] ?? null,
@@ -148,7 +148,7 @@ class EventService
      */
     private function sanitize(array $input): array
     {
-        $fields = ['titre', 'description', 'date_event', 'hours', 'lieu', 'resume'];
+        $fields = ['titre', 'description', 'date_article', 'hours', 'lieu', 'resume'];
         $clean = [];
         foreach ($fields as $field) {
             $value = trim($input[$field] ?? '');
@@ -170,14 +170,14 @@ class EventService
     private function validate(array $data): array
     {
         $errors = [];
-        foreach (['titre', 'description', 'date_event', 'hours', 'lieu'] as $field) {
+        foreach (['titre', 'description', 'date_article', 'hours', 'lieu'] as $field) {
             if ($data[$field] === '') {
                 $errors[$field] = 'Ce champ est obligatoire.';
             }
         }
         // Format date attendu : YYYY-MM-DD
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $data['date_event'])) {
-            $errors['date_event'] = "Format date invalide (attendu : AAAA-MM-JJ)";
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $data['date_article'])) {
+            $errors['date_article'] = "Format date invalide (attendu : AAAA-MM-JJ)";
         }
         // Format heure attendu : HH:MM ou HH:MM:SS
         if (!preg_match('/^\d{2}:\d{2}(:\d{2})?$/', $data['hours'])) {

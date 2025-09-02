@@ -13,19 +13,19 @@ namespace App\Dto;
  * @property int $id Identifiant unique de l'événement
  * @property string $titre Titre de l'événement
  * @property string $description Description détaillée de l'événement
- * @property string $date_event Date de l'événement au format 'YYYY-MM-DD'
+ * @property string $date_article Date de l'événement au format 'YYYY-MM-DD'
  * @property string $hours Heure de l'événement au format 'HH:MM:SS'
  * @property string|null $lieu Lieu de l'événement (optionnel)
  * @property string $created_at Date/heure de création de l'événement
  * @property int $author_id Identifiant de l'auteur/organisateur
  */
-class EventDTO
+class ArticleDTO
 {
     /**
      * @param int $id Identifiant unique de l'événement
      * @param string $titre Titre de l'événement
      * @param string $description Description détaillée de l'événement
-     * @param string $date_event Date au format 'YYYY-MM-DD'
+     * @param string $date_article Date au format 'YYYY-MM-DD'
      * @param string $hours Heure au format 'HH:MM:SS'
      * @param string|null $lieu Lieu de l'événement (nullable)
      * @param string $created_at Date/heure de création
@@ -36,7 +36,7 @@ class EventDTO
         public readonly string $titre,
         public readonly string $resume,
         public readonly ?string $description,
-        public readonly string $date_event,
+        public readonly string $date_article,
         public readonly string $hours,
         public readonly ?string $lieu,
         public readonly ?string $image,

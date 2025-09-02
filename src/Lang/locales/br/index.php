@@ -63,7 +63,7 @@ return  [
 
 
     'agenda_intro'           => 'Kavout a reot hon darvoudoù da zont :',
-    'no_upcoming_events'     => 'Darvoud ebet da zont.',
+    'no_upcoming_articles'     => 'Darvoud ebet da zont.',
     'partners_title'         => 'Ouzhpennet gant hon c\'henseurted',
     'about_title'            => 'Piv omp ?',
     'about_subtitle'         => 'Ar strollad "Gwareziñ Sokial ar Boued" (SSA)',
@@ -106,17 +106,17 @@ return  [
     'login_submit'           => 'Kennaskañ',
     'dashboard_title'      => 'Taolenn an ardoer',
     'welcome'              => 'Degemer mat',
-    'admin_manage_events'  => 'Merañ an darvoudoù',
+    'admin_manage_articles'  => 'Merañ an darvoudoù',
     'admin_contacts'       => 'Gwélout ar c\'hemennadennoù',
-    'admin_create_event'   => 'Krouiñ un darvoud',
+    'admin_create_article'   => 'Krouiñ un darvoud',
     'logout'               => 'Digevrediñ',
 
 
-    'create_event_title'       => 'Krouiñ un darvoud',
-    'create_event_label_title' => 'Titl',
-    'create_event_label_desc'  => 'Deskrivadur',
-    'create_event_label_date'  => 'Deiziad',
-    'create_event_label_time'  => 'Eur',
-    'create_event_label_place' => 'Lec\'h',
-    'create_event_submit'      => 'Krouiñ',
+    'create_article_title'       => 'Krouiñ un darvoud',
+    'create_article_label_title' => 'Titl',
+    'create_article_label_desc'  => 'Deskrivadur',
+    'create_article_label_date'  => 'Deiziad',
+    'create_article_label_time'  => 'Eur',
+    'create_article_label_place' => 'Lec\'h',
+    'create_article_submit'      => 'Krouiñ',
 ];

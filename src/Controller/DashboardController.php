@@ -10,13 +10,13 @@ use CapsuleLib\Http\Middleware\AuthMiddleware;
 use App\Lang\TranslationLoader;
 use CapsuleLib\Service\UserService;
 use CapsuleLib\Service\PasswordService;
-use App\Service\EventService;
+use App\Service\ArticleService;
 
 final class DashboardController extends RenderController
 {
     public function __construct(
         private readonly UserService $userService,
-        private readonly EventService $eventService,
+        private readonly ArticleService $articleService,
         private readonly PasswordService $passwords,
     ) {}
 
@@ -234,7 +234,7 @@ final class DashboardController extends RenderController
 
     public function articles(): void
     {
-        $articles = $this->eventService->getAll();
+        $articles = $this->articleService->getAll();
         foreach ($articles as &$article) {
             $author = $this->userService->getUserById($article->author_id);
             $article->author = $author->username ?? 'Inconnu';

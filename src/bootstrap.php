@@ -3,14 +3,14 @@
 declare(strict_types=1);
 
 use CapsuleLib\Core\DIContainer;
+use CapsuleLib\Core\LoginController;
 use CapsuleLib\Routing\Router;
 use CapsuleLib\Database\MariaDBConnection;
-use App\Repository\EventRepository;
-use App\Service\EventService;
+use App\Repository\ArticleRepository;
+use App\Service\ArticleService;
 use App\Controller\HomeController;
 use App\Controller\DashboardController;
-use App\Controller\AdminController;
-use App\Controller\EventController;
+use App\Controller\ArticleController;
 use CapsuleLib\Repository\UserRepository;
 use CapsuleLib\Service\UserService;
 
@@ -37,14 +37,14 @@ $container->set(
 );
 
 // Définition des services et contrôleurs publics
-$container->set('eventRepository', fn($c) => new EventRepository($c->get('pdo')));
-$container->set('eventService', fn($c) => new EventService($c->get('eventRepository')));
-$container->set('homeController', fn($c) => new HomeController($c->get('eventService')));
-$container->set('eventController', fn($c) => new EventController($c->get('eventService')));
+$container->set('articleRepository', fn($c) => new ArticleRepository($c->get('pdo')));
+$container->set('articleService', fn($c) => new ArticleService($c->get('articleRepository')));
+$container->set('homeController', fn($c) => new HomeController($c->get('articleService')));
+$container->set('articleController', fn($c) => new ArticleController($c->get('articleService')));
 $container->set('userRepository', fn($c) => new UserRepository($c->get('pdo')));
 
 // Définition du contrôleur admin (accès restreint)
-$container->set('adminController', fn($c) => new AdminController($c->get('pdo')));
+$container->set('loginController', fn($c) => new LoginController($c->get('pdo')));
 // Définition des services et contrôleurs privés (ex : authentification)
 $container->set('userService', fn($c) => new UserService($c->get('userRepository')));
 $container->set(
@@ -58,15 +58,15 @@ $container->set(
     fn($c) =>
     new DashboardController(
         $c->get('userService'),
-        $c->get('eventService'),
+        $c->get('articleService'),
         $c->get('passwords'),
     )
 );
 
 // --- Aliases pour éviter répétition ---
 $hc = $container->get('homeController');
-$ec = $container->get('eventController');
-$ac = $container->get('adminController');
+$ec = $container->get('articleController');
+$ac = $container->get('loginController');
 $dc = $container->get('dashboardController');
 
 // Déclaration des routes : méthode HTTP, chemin, et handler (contrôleur + méthode)
@@ -91,13 +91,13 @@ $routes = [
     ['POST', '/dashboard/users/delete',     [$dc, 'usersDelete']],
     ['GET',  '/dashboard/articles',         [$dc, 'articles']],
 
-    // Events
-    ['GET',   '/events',             [$ec, 'listEvents']],
-    ['GET',   '/events/create',      [$ec, 'createForm']],
-    ['POST',  '/events/create',      [$ec, 'createSubmit']],
-    ['GET',   '/events/edit/{id}',   [$ec, 'editForm']],
-    ['POST',  '/events/edit/{id}',   [$ec, 'editSubmit']],
-    ['POST',  '/events/delete/{id}', [$ec, 'deleteSubmit']],
+    // Articles
+    ['GET',   '/articles',             [$ec, 'listArticles']],
+    ['GET',   '/articles/create',      [$ec, 'createForm']],
+    ['POST',  '/articles/create',      [$ec, 'createSubmit']],
+    ['GET',   '/articles/edit/{id}',   [$ec, 'editForm']],
+    ['POST',  '/articles/edit/{id}',   [$ec, 'editSubmit']],
+    ['POST',  '/articles/delete/{id}', [$ec, 'deleteSubmit']],
 ];
 // Instanciation et configuration du routeur HTTP
 $router = new Router();

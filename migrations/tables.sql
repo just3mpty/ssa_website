@@ -7,11 +7,11 @@ CREATE TABLE IF NOT EXISTS users (
     created_at    DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS events (
+CREATE TABLE IF NOT EXISTS articles (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     titre       TEXT NOT NULL,
     description TEXT NOT NULL,
-    date_event  DATE NOT NULL,    -- stocke YYYY-MM-DD mais utilise seulement MM-DD côté app ou requête
+    date_article  DATE NOT NULL,    -- stocke YYYY-MM-DD mais utilise seulement MM-DD côté app ou requête
     hours       TIME NOT NULL,    -- juste HH:MM:SS
     lieu        TEXT,
     created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS contacts (
 INSERT INTO users (username, password_hash, role, email) 
 VALUES ('admin', '$2y$12$DdRaR1i6wNQbPGxbmgeB9OvAnhSzFvN98/wIBdO3w0Qcqsu62BMEy','admin', 'admin@example.org');
 
-INSERT INTO events (titre, description, date_event, hours, lieu, image, author_id)
+INSERT INTO articles (titre, description, date_article, hours, lieu, image, author_id)
 VALUES
   ('Réunion mensuelle', 'Présentation des avancées du projet', '2025-08-01', '18:00:00', 'Salle des fêtes', NULL, 1),
   ('Atelier alimentation durable', 'Initiation à la cuisine locale et responsable.', '2025-08-15', '14:00:00', 'Centre social', NULL, 1),

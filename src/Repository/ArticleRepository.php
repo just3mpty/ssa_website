@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
-use App\Dto\EventDTO;
+use App\Dto\ArticleDTO;
 use CapsuleLib\Repository\BaseRepository;
 use PDO;
 
@@ -12,18 +12,18 @@ use PDO;
  * Repository dédié à la gestion des événements.
  *
  * Fournit les opérations CRUD spécifiques aux événements,
- * avec un mapping vers des DTOs typés (`EventDTO`).
+ * avec un mapping vers des DTOs typés (`ArticleDTO`).
  *
  * Hérite du `BaseRepository` pour les opérations SQL basiques.
  */
-class EventRepository extends BaseRepository
+class ArticleRepository extends BaseRepository
 {
     /**
      * Nom de la table associée aux événements.
      *
      * @var string
      */
-    protected string $table = 'events';
+    protected string $table = 'articles';
 
     /**
      * Clé primaire de la table.
@@ -47,12 +47,12 @@ class EventRepository extends BaseRepository
      *
      * Les événements sont triés par date croissante.
      *
-     * @return EventDTO[] Liste des événements futurs.
+     * @return ArticleDTO[] Liste des événements futurs.
      */
     public function upcoming(): array
     {
         $stmt = $this->pdo->prepare(
-            "SELECT * FROM {$this->table} WHERE date_event >= :today ORDER BY date_event ASC"
+            "SELECT * FROM {$this->table} WHERE date_article >= :today ORDER BY date_article ASC"
         );
         $stmt->execute(['today' => date('Y-m-d')]);
         $rows = $stmt->fetchAll();
@@ -65,12 +65,12 @@ class EventRepository extends BaseRepository
      * Triés par date décroissante (les plus récents en premier).
      *
      * @param int $authorId ID de l’auteur.
-     * @return EventDTO[] Liste des événements de l’auteur.
+     * @return ArticleDTO[] Liste des événements de l’auteur.
      */
     public function findByAuthor(int $authorId): array
     {
         $rows = $this->query(
-            "SELECT * FROM {$this->table} WHERE author_id = :author_id ORDER BY date_event DESC",
+            "SELECT * FROM {$this->table} WHERE author_id = :author_id ORDER BY date_article DESC",
             ['author_id' => $authorId]
         );
         return array_map([$this, 'hydrate'], $rows);
@@ -80,9 +80,9 @@ class EventRepository extends BaseRepository
      * Récupère un événement via son ID.
      *
      * @param int $id ID de l’événement.
-     * @return EventDTO|null DTO de l’événement ou null si non trouvé.
+     * @return ArticleDTO|null DTO de l’événement ou null si non trouvé.
      */
-    public function findById(int $id): ?EventDTO
+    public function findById(int $id): ?ArticleDTO
     {
         $row = $this->find($id);
         return $row ? $this->hydrate($row) : null;
@@ -117,19 +117,19 @@ class EventRepository extends BaseRepository
     }
 
     /**
-     * Convertit un tableau de données SQL en DTO EventDTO.
+     * Convertit un tableau de données SQL en DTO ArticleDTO.
      *
      * @param array<string, mixed> $data Données issues de la requête SQL.
-     * @return EventDTO Objet DTO strictement typé.
+     * @return ArticleDTO Objet DTO strictement typé.
      */
-    private function hydrate(array $data): EventDTO
+    private function hydrate(array $data): ArticleDTO
     {
-        return new EventDTO(
+        return new ArticleDTO(
             id: (int)$data['id'],
             titre: $data['titre'],
             resume: $data['resume'],
             description: $data['description'] ?? null,
-            date_event: $data['date_event'],
+            date_article: $data['date_article'],
             hours: $data['hours'],
             image: $data['image'] ?? null,
             lieu: $data['lieu'] ?? null,
