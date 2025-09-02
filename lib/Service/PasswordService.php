@@ -14,7 +14,7 @@ final class PasswordService
 {
     public function __construct(
         private UserRepository $users,
-        private int $minLength = 12,
+        private int $minLength = 8,
         /** @var array<string,mixed> $hashOptions */
         private array $hashOptions = []      // ex: ['cost' => 12] pour bcrypt
     ) {}
