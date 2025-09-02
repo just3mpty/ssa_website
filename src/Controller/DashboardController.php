@@ -130,12 +130,54 @@ final class DashboardController extends RenderController
 
     public function users(): void
     {
+        AuthMiddleware::requireRole('admin');
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'create') {
+            $username = filter_input(INPUT_POST, 'username');
+            $password = $_POST['password'] ?? null;
+            $email    = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
+            $role     = $_POST['role'] ?? 'employee';
+
+            if ($username && $password && $email) {
+                $this->userService->createUser($username, $password, $email, $role);
+                $_SESSION['flash'] = "Utilisateur créé avec succès.";
+            } else {
+                $_SESSION['flash'] = "Erreur : champs invalides.";
+            }
+            header('Location: /dashboard/users');
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete') {
+            $ids = $_POST['user_ids'] ?? [];
+            foreach ($ids as $id) {
+                $this->userService->deleteUser((int) $id);
+            }
+            $_SESSION['flash'] = "Utilisateur(s) supprimé(s).";
+            header('Location: /dashboard/users');
+            exit;
+        }
+
+
         $users = $this->userService->getAllUsers();
-        $this->renderDashboard('Utilisateurs', 'dash_users.php', [
-            'users' => $users,
-        ], requireAdmin: true);
+
+        echo $this->renderView('dashboard/home.php', [
+            'title'    => 'Utilisateurs',
+            'isDashboard' => true,
+            'links' => $this->links(true),
+            'isAdmin'  => true,
+            'dashboardContent' => $this->renderComponent('dash_users.php', [
+                'users' => $users,
+                'str' => $this->strings(),
+            ]),
+            'str'      => $this->strings(),
+        ]);
     }
 
+
+    /**
+     * Page "Mes articles" dans le dashboard.
+     */
     public function articles(): void
     {
         $articles = $this->eventService->getAll();

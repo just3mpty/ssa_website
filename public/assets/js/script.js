@@ -146,6 +146,17 @@ const showMobileNav = () => {
 window.addEventListener("resize", showMobileNav);
 window.addEventListener("load", showMobileNav);
 
+// USER CHECKBOXES
+const checkboxes = document.querySelectorAll(".user-checkbox");
+const deleteBtn = document.querySelector(".deleteUser");
+
+function toggleDeleteBtn() {
+    const isChecked = Array.from(checkboxes).some((cb) => cb.checked);
+    deleteBtn.disabled = !isChecked;
+}
+
+checkboxes.forEach((cb) => cb.addEventListener("change", toggleDeleteBtn));
+
 // UPDATE PASSWORD
 /*
 if (changePassword) {

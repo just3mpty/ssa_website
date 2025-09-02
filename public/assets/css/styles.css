@@ -1215,6 +1215,8 @@ body {
                     height: fit-content;
                     border-collapse: collapse;
                     border-spacing: 0;
+                    overflow: hidden;
+                    overflow-y: scroll;
 
                     & th {
                         background: var(--blue);
@@ -1251,22 +1253,39 @@ body {
                     }
                 }
             }
-            & button,
-            & a {
-                all: unset;
-                padding: 5px 15px;
-                background: var(--blue);
-                color: var(--background);
-                border-radius: 8px;
-                cursor: pointer;
-                font-weight: 600;
-                transition: background-color 0.3s;
-                text-align: center;
 
-                &:hover {
-                    background-color: #536a7750;
-                    color: var(--blue);
-                }
+            & .deleteUser {
+                margin-top: 15px;
+                background: salmon;
+            }
+        }
+        & button,
+        & a {
+            all: unset;
+            padding: 5px 15px;
+            background: var(--blue);
+            color: var(--background);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s;
+            text-align: center;
+
+            &:hover {
+                background-color: #536a7750;
+                color: var(--blue);
+            }
+        }
+
+        & .users {
+            & form {
+                display: flex;
+                flex-direction: column;
+                border-radius: 8px;
+            }
+            & .deleteUser:disabled {
+                background: var(--grey);
+                cursor: not-allowed;
             }
         }
     }
