@@ -62,11 +62,18 @@ $container->set(
         $c->get('passwords'),
     )
 );
+$container->set(
+    'articlesAdminController',
+    fn($c) =>
+    new \App\Controller\ArticlesAdminController($c->get('articleService'))
+);
+
 
 // --- Aliases pour éviter répétition ---
+$aa = $container->get('articlesAdminController');
 $hc = $container->get('homeController');
-$ec = $container->get('articleController');
-$ac = $container->get('loginController');
+$ac = $container->get('articleController');
+$lc = $container->get('loginController');
 $dc = $container->get('dashboardController');
 
 // Déclaration des routes : méthode HTTP, chemin, et handler (contrôleur + méthode)
@@ -78,9 +85,9 @@ $routes = [
     ['GET',  '/wiki',    [$hc, 'wiki']],
 
     // Auth
-    ['GET',  '/login',  [$ac, 'loginForm']],
-    ['POST', '/login',  [$ac, 'loginSubmit']],
-    ['GET',  '/logout', [$ac, 'logout']],
+    ['GET',  '/login',  [$lc, 'loginForm']],
+    ['POST', '/login',  [$lc, 'loginSubmit']],
+    ['GET',  '/logout', [$lc, 'logout']],
 
     // Dashboard
     ['GET',  '/dashboard/home',             [$dc, 'home']],
@@ -98,6 +105,14 @@ $routes = [
     ['GET',   '/articles/edit/{id}',   [$ec, 'editForm']],
     ['POST',  '/articles/edit/{id}',   [$ec, 'editSubmit']],
     ['POST',  '/articles/delete/{id}', [$ec, 'deleteSubmit']],
+
+    // Dashboard articles (admin)
+    ['GET',  '/dashboard/articles',             [$aa, 'index']],
+    ['GET',  '/dashboard/articles/create',      [$aa, 'createForm']],
+    ['POST', '/dashboard/articles/create',      [$aa, 'createSubmit']],
+    ['GET',  '/dashboard/articles/edit/{id}',   [$aa, 'editForm']],
+    ['POST', '/dashboard/articles/edit/{id}',   [$aa, 'editSubmit']],
+    ['POST', '/dashboard/articles/delete/{id}', [$aa, 'deleteSubmit']],
 ];
 // Instanciation et configuration du routeur HTTP
 $router = new Router();
