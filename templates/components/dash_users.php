@@ -42,7 +42,7 @@
         </form>
     </div>
 
-    <div class="popup">
+    <div class="popup hidden">
         <form method="POST" action="/dashboard/users">
             <input type="hidden" name="action" value="create">
 
