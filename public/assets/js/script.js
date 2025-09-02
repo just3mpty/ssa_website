@@ -3,6 +3,9 @@ const hamburger = document.querySelector(".hamburger");
 const navbar = document.querySelector(".navbar");
 const downloadLink = document.getElementById("download");
 const changePassword = document.getElementById("submit-update-password");
+const checkboxes = document.querySelectorAll(".user-checkbox");
+const deleteBtn = document.querySelector(".deleteUser");
+const createUser = document.getElementById("createUserBtn");
 
 // MASQUER LE HEADER AU SCROLL
 let lastScroll = window.scrollY;
@@ -147,15 +150,24 @@ window.addEventListener("resize", showMobileNav);
 window.addEventListener("load", showMobileNav);
 
 // USER CHECKBOXES
-const checkboxes = document.querySelectorAll(".user-checkbox");
-const deleteBtn = document.querySelector(".deleteUser");
 
 function toggleDeleteBtn() {
     const isChecked = Array.from(checkboxes).some((cb) => cb.checked);
     deleteBtn.disabled = !isChecked;
 }
-
 checkboxes.forEach((cb) => cb.addEventListener("change", toggleDeleteBtn));
+
+// CREER UN USER (MODALE)
+createUser.addEventListener("click", () => {
+    const popup = document.querySelector(".popup");
+    popup.classList.remove("hidden");
+
+    popup.addEventListener("click", (e) => {
+        if (e.target === popup) {
+            popup.classList.add("hidden");
+        }
+    });
+});
 
 // UPDATE PASSWORD
 /*

@@ -235,6 +235,10 @@ final class DashboardController extends RenderController
     public function articles(): void
     {
         $articles = $this->eventService->getAll();
+        foreach ($articles as &$article) {
+            $author = $this->userService->getUserById($article->author_id);
+            $article->author = $author->username ?? 'Inconnu';
+        }
         $this->renderDashboard('Mes articles', 'dash_articles.php', [
             'articles' => $articles,
         ]);
