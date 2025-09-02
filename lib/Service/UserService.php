@@ -60,6 +60,17 @@ class UserService
     }
 
     /**
+     * Supprime un utilisateur par son ID.
+     *
+     * @param int $userId ID de l’utilisateur.
+     * @return bool Succès de la suppression.
+     */
+    public function deleteUser(int $userId): bool
+    {
+        return $this->userRepository->delete($userId) > 0;
+    }
+
+    /**
      * Met à jour le mot de passe d’un utilisateur (hash sécurisé).
      *
      * @param int $userId ID de l’utilisateur.
