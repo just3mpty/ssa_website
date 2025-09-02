@@ -44,6 +44,7 @@
 
     <div class="popup hidden">
         <form method="POST" action="/dashboard/users">
+            <h2>Créer un utilisateur</h2>
             <input type="hidden" name="action" value="create">
 
             <input type="text" name="username" placeholder="Nom d'utilisateur" required>
