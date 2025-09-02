@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace CapsuleLib\Database\Repository;
+namespace CapsuleLib\Repository;
 
-use CapsuleLib\Database\Repository\BaseRepository;
+use CapsuleLib\Repository\BaseRepository;
 use CapsuleLib\DTO\UserDTO;
 use PDO;
 
