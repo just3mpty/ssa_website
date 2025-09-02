@@ -43,40 +43,62 @@ $container->set('homeController', fn($c) => new HomeController($c->get('eventSer
 $container->set('eventController', fn($c) => new EventController($c->get('eventService')));
 $container->set('userRepository', fn($c) => new UserRepository($c->get('pdo')));
 
-// Définition des services et contrôleurs privés (ex : authentification)
-$container->set('userService', fn($c) => new UserService($c->get('userRepository')));
-
 // Définition du contrôleur admin (accès restreint)
 $container->set('adminController', fn($c) => new AdminController($c->get('pdo')));
-$container->set('dashboardController', fn($c) => new DashboardController($c->get('userService'), $c->get('eventService')));
+// Définition des services et contrôleurs privés (ex : authentification)
+$container->set('userService', fn($c) => new UserService($c->get('userRepository')));
+$container->set(
+    'passwords',
+    fn($c) =>
+    new \CapsuleLib\Service\PasswordService($c->get('userRepository'), 8, [])
+);
+
+$container->set(
+    'dashboardController',
+    fn($c) =>
+    new DashboardController(
+        $c->get('userService'),
+        $c->get('eventService'),
+        $c->get('passwords'),
+    )
+);
+
+// --- Aliases pour éviter répétition ---
+$hc = $container->get('homeController');
+$ec = $container->get('eventController');
+$ac = $container->get('adminController');
+$dc = $container->get('dashboardController');
 
 // Déclaration des routes : méthode HTTP, chemin, et handler (contrôleur + méthode)
 $routes = [
-    ['GET',  '/',             [$container->get('homeController'), 'home']],
-    ['GET',  '/projet',       [$container->get('homeController'), 'projet']],
-    ['GET',  '/galerie',      [$container->get('homeController'), 'galerie']],
-    ['GET',  '/wiki',         [$container->get('homeController'), 'wiki']],
+    // Public
+    ['GET',  '/',        [$hc, 'home']],
+    ['GET',  '/projet',  [$hc, 'projet']],
+    ['GET',  '/galerie', [$hc, 'galerie']],
+    ['GET',  '/wiki',    [$hc, 'wiki']],
 
     // Auth
-    ['GET', '/login',        [$container->get('adminController'), 'loginForm']],
-    ['POST', '/login',       [$container->get('adminController'), 'loginSubmit']],
-    ['GET', '/logout',       [$container->get('adminController'), 'logout']],
+    ['GET',  '/login',  [$ac, 'loginForm']],
+    ['POST', '/login',  [$ac, 'loginSubmit']],
+    ['GET',  '/logout', [$ac, 'logout']],
 
-    // Dashboard pages
-    ['GET', '/dashboard/home',  [$container->get('dashboardController'), 'home']],
-    ['GET', '/dashboard/account', [$container->get('dashboardController'), 'account']],
-    ['GET', '/dashboard/users',   [$container->get('dashboardController'), 'users']],
-    ['POST', '/dashboard/users',   [$container->get('dashboardController'), 'users']],
-    ['GET', '/dashboard/articles',   [$container->get('dashboardController'), 'articles']],
+    // Dashboard
+    ['GET',  '/dashboard/home',             [$dc, 'home']],
+    ['GET',  '/dashboard/account',          [$dc, 'account']],
+    ['POST', '/dashboard/account/password', [$dc, 'accountPassword']],
+    ['GET',  '/dashboard/users',            [$dc, 'users']],
+    ['POST', '/dashboard/users/create',     [$dc, 'usersCreate']],
+    ['POST', '/dashboard/users/delete',     [$dc, 'usersDelete']],
+    ['GET',  '/dashboard/articles',         [$dc, 'articles']],
 
-    ['GET',   '/events',                [$container->get('eventController'), 'listEvents']],
-    ['GET',   '/events/create',         [$container->get('eventController'), 'createForm']],
-    ['POST',  '/events/create',         [$container->get('eventController'), 'createSubmit']],
-    ['GET',   '/events/edit/{id}',      [$container->get('eventController'), 'editForm']],
-    ['POST',  '/events/edit/{id}',      [$container->get('eventController'), 'editSubmit']],
-    ['POST',  '/events/delete/{id}',    [$container->get('eventController'), 'deleteSubmit']],
+    // Events
+    ['GET',   '/events',             [$ec, 'listEvents']],
+    ['GET',   '/events/create',      [$ec, 'createForm']],
+    ['POST',  '/events/create',      [$ec, 'createSubmit']],
+    ['GET',   '/events/edit/{id}',   [$ec, 'editForm']],
+    ['POST',  '/events/edit/{id}',   [$ec, 'editSubmit']],
+    ['POST',  '/events/delete/{id}', [$ec, 'deleteSubmit']],
 ];
-
 // Instanciation et configuration du routeur HTTP
 $router = new Router();
 foreach ($routes as [$method, $path, $handler]) {
