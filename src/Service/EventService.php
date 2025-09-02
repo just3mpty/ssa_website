@@ -44,6 +44,9 @@ class EventService
      */
     public function find(int $id): ?array
     {
+        if ($id <= 0) {
+            throw new \InvalidArgumentException('ID doit être positif');
+        }
         return $this->eventRepository->find($id);
     }
 
@@ -161,7 +164,7 @@ class EventService
      *
      * Vérifie la présence obligatoire des champs et le format date/heure.
      *
-     * @param array $data Données nettoyées.
+     * @param array $data Données nettoyées.s
      * @return array Tableau associatif champ => message d’erreur, vide si valide.
      */
     private function validate(array $data): array

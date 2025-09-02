@@ -1,6 +1,6 @@
 <?php
 
-namespace CapsuleLib\Database\Connection;
+namespace CapsuleLib\Database;
 
 use PDO;
 use PDOException;

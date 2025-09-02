@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CapsuleLib\Service;
 
-use CapsuleLib\Database\Repository\UserRepository;
+use CapsuleLib\Repository\UserRepository;
 use CapsuleLib\DTO\UserDTO;
 use RuntimeException;
 

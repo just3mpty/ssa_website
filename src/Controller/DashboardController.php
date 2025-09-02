@@ -28,7 +28,7 @@ final class DashboardController extends RenderController
         return $this->strings ??= TranslationLoader::load(defaultLang: 'fr');
     }
 
-    /** Idéalement, injecter un UrlGenerator et une ACL pour filtrer par rôle. */
+    // TODO: Idéalement, injecter un UrlGenerator et une ACL pour filtrer par rôle. */
     private function links(bool $isAdmin): array
     {
         if ($this->links !== null) {
@@ -37,14 +37,12 @@ final class DashboardController extends RenderController
 
         $links = [
             ['title' => 'Accueil',      'url' => 'home',     'icon' => 'home'],
-            ['title' => 'Utilisateurs', 'url' => 'users',    'icon' => 'users'],    // masquer si non-admin si besoin
+            ['title' => 'Utilisateurs', 'url' => 'users',    'icon' => 'users'],
             ['title' => 'Mes articles', 'url' => 'articles', 'icon' => 'articles'],
             ['title' => 'Mon compte',   'url' => 'account',  'icon' => 'account'],
-            // ⚠️ logout en GET n’est pas idéal : passer en POST + CSRF dans une itération suivante.
             ['title' => 'Déconnexion',  'url' => '../logout', 'icon' => 'logout'],
         ];
 
-        // Exemple minimal de filtrage DRY :
         if (!$isAdmin) {
             $links = array_values(array_filter($links, fn($l) => $l['url'] !== 'users'));
         }
@@ -54,7 +52,7 @@ final class DashboardController extends RenderController
 
     private function currentUser(): array
     {
-        // TODO itération B: injecter CurrentUserInterface plutôt que statique
+        // TODO: itération B: injecter CurrentUserInterface plutôt que statique
         return Authenticator::getUser() ?? [];
     }
 
@@ -149,6 +147,9 @@ final class DashboardController extends RenderController
         $this->home();
     }
 }
+
+// NOTE: ANCIENNE CLASS
+
     //
     // declare(strict_types=1);
     //
