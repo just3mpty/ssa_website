@@ -110,6 +110,21 @@ class UserRepository extends BaseRepository
         return (bool)$stmt->fetchColumn();
     }
 
+
+    public function getPasswordHashById(int $id): ?string
+    {
+        $row = $this->queryOne("SELECT password_hash FROM {$this->table} WHERE {$this->primaryKey} = :id", [
+            'id' => $id,
+        ]);
+        return $row['password_hash'] ?? null;
+    }
+
+    public function updatePasswordHash(int $id, string $newHash): bool
+    {
+        // délègue au update() générique du BaseRepository
+        return $this->update($id, ['password_hash' => $newHash]);
+    }
+
     /**
      * Hydrate un objet UserDTO à partir d’un tableau associatif de données SQL.
      *
