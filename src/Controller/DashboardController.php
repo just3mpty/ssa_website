@@ -11,6 +11,7 @@ use App\Lang\TranslationLoader;
 use CapsuleLib\Service\UserService;
 use CapsuleLib\Service\PasswordService;
 use App\Service\ArticleService;
+use App\Navigation\SidebarLinksProvider;
 
 final class DashboardController extends RenderController
 {
@@ -18,11 +19,11 @@ final class DashboardController extends RenderController
         private readonly UserService $userService,
         private readonly ArticleService $articleService,
         private readonly PasswordService $passwords,
+        private readonly SidebarLinksProvider $linksProvider,
     ) {}
 
     /** Cache par requête */
     private ?array $strings = null;
-    private ?array $links   = null;
 
     /** ---- DRY helpers ---- */
     private function strings(): array
@@ -31,26 +32,6 @@ final class DashboardController extends RenderController
     }
 
     // TODO: Idéalement, injecter un UrlGenerator et une ACL pour filtrer par rôle.
-    private function links(bool $isAdmin): array
-    {
-        if ($this->links !== null) {
-            return $this->links;
-        }
-
-        $links = [
-            ['title' => 'Accueil',      'url' => 'home',     'icon' => 'home'],
-            ['title' => 'Utilisateurs', 'url' => 'users',    'icon' => 'users'],
-            ['title' => 'Mes articles', 'url' => 'articles', 'icon' => 'articles'],
-            ['title' => 'Mon compte',   'url' => 'account',  'icon' => 'account'],
-            ['title' => 'Déconnexion',  'url' => '/logout',  'icon' => 'logout'],
-        ];
-
-        if (!$isAdmin) {
-            $links = array_values(array_filter($links, fn($l) => $l['url'] !== 'users'));
-        }
-
-        return $this->links = $links;
-    }
 
     private function currentUser(): array
     {
@@ -61,6 +42,11 @@ final class DashboardController extends RenderController
     private function isAdmin(array $user): bool
     {
         return ($user['role'] ?? null) === 'admin';
+    }
+
+    private function links(bool $isAdmin): array
+    {
+        return $this->linksProvider->get($isAdmin);
     }
 
     /** Base payload commun au layout Dashboard */
@@ -179,6 +165,7 @@ final class DashboardController extends RenderController
 
     public function users(): void
     {
+
         AuthMiddleware::requireRole('admin');
         $users = $this->userService->getAllUsers();
         echo $this->renderView('dashboard/home.php', [

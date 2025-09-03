@@ -9,26 +9,24 @@ use CapsuleLib\Http\Middleware\AuthMiddleware;
 use CapsuleLib\Security\CsrfTokenManager;
 use App\Lang\TranslationLoader;
 use App\Service\ArticleService;
+use App\Navigation\SidebarLinksProvider;
 
 final class ArticlesAdminController extends RenderController
 {
-    public function __construct(private ArticleService $articles) {}
+    public function __construct(
+        private readonly ArticleService $articles,
+        private readonly SidebarLinksProvider $linksProvider
+    ) {}
+
 
     private function str(): array
     {
         return TranslationLoader::load(defaultLang: 'fr');
     }
 
-    /** TODO: factoriser dans un LinkProvider commun au dashboard */
-    private function links(): array
+    private function links(bool $isAdmin): array
     {
-        return [
-            ['title' => 'Accueil',      'url' => '/dashboard/home',     'icon' => 'home'],
-            ['title' => 'Utilisateurs', 'url' => '/dashboard/users',    'icon' => 'users'],
-            ['title' => 'Mes articles', 'url' => '/dashboard/articles', 'icon' => 'articles'],
-            ['title' => 'Mon compte',   'url' => '/dashboard/account',  'icon' => 'account'],
-            ['title' => 'Déconnexion',  'url' => '/logout',             'icon' => 'logout'],
-        ];
+        return $this->linksProvider->get($isAdmin);
     }
 
     private function renderDash(string $title, string $component, array $vars = []): void
@@ -39,7 +37,8 @@ final class ArticlesAdminController extends RenderController
             'title'            => $title,
             'isDashboard'      => true,
             'isAdmin'          => true,
-            'links'            => $this->links(),
+            'user'             => $_SESSION['admin'] ?? [],
+            'links'            => $this->links(true),
             'dashboardContent' => $this->renderComponent($component, $vars + ['str' => $this->str()]),
             'str'              => $this->str(),
         ]);
