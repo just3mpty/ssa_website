@@ -1,32 +1,83 @@
-DC = docker compose
+# --- Config par défaut (surchargable: `make up DC="docker compose -p myproj"`)
+DC ?= docker compose
+PHP ?= $(DC) exec -T web php
+COMPOSER ?= $(DC) exec -T web composer
 
-# --- Commandes principales ---
-up:
+.PHONY: up down restart build pull logs ps \
+        setup setup-dev install vendor-clean \
+        phpstan test cs-fix cs-check \
+        pma pma-stop open-pma open-web open-doc \
+        db-purge bash-db bash-web init
+
+# ---------- Infra ----------
+up:        ## Démarre l'infra (idempotent)
 	$(DC) up -d
 
-down:
+down:      ## Stoppe l'infra
 	$(DC) down
 
-logs:
+restart:   ## Redémarre l'infra
+	$(DC) down
+	$(DC) up -d
+
+build:     ## (Re)build les images
+	$(DC) build
+
+pull:      ## Pull les images
+	$(DC) pull
+
+logs:      ## Logs suivis
 	$(DC) logs -f
 
-db-purge:
+ps:        ## Etat des conteneurs
+	$(DC) ps
+
+db-purge:  ## Stop + purge volumes (ATTENTION: destructive)
 	$(DC) down -v
 
-phpstan:
-	@echo "Phpstan analyse"
+bash-db:
+	$(DC) exec db bash
+
+bash-web:
+	$(DC) exec web bash
+
+# ---------- Bootstrap projet (one-shot) ----------
+init:      ## One-shot: installe les outils dev et prépare le projet
+	# Installe les outils DEV (une seule fois au démarrage d'un poste)
+	composer require --dev phpstan/phpstan phpunit/phpunit friendsofphp/php-cs-fixer
+	@echo "✔ Tools added to composer.json (dev). Next runs will use 'install' only."
+
+setup:     ## Installe les deps à partir du lock (reproductible)
+	composer install --no-interaction --prefer-dist --optimize-autoloader
+
+# Variante inside container (si Composer/PHP sont dans le conteneur 'web')
+setup-dev: ## Installe deps dev dans le conteneur
+	$(COMPOSER) install --no-interaction --prefer-dist
+
+vendor-clean: ## Réinstalle vendor proprement (host)
+	rm -rf vendor composer.lock
+	composer install
+
+# ---------- Qualité / Tests ----------
+phpstan:   ## Analyse statique
 	vendor/bin/phpstan analyse lib src --level=6
 
-restart: down up
+test:      ## Tests unitaires
+	vendor/bin/phpunit --testdox
 
-# --- Lancer seulement phpMyAdmin (avec dépendances) ---
+cs-fix:    ## Formatage code
+	vendor/bin/php-cs-fixer fix lib src
+
+cs-check:  ## Check format (dry-run)
+	vendor/bin/php-cs-fixer fix lib src --dry-run --diff
+
+# ---------- Outils pratiques ----------
 pma:
 	$(DC) up -d pma
 
 pma-stop:
 	$(DC) stop pma
 
-# --- Accès rapides ---
 open-pma:
 	xdg-open http://localhost:8081
 
@@ -35,13 +86,3 @@ open-web:
 
 open-doc:
 	xdg-open doc.md
-
-# --- (Facultatif) Bash dans les containers ---
-bash-db:
-	$(DC) exec db bash
-
-bash-web:
-	$(DC) exec web bash
-
-
-.PHONY: up down logs db-purge restart pma pma-stop open-pma open-web open-doc bash-db bash-web
