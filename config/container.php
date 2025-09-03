@@ -1,22 +1,24 @@
 <?php
-// config/container.php
+
 declare(strict_types=1);
 
 use CapsuleLib\Core\DIContainer;
 use CapsuleLib\Database\MariaDBConnection;
+use CapsuleLib\Repository\UserRepository;
+use CapsuleLib\Service\UserService;
+use CapsuleLib\Core\LoginController;
 
 use App\Repository\ArticleRepository;
 use App\Service\ArticleService;
+use App\Navigation\SidebarLinksProvider;
 use App\Controller\HomeController;
 use App\Controller\DashboardController;
 use App\Controller\ArticleController;
 use App\Controller\ArticlesAdminController;
 
-use CapsuleLib\Repository\UserRepository;
-use CapsuleLib\Service\UserService;
-use CapsuleLib\Core\LoginController;
 
-// (Optionnel) Interfaces lib → impls src si tu en as
+//HACK : (Optionnel) Interfaces lib → impls src 
+
 // use CapsuleLib\Security\AuthenticatorInterface;
 // use App\Security\SessionAuthenticator;
 
@@ -36,22 +38,29 @@ return (function (): DIContainer {
     $container->set(ArticleService::class, fn($container) => new ArticleService($container->get(ArticleRepository::class)));
     $container->set(UserService::class,    fn($container) => new UserService($container->get(UserRepository::class)));
     $container->set('passwords',           fn($container) => new \CapsuleLib\Service\PasswordService(
-        $container->get(UserRepository::class), // ou un adapter si tu as créé une interface PasswordStore
+        $container->get(UserRepository::class),
         $LENGTH_PASSWORD,
         []
     ));
 
+    // --- Navigation ---
+    $container->set(SidebarLinksProvider::class, fn($c) => new SidebarLinksProvider());
+
     // --- Controllers ---
     $container->set(HomeController::class,        fn($container) => new HomeController($container->get(ArticleService::class)));
-    $container->set(ArticleController::class,     fn($container) => new ArticleController($container->get(ArticleService::class)));
     $container->set(LoginController::class,       fn($container) => new LoginController($container->get('pdo')));
     $container->set(DashboardController::class,   fn($container) => new DashboardController(
         $container->get(UserService::class),
         $container->get(ArticleService::class),
         $container->get('passwords'),
+        $container->get(SidebarLinksProvider::class),
     ));
-    $container->set(ArticlesAdminController::class, fn($container) => new ArticlesAdminController($container->get(ArticleService::class)));
+    $container->set(ArticlesAdminController::class, fn($container) => new ArticlesAdminController(
+        $container->get(ArticleService::class),
+        $container->get(SidebarLinksProvider::class),
+    ));
 
+    // NOTE: 
     // (Optionnel) Binders d’interfaces → impls projet
     // $container->set(AuthenticatorInterface::class, fn($container) => new SessionAuthenticator(...));
 

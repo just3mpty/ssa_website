@@ -1,5 +1,5 @@
 <?php
-// config/routes.php
+
 declare(strict_types=1);
 
 use App\Controller\HomeController;
@@ -17,7 +17,6 @@ use CapsuleLib\Core\DIContainer;
 return static function (DIContainer $c): array {
     $hc = $c->get(HomeController::class);
     $dc = $c->get(DashboardController::class);
-    $ac = $c->get(ArticleController::class);
     $aa = $c->get(ArticlesAdminController::class);
     $lc = $c->get(\CapsuleLib\Core\LoginController::class);
 
@@ -41,10 +40,7 @@ return static function (DIContainer $c): array {
         ['POST', '/dashboard/users/create',     [$dc, 'usersCreate']],
         ['POST', '/dashboard/users/delete',     [$dc, 'usersDelete']],
 
-        // Articles public
-        ['GET',  '/articles',                   [$ac, 'listArticles']],
-
-        // Dashboard articles (admin) — ATTENTION: évite le doublon /dashboard/articles
+        // Dashboard articles (admin) —  WARN: doublon /dashboard/articles
         ['GET',  '/dashboard/articles',               [$aa, 'index']],
         ['GET',  '/dashboard/articles/create',        [$aa, 'createForm']],
         ['POST', '/dashboard/articles/create',        [$aa, 'createSubmit']],
