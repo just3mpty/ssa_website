@@ -4,6 +4,7 @@
 # Composer caches (pas nécessaires au repo)
 composer.phar
 .phpunit.result.cache
+.phpunit.cache
 composer.lock  # <- Garde-le SI (et seulement si) tu décides de ne pas versionner le lock.
                # Reco: pour l'appli, supprime cette ligne et commit le lock.
 

@@ -13,6 +13,10 @@ logs:
 db-purge:
 	$(DC) down -v
 
+phpstan:
+	@echo "Phpstan analyse"
+	vendor/bin/phpstan analyse lib src --level=6
+
 restart: down up
 
 # --- Lancer seulement phpMyAdmin (avec dépendances) ---
