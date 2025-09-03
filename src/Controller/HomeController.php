@@ -18,20 +18,13 @@ use CapsuleLib\Core\RenderController;
  */
 class HomeController extends RenderController
 {
-    /**
-     * Service pour accéder aux événements.
-     */
-    private ArticleService $articleService;
 
     /**
      * Constructeur.
      *
      * @param ArticleService $articleService Service d'accès aux événements.
      */
-    public function __construct(ArticleService $articleService)
-    {
-        $this->articleService = $articleService;
-    }
+    public function __construct(private ArticleService $articleService) {}
 
     /**
      * Prépare un tableau associatif de chaînes traduites pour layout et contenu.
