@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use CapsuleLib\Core\RenderController;
-use CapsuleLib\Security\Authenticator;
 use CapsuleLib\Http\Middleware\AuthMiddleware;
 use App\Lang\TranslationLoader;
 use CapsuleLib\Service\UserService;
 use CapsuleLib\Service\PasswordService;
 use App\Service\ArticleService;
 use App\Navigation\SidebarLinksProvider;
+use CapsuleLib\Security\CurrentUserProvider;
 
 final class DashboardController extends RenderController
 {
@@ -36,7 +36,7 @@ final class DashboardController extends RenderController
     private function currentUser(): array
     {
         // TODO: itération B: injecter CurrentUserInterface plutôt que statique
-        return Authenticator::getUser() ?? [];
+        return CurrentUserProvider::getUser() ?? [];
     }
 
     private function isAdmin(array $user): bool
