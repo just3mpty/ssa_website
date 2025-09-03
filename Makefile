@@ -5,7 +5,7 @@ COMPOSER ?= $(DC) exec -T web composer
 
 .PHONY: up down restart build pull logs ps \
         setup setup-dev install vendor-clean \
-        phpstan test cs-fix cs-check \
+        phpstan test \
         pma pma-stop open-pma open-web open-doc \
         db-purge bash-db bash-web init
 
@@ -44,7 +44,7 @@ bash-web:
 # ---------- Bootstrap projet (one-shot) ----------
 init:      ## One-shot: installe les outils dev et prépare le projet
 	# Installe les outils DEV (une seule fois au démarrage d'un poste)
-	composer require --dev phpstan/phpstan phpunit/phpunit friendsofphp/php-cs-fixer
+	composer require --dev phpstan/phpstan phpunit/phpunit 
 	@echo "✔ Tools added to composer.json (dev). Next runs will use 'install' only."
 
 setup:     ## Installe les deps à partir du lock (reproductible)
@@ -64,12 +64,6 @@ phpstan:   ## Analyse statique
 
 test:      ## Tests unitaires
 	vendor/bin/phpunit --testdox
-
-cs-fix:    ## Formatage code
-	vendor/bin/php-cs-fixer fix lib src
-
-cs-check:  ## Check format (dry-run)
-	vendor/bin/php-cs-fixer fix lib src --dry-run --diff
 
 # ---------- Outils pratiques ----------
 pma:

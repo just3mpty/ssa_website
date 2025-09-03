@@ -21,9 +21,6 @@
     "scripts": {
         "dump": "composer dump-autoload -o",
         "stan": "vendor/bin/phpstan analyse -c phpstan.neon",
-        "cs": "PHP_CS_FIXER_IGNORE_ENV=1 vendor/bin/php-cs-fixer fix --dry-run --diff",
-        "cs:fix": "PHP_CS_FIXER_IGNORE_ENV=1 vendor/bin/php-cs-fixer fix",
-        "test": "vendor/bin/phpunit --testdox",
         "qa": [
             "@dump",
             "@cs",
