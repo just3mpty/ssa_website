@@ -1,0 +1,55 @@
+<?php
+// config/routes.php
+declare(strict_types=1);
+
+use App\Controller\HomeController;
+use App\Controller\DashboardController;
+use App\Controller\ArticleController;
+use App\Controller\ArticlesAdminController;
+use CapsuleLib\Core\DIContainer;
+
+/**
+ * Retourne un tableau de routes [METHOD, PATH, HANDLER].
+ * On injecte le container pour construire les handlers.
+ *
+ * @return array<int, array{0:string,1:string,2:array{0:object,1:string}}>
+ */
+return static function (DIContainer $c): array {
+    $hc = $c->get(HomeController::class);
+    $dc = $c->get(DashboardController::class);
+    $ac = $c->get(ArticleController::class);
+    $aa = $c->get(ArticlesAdminController::class);
+    $lc = $c->get(\CapsuleLib\Core\LoginController::class);
+
+    return [
+        // Public
+        ['GET',  '/',        [$hc, 'home']],
+        ['GET',  '/projet',  [$hc, 'projet']],
+        ['GET',  '/galerie', [$hc, 'galerie']],
+        ['GET',  '/wiki',    [$hc, 'wiki']],
+
+        // Auth
+        ['GET',  '/login',  [$lc, 'loginForm']],
+        ['POST', '/login',  [$lc, 'loginSubmit']],
+        ['GET',  '/logout', [$lc, 'logout']],
+
+        // Dashboard (profil, users)
+        ['GET',  '/dashboard/home',             [$dc, 'home']],
+        ['GET',  '/dashboard/account',          [$dc, 'account']],
+        ['POST', '/dashboard/account/password', [$dc, 'accountPassword']],
+        ['GET',  '/dashboard/users',            [$dc, 'users']],
+        ['POST', '/dashboard/users/create',     [$dc, 'usersCreate']],
+        ['POST', '/dashboard/users/delete',     [$dc, 'usersDelete']],
+
+        // Articles public
+        ['GET',  '/articles',                   [$ac, 'listArticles']],
+
+        // Dashboard articles (admin) — ATTENTION: évite le doublon /dashboard/articles
+        ['GET',  '/dashboard/articles',               [$aa, 'index']],
+        ['GET',  '/dashboard/articles/create',        [$aa, 'createForm']],
+        ['POST', '/dashboard/articles/create',        [$aa, 'createSubmit']],
+        ['GET',  '/dashboard/articles/edit/{id}',     [$aa, 'editForm']],
+        ['POST', '/dashboard/articles/edit/{id}',     [$aa, 'editSubmit']],
+        ['POST', '/dashboard/articles/delete/{id}',   [$aa, 'deleteSubmit']],
+    ];
+};

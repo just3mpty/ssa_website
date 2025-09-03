@@ -2,29 +2,41 @@
 
 declare(strict_types=1);
 
-use CapsuleLib\Http\SecureHeaders;
-
+// --- Autoload (temporaire). Idéalement: require dirname(__DIR__).'/vendor/autoload.php';
 require dirname(__DIR__) . '/lib/Autoload.php';
 
+use CapsuleLib\Http\SecureHeaders;
+
+// Sécurité session
 ini_set('session.cookie_httponly', '1');
-//ini_set('session.cookie_secure', '1'); // uniquement si tu es en HTTPS
+//ini_set('session.cookie_secure', '1'); // active en HTTPS
 ini_set('session.cookie_samesite', 'Strict');
-// Affiche les erreurs en dev
+
+// Affichage erreurs (dev)
 ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
-
 error_reporting(E_ALL);
 
-// Démarre la session dès le début
+// Session
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-// 1. Sécurité HTTP
-SecureHeaders::send();
+// En-têtes sécurisés (si ta classe existe)
+if (class_exists(SecureHeaders::class)) {
+    SecureHeaders::send();
+}
 
-// Charge bootstrap (instancie tout et retourne $router prêt)
-$router = require dirname(__DIR__) . '/src/bootstrap.php';
+// Bootstrap (ATTENTION au chemin !)
+$bootstrapPath = dirname(__DIR__) . '/bootstrap/app.php';
+if (!is_file($bootstrapPath)) {
+    http_response_code(500);
+    echo "Bootstrap introuvable: {$bootstrapPath}";
+    exit;
+}
 
-// Lance le dispatch (analyse la requête et appelle le contrôleur)
+/** @var \CapsuleLib\Routing\Router $router */
+$router = require $bootstrapPath;
+
+// Dispatch
 $router->dispatch();
