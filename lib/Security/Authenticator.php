@@ -74,37 +74,4 @@ class Authenticator
 
         session_destroy();
     }
-
-    /**
-     * Indique si un utilisateur est authentifié (session active).
-     *
-     * @return bool True si utilisateur connecté, false sinon.
-     */
-    public static function isAuthenticated(): bool
-    {
-        return isset($_SESSION['admin']);
-    }
-
-    /**
-     * Force la vérification d'authentification et redirige vers /login si non connecté.
-     *
-     * @return void
-     */
-    public static function requireAuth(): void
-    {
-        if (!self::isAuthenticated()) {
-            header('Location: /login');
-            exit;
-        }
-    }
-
-    /**
-     * Retourne les données utilisateur de la session, ou null si non connecté.
-     *
-     * @return array<string, mixed>|null Tableau associatif des infos utilisateur ou null.
-     */
-    public static function getUser(): ?array
-    {
-        return $_SESSION['admin'] ?? null;
-    }
 }

@@ -30,7 +30,7 @@
                 </form>
             </li>
 
-            <?php if (\CapsuleLib\Security\Authenticator::isAuthenticated()): ?>
+            <?php if (\CapsuleLib\Security\CurrentUserProvider::isAuthenticated()): ?>
                 <li><a class="icons" href="/dashboard/home">
                         <img src="/assets/icons/dashboard.svg" alt="Dashboard icon">
                     </a></li>
