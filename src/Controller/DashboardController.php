@@ -35,7 +35,6 @@ final class DashboardController extends RenderController
 
     private function currentUser(): array
     {
-        // TODO: itération B: injecter CurrentUserInterface plutôt que statique
         return CurrentUserProvider::getUser() ?? [];
     }
 

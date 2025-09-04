@@ -12,14 +12,20 @@ use CapsuleLib\Repository\UserRepository;
  */
 final class PasswordService
 {
+    /**
+     * @param array<string,mixed> $hashOptions Options passées à password_hash/password_needs_rehash (ex: ['cost' => 12])
+     */
     public function __construct(
         private UserRepository $users,
         private int $minLength = 8,
-        /** @var array<string,mixed> $hashOptions */
-        private array $hashOptions = []      // ex: ['cost' => 12] pour bcrypt
+        private array $hashOptions = []
     ) {}
 
-    /** Validation métier du nouveau mdp. Retourne la liste d'erreurs (vide = OK). */
+    /**
+     * Validation métier du nouveau mdp.
+     *
+     * @return string[] Liste d’erreurs (vide = OK)
+     */
     public function validate(string $new, ?string $old = null): array
     {
         $e = [];
@@ -51,7 +57,8 @@ final class PasswordService
 
     /**
      * Orchestration : vérifie l'ancien, valide le nouveau, met à jour le hash.
-     * Retourne [ok(bool), errors(array<string>)]. Pas d’exception pour un old invalide.
+     *
+     * @return array{0: bool, 1: string[]} Tuple [ok, errors]
      */
     public function changePassword(int $userId, string $old, string $new): array
     {

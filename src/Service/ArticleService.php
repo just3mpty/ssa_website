@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Repository\ArticleRepository;
+use App\Dto\ArticleDTO;
 
 /**
  * Service de gestion métier des événements.
@@ -16,11 +17,6 @@ class ArticleService
 {
     private ArticleRepository $articleRepository;
 
-    /**
-     * Constructeur.
-     *
-     * @param ArticleRepository $articleRepository Instance du repository d’événements.
-     */
     public function __construct(ArticleRepository $articleRepository)
     {
         $this->articleRepository = $articleRepository;
@@ -29,42 +25,48 @@ class ArticleService
     /**
      * Récupère tous les événements à venir.
      *
-     * @return array[] Liste d’événements (DTO ou tableau associatif).
+     * @return array<ArticleDTO> Liste d’articles à venir sous forme de DTO.
      */
     public function getUpcoming(): array
     {
-        return $this->articleRepository->upcoming();
+        // Si ton repository retourne déjà des DTO, laisse tel quel.
+        // Sinon, hydrate comme dans getAll().
+        /** @var array<ArticleDTO> $rows */
+        $rows = $this->articleRepository->upcoming();
+        return $rows;
     }
 
     /**
      * Récupère un événement par son ID.
      *
      * @param int $id Identifiant de l’événement.
-     * @return array|null Données de l’événement ou null si non trouvé.
+     * @return array<string,mixed>|null Données de l’événement (row) ou null si non trouvé.
      */
     public function find(int $id): ?array
     {
         if ($id <= 0) {
             throw new \InvalidArgumentException('ID doit être positif');
         }
-        return $this->articleRepository->find($id);
+        /** @var array<string,mixed>|null $row */
+        $row = $this->articleRepository->find($id);
+        return $row;
     }
 
     /**
      * Crée un nouvel événement à partir des données du formulaire et de l’utilisateur.
      *
-     * Effectue la sanitation et la validation des données.
-     *
-     * @param array $input Données brutes issues du formulaire.
-     * @param array $user  Données utilisateur, doit contenir au minimum un identifiant.
-     * @return array Tableau contenant 'errors' (tableau associatif champ => message) si erreurs, sinon vide.
+     * @param array<string,mixed> $input Données brutes issues du formulaire.
+     * @param array<string,mixed> $user  Données utilisateur (doit contenir au moins 'id').
+     * @return array{errors?: array<string,string>, data?: array{
+     *     titre:string, resume:string, description:string, date_article:string, hours:string, lieu:string
+     * }}
      */
     public function create(array $input, array $user): array
     {
         $data   = $this->sanitize($input);
         $errors = $this->validate($data);
 
-        if (!empty($errors)) {
+        if ($errors !== []) {
             return ['errors' => $errors, 'data' => $data];
         }
 
@@ -72,40 +74,39 @@ class ArticleService
             ...$data,
             'author_id'  => $user['id'] ?? null,
         ]);
-        return [];
+
+        return []; // pas d’erreurs
     }
 
     /**
      * Met à jour un événement existant.
      *
-     * Effectue la sanitation et la validation des données.
-     *
      * @param int $id Identifiant de l’événement à mettre à jour.
-     * @param array $input Données mises à jour issues du formulaire.
-     * @return array Tableau contenant 'errors' si erreurs, sinon vide.
+     * @param array<string,mixed> $input Données mises à jour issues du formulaire.
+     * @return array{errors?: array<string,string>, data?: array{
+     *     titre:string, resume:string, description:string, date_article:string, hours:string, lieu:string
+     * }}
      */
     public function update(int $id, array $input): array
     {
         $data   = $this->sanitize($input);
         $errors = $this->validate($data);
 
-        if (!empty($errors)) {
+        if ($errors !== []) {
             return ['errors' => $errors, 'data' => $data];
         }
 
         $this->articleRepository->update($id, [
             ...$data,
-            // Remplacement du 'T' ISO par espace si présent (convention date SQL)
-            'date_article' => str_replace('T', ' ', $data['date_article']),
+            // si besoin (selon ton format SQL)
+            'date_article' => \str_replace('T', ' ', $data['date_article']),
         ]);
-        return [];
+
+        return []; // pas d’erreurs
     }
 
     /**
      * Supprime un événement par son ID.
-     *
-     * @param int $id Identifiant de l’événement à supprimer.
-     * @return void
      */
     public function delete(int $id): void
     {
@@ -115,74 +116,99 @@ class ArticleService
     /**
      * Récupère tous les événements/articles (admin/dashboard).
      *
-     * @return ArticleDTO[]
+     * @return array<ArticleDTO>
      */
     public function getAll(): array
     {
+        /** @var array<array<string,mixed>> $rows */
         $rows = $this->articleRepository->all();
-        return array_map(function ($row) {
-            // On hydrate comme dans ArticleRepository
-            return new \App\Dto\ArticleDTO(
-                id: (int)$row['id'],
-                titre: $row['titre'],
-                resume: $row['resume'],
-                description: $row['description'] ?? null,
-                date_article: $row['date_article'],
-                hours: $row['hours'],
-                lieu: $row['lieu'] ?? null,
-                image: $row['image'] ?? null,
-                created_at: $row['created_at'],
-                author_id: (int)$row['author_id'],
-                author: $row['author']
-            );
-        }, $rows);
+
+        return array_map(
+            /**
+             * @param array<string,mixed> $row
+             */
+            static function (array $row): ArticleDTO {
+                return new ArticleDTO(
+                    id: (int)$row['id'],
+                    titre: (string)$row['titre'],
+                    resume: (string)$row['resume'],
+                    description: isset($row['description']) ? (string)$row['description'] : null,
+                    date_article: (string)$row['date_article'],
+                    hours: (string)$row['hours'],
+                    lieu: isset($row['lieu']) ? (string)$row['lieu'] : null,
+                    image: isset($row['image']) ? (string)$row['image'] : null,
+                    created_at: (string)$row['created_at'],
+                    author_id: (int)$row['author_id'],
+                    author: $row['author'] ?? null
+                );
+            },
+            $rows
+        );
     }
 
     /**
      * Nettoie et prépare les données brutes du formulaire.
      *
-     * Trim et strip_tags sauf pour la description qui conserve son contenu.
-     *
-     * @param array $input Données brutes.
-     * @return array Données nettoyées.
+     * @param array<string,mixed> $input
+     * @return array{
+     *   titre:string,
+     *   resume:string,
+     *   description:string,
+     *   date_article:string,
+     *   hours:string,
+     *   lieu:string
+     * }
      */
     private function sanitize(array $input): array
     {
         $fields = ['titre', 'description', 'date_article', 'hours', 'lieu', 'resume'];
-        $clean = [];
+        $clean = [
+            'titre'        => '',
+            'resume'       => '',
+            'description'  => '',
+            'date_article' => '',
+            'hours'        => '',
+            'lieu'         => '',
+        ];
+
         foreach ($fields as $field) {
-            $value = trim($input[$field] ?? '');
-            $clean[$field] = $field === 'description'
-                ? $value
-                : strip_tags($value);
+            $value = \trim((string)($input[$field] ?? ''));
+            $clean[$field] = ($field === 'description') ? $value : \strip_tags($value);
         }
+
+        /** @var array{
+         *   titre:string, resume:string, description:string, date_article:string, hours:string, lieu:string
+         * } $clean */
         return $clean;
     }
 
     /**
      * Valide les données nettoyées.
      *
-     * Vérifie la présence obligatoire des champs et le format date/heure.
-     *
-     * @param array $data Données nettoyées.s
-     * @return array Tableau associatif champ => message d’erreur, vide si valide.
+     * @param array{
+     *   titre:string, resume:string, description:string, date_article:string, hours:string, lieu:string
+     * } $data
+     * @return array<string,string> Tableau associatif champ => message d’erreur, vide si valide.
      */
     private function validate(array $data): array
     {
         $errors = [];
-        foreach (['titre', 'description', 'date_article', 'hours', 'lieu'] as $field) {
+
+        foreach (['titre', 'resume', 'description', 'date_article', 'hours', 'lieu'] as $field) {
             if ($data[$field] === '') {
                 $errors[$field] = 'Ce champ est obligatoire.';
             }
         }
-        // Format date attendu : YYYY-MM-DD
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $data['date_article'])) {
-            $errors['date_article'] = "Format date invalide (attendu : AAAA-MM-JJ)";
+
+        // YYYY-MM-DD
+        if ($data['date_article'] !== '' && !\preg_match('/^\d{4}-\d{2}-\d{2}$/', $data['date_article'])) {
+            $errors['date_article'] = "Format date invalide (attendu : AAAA-MM-JJ)";
         }
-        // Format heure attendu : HH:MM ou HH:MM:SS
-        if (!preg_match('/^\d{2}:\d{2}(:\d{2})?$/', $data['hours'])) {
-            $errors['hours'] = "Format heure invalide (attendu : HH:MM ou HH:MM:SS)";
+        // HH:MM ou HH:MM:SS
+        if ($data['hours'] !== '' && !\preg_match('/^\d{2}:\d{2}(:\d{2})?$/', $data['hours'])) {
+            $errors['hours'] = "Format heure invalide (attendu : HH:MM ou HH:MM:SS)";
         }
+
         return $errors;
     }
 }
