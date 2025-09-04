@@ -167,6 +167,12 @@ final class DashboardController extends RenderController
 
         AuthMiddleware::requireRole('admin');
         $users = $this->userService->getAllUsers();
+
+        $flash  = $_SESSION['flash']  ?? null;
+        unset($_SESSION['flash']);
+        $errors = $_SESSION['errors'] ?? null;
+        unset($_SESSION['errors']);
+
         echo $this->renderView('dashboard/home.php', [
             'title' => 'Utilisateurs',
             'isDashboard' => true,
@@ -174,6 +180,8 @@ final class DashboardController extends RenderController
             'isAdmin' => true,
             'dashboardContent' => $this->renderComponent('dash_users.php', [
                 'users' => $users,
+                'flash' => $flash,
+                'errors' => $errors,
                 'str' => $this->strings(),
                 'createAction' => '/dashboard/users/create',
                 'deleteAction' => '/dashboard/users/delete',
@@ -186,7 +194,7 @@ final class DashboardController extends RenderController
     {
         AuthMiddleware::requireRole('admin');
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
-            header('Location: /dashboard/users', true, 303);
+            header('Location: /dashboard/users/create', true, 303);
             return;
         }
         $username = filter_input(INPUT_POST, 'username');
@@ -207,7 +215,7 @@ final class DashboardController extends RenderController
     {
         AuthMiddleware::requireRole('admin');
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
-            header('Location: /dashboard/users', true, 303);
+            header('Location: /dashboard/users/delete', true, 303);
             return;
         }
         $ids = array_map('intval', $_POST['user_ids'] ?? []);

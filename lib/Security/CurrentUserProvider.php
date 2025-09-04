@@ -6,7 +6,11 @@ namespace CapsuleLib\Security;
 
 final class CurrentUserProvider
 {
-    /** @return array<string,mixed> */
+    /**
+     * Retourne l'utilisateur courant depuis la session.
+     *
+     * @return array{ id?: int, username?: string, role?: string }|null
+     */
     public static function getUser(): ?array
     {
         return $_SESSION['admin'] ?? null;
@@ -17,6 +21,11 @@ final class CurrentUserProvider
         return isset($_SESSION['admin']);
     }
 
+    /**
+     * Vérifie si l'utilisateur courant a le rôle admin.
+     *
+     * @param array{id?: int, username?: string, role?: string} $user
+     */
     public static function isAdmin(array $user): bool
     {
         return ($user['role'] ?? null) === 'admin';
@@ -24,8 +33,6 @@ final class CurrentUserProvider
 
     /**
      * Force la vérification d'authentification et redirige vers /login si non connecté.
-     *
-     * @return void
      */
     public static function requireAuth(): void
     {

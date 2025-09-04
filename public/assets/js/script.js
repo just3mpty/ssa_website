@@ -6,6 +6,11 @@ const changePassword = document.getElementById("submit-update-password");
 const checkboxes = document.querySelectorAll(".user-checkbox");
 const deleteBtn = document.querySelector(".deleteUser");
 const createUser = document.getElementById("createUserBtn");
+const overlay = document.getElementById("image-overlay");
+const overlayImg = document.getElementById("overlay-img");
+const closeBtn = document.getElementById("close-overlay");
+const prevBtn = document.getElementById("prev-img");
+const nextBtn = document.getElementById("next-img");
 
 // MASQUER LE HEADER AU SCROLL
 let lastScroll = window.scrollY;
@@ -48,75 +53,67 @@ if (hamburger && navbar) {
         hamburger.classList.toggle("open");
     });
 }
-// OUVERTURE DE L'OVERLAY IMAGES
-const overlay = document.getElementById("image-overlay");
-const overlayImg = document.getElementById("overlay-img");
-const closeBtn = document.getElementById("close-overlay");
-const prevBtn = document.getElementById("prev-img");
-const nextBtn = document.getElementById("next-img");
+const galleryImages = document.querySelectorAll(".gallery-grid img");
+const totalImages = galleryImages.length;
 
-const galleryImages = Array.from(
-    document.querySelectorAll(".gallery-grid img")
-);
 let currentImgIndex = -1;
 
-function showOverlay(index) {
-    currentImgIndex = index;
+function updateOverlayImage(index) {
+    if (totalImages === 0) return;
+    currentImgIndex = (index + totalImages) % totalImages;
     overlayImg.src = galleryImages[currentImgIndex].src;
+    overlayImg.alt =
+        galleryImages[currentImgIndex].alt || "Image de la galerie"; // accessibilité
+}
+
+function showOverlay(index) {
+    updateOverlayImage(index);
     overlay.classList.add("active");
+    overlay.setAttribute("aria-hidden", "false");
     overlay.focus();
 }
 
+function closeOverlay() {
+    overlay.classList.remove("active");
+    overlay.setAttribute("aria-hidden", "true");
+    overlayImg.src = "";
+    overlayImg.alt = "";
+    currentImgIndex = -1;
+}
+
 function showPrev() {
-    if (galleryImages.length === 0) return;
-    currentImgIndex =
-        (currentImgIndex - 1 + galleryImages.length) % galleryImages.length;
-    overlayImg.src = galleryImages[currentImgIndex].src;
+    updateOverlayImage(currentImgIndex - 1);
 }
-
 function showNext() {
-    if (galleryImages.length === 0) return;
-    currentImgIndex = (currentImgIndex + 1) % galleryImages.length;
-    overlayImg.src = galleryImages[currentImgIndex].src;
+    updateOverlayImage(currentImgIndex + 1);
 }
 
-if (prevBtn && nextBtn) {
-    prevBtn.addEventListener("click", showPrev);
-    nextBtn.addEventListener("click", showNext);
-}
+prevBtn?.addEventListener("click", showPrev);
+nextBtn?.addEventListener("click", showNext);
 
-galleryImages.forEach((img, idx) => {
-    img.addEventListener("click", () => {
-        showOverlay(idx);
-    });
+galleryImages.forEach((img, idx) =>
+    img.addEventListener("click", () => showOverlay(idx))
+);
+
+overlay?.addEventListener("click", (e) => {
+    if (e.target === overlay || e.target === closeBtn) closeOverlay();
 });
 
-if (overlay && closeBtn) {
-    overlay.addEventListener("click", (e) => {
-        if (e.target === overlay || e.target === closeBtn) {
-            overlay.classList.remove("active");
-            overlayImg.src = "";
-            currentImgIndex = -1;
-        }
-    });
+overlay?.addEventListener("keydown", (e) => {
+    if (!overlay.classList.contains("active")) return;
 
-    overlay.addEventListener("keydown", (e) => {
-        if (!overlay.classList.contains("active")) return;
-        if (e.key === "ArrowRight") {
-            currentImgIndex = (currentImgIndex + 1) % galleryImages.length;
-            overlayImg.src = galleryImages[currentImgIndex].src;
-        } else if (e.key === "ArrowLeft") {
-            currentImgIndex =
-                (currentImgIndex - 1 + galleryImages.length) %
-                galleryImages.length;
-            overlayImg.src = galleryImages[currentImgIndex].src;
-        } else if (e.key === "Escape") {
-            overlay.classList.remove("active");
-            overlayImg.src = "";
-            currentImgIndex = -1;
-        }
-    });
-}
+    switch (e.key) {
+        case "ArrowRight":
+            showNext();
+            break;
+        case "ArrowLeft":
+            showPrev();
+            break;
+        case "Escape":
+            closeOverlay();
+            break;
+    }
+});
 
 // TELECHARGEMENT DE FICHIER
 const handleDownload = () => {
@@ -241,21 +238,3 @@ document.querySelectorAll(".edit-btn").forEach((button) => {
         }
     });
 });
-
-// UPDATE PASSWORD
-/*
-if (changePassword) {
-    changePassword.addEventListener("click", () => {
-        const newPassword = prompt("Entrez votre nouveau mot de passe :");
-        if (newPassword) {
-            alert("Mot de passe mis à jour avec succès !");
-            // Ici, vous pouvez ajouter la logique pour mettre à jour le mot de passe côté serveur
-            updatePassword($user['id'], newPassword);
-        } else {
-            alert("Mot de passe non modifié.");
-        }
-    });
-}
-if (changePassword) {
-    console.log($user['id']);
-};*/
