@@ -8,78 +8,53 @@ use App\Lang\TranslationLoader;
 use App\Service\ArticleService;
 use CapsuleLib\Core\RenderController;
 
-/**
- * Contrôleur principal pour les pages publiques du site.
- *
- * Gère l’affichage des vues et la récupération des données nécessaires.
- * Intègre la gestion des traductions via TranslationLoader.
- *
- * @package App\Controller
- */
-class HomeController extends RenderController
+final class HomeController extends RenderController
 {
+    private ?array $strings = null;
 
-    /**
-     * Constructeur.
-     *
-     * @param ArticleService $articleService Service d'accès aux événements.
-     */
     public function __construct(private ArticleService $articleService) {}
 
-    /**
-     * Prépare un tableau associatif de chaînes traduites pour layout et contenu.
-     *
-     * Charge les traductions dynamiquement selon la page actuelle.
-     *
-     * @return array<string, string> Tableau clé → chaîne traduite.
-     */
-    private function getStrings(): array
+    /* ---------- Helpers ---------- */
+
+    private function strings(): array
     {
-        return TranslationLoader::load(defaultLang: 'fr');
+        return $this->strings ??= TranslationLoader::load(defaultLang: 'fr');
     }
 
     /**
-     * Affiche la page d’accueil avec les événements à venir et les traductions.
-     *
-     * @return void
+     * Base payload commun aux pages publiques.
+     * @param array $extra Variables spécifiques à la vue
+     * @param bool  $withArticles Injecte les articles à venir si true
      */
+    private function base(array $extra = [], bool $withArticles = true): array
+    {
+        $base = [
+            'showHeader' => true,
+            'showFooter' => true,
+            'str'        => $this->strings(),
+        ];
+
+        if ($withArticles) {
+            $base['articles'] = $this->articleService->getUpcoming();
+        }
+
+        return array_replace($base, $extra);
+    }
+
+    /* ---------- Pages ---------- */
+
     public function home(): void
     {
-        echo $this->renderView('pages/home.php', [
-            'str'    => $this->getStrings(),
-            'showHeader' => true,
-            'showFooter' => true,
-            'articles' => $this->articleService->getUpcoming(),
-        ]);
+        echo $this->renderView('pages/home.php', $this->base());
     }
 
-    /**
-     * Affiche la page "Projet".
-     *
-     * @return void
-     */
     public function projet(): void
     {
-        echo $this->renderView('pages/projet.php', [
-            'str'    => $this->getStrings(),
-            'showHeader' => true,
-            'showFooter' => true,
-            'articles' => $this->articleService->getUpcoming(),
-        ]);
+        echo $this->renderView('pages/projet.php', $this->base());
     }
 
-    /**
-     * Affiche la page "Galerie".
-     *
-     * @return void
-     */
     public function galerie(): void
     {
-        echo $this->renderView('pages/galerie.php', [
-            'showHeader' => true,
-            'showFooter' => true,
-            'str'    => $this->getStrings(),
-            'articles' => $this->articleService->getUpcoming(),
-        ]);
+        echo $this->renderView('pages/galerie.php', $this->base());
     }
 }
