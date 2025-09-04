@@ -55,14 +55,15 @@ function secure_js(?string $str): string
 {
     return Html::escapeJs($str);
 }
+
 /**
  * Échappe récursivement un tableau associatif ou un objet (DTO).
  *
  * Chaque valeur (string) sera sécurisée via `Html::escape()`.
  * Utile pour sécuriser les données en bloc avant affichage.
  *
- * @param array|object $data Données brutes (array ou DTO).
- * @return array Données échappées (tableau associatif propre).
+ * @param array<string,mixed>|object $data Données brutes (array assoc ou DTO).
+ * @return array<string,mixed> Données échappées (tableau associatif propre).
  */
 function secure_data(array|object $data): array
 {
