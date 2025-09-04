@@ -58,7 +58,7 @@ class ArticleService
      * @param array<string,mixed> $input Données brutes issues du formulaire.
      * @param array<string,mixed> $user  Données utilisateur (doit contenir au moins 'id').
      * @return array{errors?: array<string,string>, data?: array{
-     *     titre:string, resume:string, description:string, date_event:string, hours:string, lieu:string
+     *     titre:string, resume:string, description:string, date_article:string, hours:string, lieu:string
      * }}
      */
     public function create(array $input, array $user): array
@@ -84,7 +84,7 @@ class ArticleService
      * @param int $id Identifiant de l’événement à mettre à jour.
      * @param array<string,mixed> $input Données mises à jour issues du formulaire.
      * @return array{errors?: array<string,string>, data?: array{
-     *     titre:string, resume:string, description:string, date_event:string, hours:string, lieu:string
+     *     titre:string, resume:string, description:string, date_article:string, hours:string, lieu:string
      * }}
      */
     public function update(int $id, array $input): array
@@ -99,7 +99,7 @@ class ArticleService
         $this->articleRepository->update($id, [
             ...$data,
             // si besoin (selon ton format SQL)
-            'date_event' => \str_replace('T', ' ', $data['date_event']),
+            'date_article' => \str_replace('T', ' ', $data['date_article']),
         ]);
 
         return []; // pas d’erreurs
@@ -133,7 +133,7 @@ class ArticleService
                     titre: (string)$row['titre'],
                     resume: (string)$row['resume'],
                     description: isset($row['description']) ? (string)$row['description'] : null,
-                    date_event: (string)$row['date_event'],
+                    date_article: (string)$row['date_article'],
                     hours: (string)$row['hours'],
                     lieu: isset($row['lieu']) ? (string)$row['lieu'] : null,
                     image: isset($row['image']) ? (string)$row['image'] : null,
@@ -154,19 +154,19 @@ class ArticleService
      *   titre:string,
      *   resume:string,
      *   description:string,
-     *   date_event:string,
+     *   date_article:string,
      *   hours:string,
      *   lieu:string
      * }
      */
     private function sanitize(array $input): array
     {
-        $fields = ['titre', 'description', 'date_event', 'hours', 'lieu', 'resume'];
+        $fields = ['titre', 'description', 'date_article', 'hours', 'lieu', 'resume'];
         $clean = [
             'titre'        => '',
             'resume'       => '',
             'description'  => '',
-            'date_event' => '',
+            'date_article' => '',
             'hours'        => '',
             'lieu'         => '',
         ];
@@ -177,7 +177,7 @@ class ArticleService
         }
 
         /** @var array{
-         *   titre:string, resume:string, description:string, date_event:string, hours:string, lieu:string
+         *   titre:string, resume:string, description:string, date_article:string, hours:string, lieu:string
          * } $clean */
         return $clean;
     }
@@ -186,7 +186,7 @@ class ArticleService
      * Valide les données nettoyées.
      *
      * @param array{
-     *   titre:string, resume:string, description:string, date_event:string, hours:string, lieu:string
+     *   titre:string, resume:string, description:string, date_article:string, hours:string, lieu:string
      * } $data
      * @return array<string,string> Tableau associatif champ => message d’erreur, vide si valide.
      */
@@ -194,15 +194,15 @@ class ArticleService
     {
         $errors = [];
 
-        foreach (['titre', 'resume', 'description', 'date_event', 'hours', 'lieu'] as $field) {
+        foreach (['titre', 'resume', 'description', 'date_article', 'hours', 'lieu'] as $field) {
             if ($data[$field] === '') {
                 $errors[$field] = 'Ce champ est obligatoire.';
             }
         }
 
         // YYYY-MM-DD
-        if ($data['date_event'] !== '' && !\preg_match('/^\d{4}-\d{2}-\d{2}$/', $data['date_event'])) {
-            $errors['date_event'] = "Format date invalide (attendu : AAAA-MM-JJ)";
+        if ($data['date_article'] !== '' && !\preg_match('/^\d{4}-\d{2}-\d{2}$/', $data['date_article'])) {
+            $errors['date_article'] = "Format date invalide (attendu : AAAA-MM-JJ)";
         }
         // HH:MM ou HH:MM:SS
         if ($data['hours'] !== '' && !\preg_match('/^\d{2}:\d{2}(:\d{2})?$/', $data['hours'])) {
