@@ -12,9 +12,8 @@ use App\Repository\ArticleRepository;
 use App\Service\ArticleService;
 use App\Navigation\SidebarLinksProvider;
 use App\Controller\HomeController;
+use App\Controller\ArticlesController;
 use App\Controller\DashboardController;
-use App\Controller\ArticleController;
-use App\Controller\ArticlesAdminController;
 
 
 //HACK : (Optionnel) Interfaces lib → impls src 
@@ -44,10 +43,10 @@ return (function (): DIContainer {
     ));
 
     // --- Navigation ---
-    $container->set(SidebarLinksProvider::class, fn($c) => new SidebarLinksProvider());
+    $container->set(SidebarLinksProvider::class, fn($container) => new SidebarLinksProvider());
 
     // --- Controllers ---
-    $container->set(HomeController::class,        fn($container) => new HomeController($container->get(ArticleService::class)));
+    $container->set(HomeController::class,      fn($container) => new HomeController($container->get(ArticleService::class)));
     $container->set(LoginController::class,       fn($container) => new LoginController($container->get('pdo')));
     $container->set(DashboardController::class,   fn($container) => new DashboardController(
         $container->get(UserService::class),
@@ -55,7 +54,7 @@ return (function (): DIContainer {
         $container->get('passwords'),
         $container->get(SidebarLinksProvider::class),
     ));
-    $container->set(ArticlesAdminController::class, fn($container) => new ArticlesAdminController(
+    $container->set(ArticlesController::class, fn($container) => new ArticlesController(
         $container->get(ArticleService::class),
         $container->get(SidebarLinksProvider::class),
     ));

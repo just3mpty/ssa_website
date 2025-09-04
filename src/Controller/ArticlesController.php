@@ -11,7 +11,7 @@ use App\Lang\TranslationLoader;
 use App\Service\ArticleService;
 use App\Navigation\SidebarLinksProvider;
 
-final class ArticlesAdminController extends RenderController
+final class ArticlesController extends RenderController
 {
     public function __construct(
         private readonly ArticleService $articles,
