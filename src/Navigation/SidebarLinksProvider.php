@@ -21,7 +21,7 @@ final class SidebarLinksProvider
     {
 
         $links = [
-            ['title' => 'Accueil', 'url' => '/dashboard/home', 'icon' => 'home'],
+            ['title' => 'Accueil', 'url' => '/', 'icon' => 'home'],
             ['title' => 'Utilisateurs', 'url' => '/dashboard/users', 'icon' => 'users'],
             ['title' => 'Mes articles', 'url' => '/dashboard/articles', 'icon' => 'articles'],
             ['title' => 'Mon compte', 'url' => '/dashboard/account', 'icon' => 'account'],
