@@ -1216,53 +1216,47 @@ body {
             flex-direction: column;
             gap: 30px;
 
-
             /* style du formulaire */
             & #update-password-form {
                 width: fit-content;
                 height: fit-content;
                 display: flex;
                 flex-direction: column;
-                align-items: left;
-                justify-content: left;
                 gap: 10px;
-                
-
+                padding: 15px;
+                border: 1px solid var(--blue);
+                border-radius: 8px;
 
                 & form {
-                    background: var(--background);
-                    border-radius: 8px;
-                    transition: border-color 0.3s;
-                    outline: none;
-
-                    &:focus {
-                        border: 1px solid var(--orange);
-                    }
-                }
-
-                & #old_password, & #new_password, & #confirm_new_password, & label {
                     display: flex;
                     flex-direction: column;
-                    gap: 15px;
-                }
+                    gap: 10px;
+                    background: var(--background);
 
-                span {
-                    margin-top: 10px;
-                }
+                    h2 {
+                        color: var(--blue);
+                    }
 
-                input {
-                    width: 250px;
-                }
+                    & input,
+                    & select {
+                        background: var(--background);
+                        padding: 10px;
+                        border: 1px solid var(--grey);
+                        border-radius: 8px;
+                        transition: border-color 0.3s;
+                        outline: none;
 
-                button {
-                    margin-top: 20px;
+                        &:focus {
+                            border: 1px solid var(--orange);
+                        }
+                    }
                 }
-
             }
         }
 
         & .users,
-        & .articles, & .account {
+        & .articles,
+        & .account {
             flex: 2;
             height: 100%;
             display: flex;

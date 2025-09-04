@@ -23,7 +23,7 @@ $action   = $e($accountPasswordAction ?? '/dashboard/account/password');
             <thead>
                 <tr>
                     <th class='username'><?= $e($str['account.username'] ?? 'Utilisateur') ?></th>
-                    <th class='<?= htmlspecialchars($user->role) ?>'><?= $e($str['account.role'] ?? 'Rôle') ?></th>
+                    <th>Rôle</th>
                     <th class='email'><?= $e($str['account.email'] ?? 'Email') ?></th>
                     <th>Gérer</th>
 
@@ -32,12 +32,14 @@ $action   = $e($accountPasswordAction ?? '/dashboard/account/password');
             <tbody>
                 <tr>
                     <td class="username"><?= $username ?></td>
-                    <td class="role"><p><?=$e($str['account.role'] ?? 'Rôle') ?></p></td>
+                    <td class='<?= htmlspecialchars($user['role']) ?>'>
+                        <p><?= $role ?></p>
+                    </td>
                     <td class="email"><?= $email ?></td>
                     <td><button class="edit-btn" type="button">Gérer</button></td>
                 </tr>
             </tbody>
-            
+
         </table>
     </div>
 
@@ -97,7 +99,7 @@ $action   = $e($accountPasswordAction ?? '/dashboard/account/password');
                 required
                 autocomplete="new-password"
                 minlength="8">
-            
+
             <button type="submit" id="submit-update-password">
                 <?= $e($str['account.update_password_cta'] ?? 'Mettre à jour') ?>
             </button>
