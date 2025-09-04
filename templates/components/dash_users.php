@@ -1,3 +1,7 @@
+<?php
+$e = static fn($v) => htmlspecialchars((string)($v ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+?>
+
 <section class="users">
     <h1>Gestion des utilisateurs</h1>
 
@@ -5,8 +9,12 @@
         <button id="createUserBtn">Créer</button>
     </div>
 
+    <?php if (!empty($flash)): ?>
+        <p class="notice notice--success" style="color: #43c466;"><?= $e($flash) ?></p>
+    <?php endif; ?>
+
     <div class="wrapper">
-        <form id="usersTableForm" method="POST" action="/dashboard/users">
+        <form id="usersTableForm" method="POST" action="/dashboard/users/delete">
             <input type="hidden" name="action" value="delete">
             <table class="table table-striped">
                 <thead>
@@ -23,7 +31,6 @@
                     <?php foreach ($users as $user): ?>
                         <tr>
                             <td>
-                                <!-- On transmet un tableau user_ids[] pour pouvoir supprimer plusieurs utilisateurs -->
                                 <input class="user-checkbox" type="checkbox" name="user_ids[]" value="<?php echo htmlspecialchars($user->id); ?>">
                             </td>
                             <td class="username"><?php echo htmlspecialchars($user->username); ?></td>
@@ -37,13 +44,12 @@
                     <?php endforeach; ?>
                 </tbody>
             </table>
-            <!-- Bouton de suppression lié au tableau -->
             <button class="deleteUser" type="submit" disabled>Supprimer la sélection</button>
         </form>
     </div>
 
     <div class="popup hidden">
-        <form method="POST" action="/dashboard/users">
+        <form method="POST" action="/dashboard/users/create">
             <h2>Créer un utilisateur</h2>
             <input type="hidden" name="action" value="create">
 

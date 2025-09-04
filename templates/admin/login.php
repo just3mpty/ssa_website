@@ -5,13 +5,15 @@
 
 <h1><?= secure_html($title ?? $str['login_title']) ?></h1>
 
-<?php if (!empty($error)): ?>
-    <p style="color:red"><?= secure_html($error) ?></p>
-<?php endif; ?>
+
 
 <section class="login">
     <form method="POST">
         <?= \CapsuleLib\Security\CsrfTokenManager::insertInput(); ?>
+
+        <?php if (!empty($error)): ?>
+            <p style="color:red"><?= secure_html($error) ?></p>
+        <?php endif; ?>
 
         <label for="username"><?= secure_html($str['login_username']) ?></label>
         <input id="username" name="username" required />
