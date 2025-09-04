@@ -8,7 +8,7 @@ use App\Lang\TranslationLoader;
 use App\Navigation\SidebarLinksProvider;
 use App\Service\ArticleService;
 use CapsuleLib\Core\RenderController;
-use CapsuleLib\Http\Middleware\AuthMiddleware;
+use CapsuleLib\Middleware\AuthMiddleware;
 use CapsuleLib\Http\RequestUtils;
 use CapsuleLib\Http\FlashBag;
 use CapsuleLib\Security\CsrfTokenManager;

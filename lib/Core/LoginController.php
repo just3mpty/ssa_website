@@ -7,7 +7,6 @@ namespace CapsuleLib\Core;
 use CapsuleLib\Core\RenderController;
 use CapsuleLib\Security\Authenticator;
 use CapsuleLib\Security\CsrfTokenManager;
-use CapsuleLib\Http\Middleware\AuthMiddleware;
 use App\Lang\TranslationLoader;
 use PDO;
 

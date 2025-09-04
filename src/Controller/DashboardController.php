@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use CapsuleLib\Core\RenderController;
-use CapsuleLib\Http\Middleware\AuthMiddleware;
+use CapsuleLib\Middleware\AuthMiddleware;
 use App\Lang\TranslationLoader;
 use CapsuleLib\Service\UserService;
 use CapsuleLib\Service\PasswordService;

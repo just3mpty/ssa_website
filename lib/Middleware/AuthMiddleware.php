@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CapsuleLib\Http\Middleware;
+namespace CapsuleLib\Middleware;
 
 use CapsuleLib\Security\CurrentUserProvider;
 
