@@ -1204,89 +1204,48 @@ body {
             display: flex;
             flex-direction: column;
             gap: 30px;
-            padding: 30px;
-            
 
-            .account__identity th:first-child {
-            border-top-left-radius: 15px;
-            }
 
-            .account__identity th:last-child {
-            border-top-right-radius: 15px;
-            }
-
-            .account__identity tr:last-child td:first-child {
-            border-bottom-left-radius: 15px;
-            }
-
-            .account__identity tr:last-child td:last-child {
-            border-bottom-right-radius: 15px;
-            }
-
-            
-            & .account__identity {
-                display: flex;
-                flex-direction: column;
-                border-spacing: 0;
-                gap: 30px;
-                border-radius: 15px;
-                height: fit-content;
-                border-collapse: separate;
-                overflow: hidden;
-
-                & th {
-                    background: var(--blue);
-                    color: var(--background);
-                    padding: 15px;
-                    text-align: left;
-                }
-
-                & td {
-                    padding: 15px;
-                    background: #b8b8b850;
-
-                    & p {
-                        background: #fdb54425;
-                        padding: 5px 15px;
-                        text-align: center;
-                        border-radius: 60px;
-                        color: var(--orange);
-                    }
-
-                    &.admin p {
-                        background: #43c46625;
-                        color: var(--green);
-                    }
-                }
-
-            }
-
+            /* style du formulaire */
             & #update-password-form {
+                width: fit-content;
+                height: fit-content;
                 display: flex;
                 flex-direction: column;
-                gap: 15px;
-                border-radius: 15px;
+                align-items: left;
+                justify-content: left;
+                gap: 10px;
+                
+
 
                 & form {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 15px;
-                    width: fit-content;
-                
-                    & button {
-                        display: row;
-                        width: fit-content;
-                        margin: 0 auto;
+                    background: var(--background);
+                    border-radius: 8px;
+                    transition: border-color 0.3s;
+                    outline: none;
+
+                    &:focus {
+                        border: 1px solid var(--orange);
                     }
                 }
 
-                & #old_password, & #new_password, & #confirm_new_password {
+                & #old_password, & #new_password, & #confirm_new_password, & label {
                     display: flex;
                     flex-direction: column;
                     gap: 15px;
                 }
 
-                
+                span {
+                    margin-top: 10px;
+                }
+
+                input {
+                    width: 250px;
+                }
+
+                button {
+                    margin-top: 20px;
+                }
 
             }
 
@@ -1294,7 +1253,7 @@ body {
         }
 
         & .users,
-        & .articles {
+        & .articles, & .account {
             flex: 2;
             height: 100%;
             display: flex;

@@ -16,21 +16,30 @@ $action   = $e($accountPasswordAction ?? '/dashboard/account/password');
 ?>
 
 <section class="account">
-    <h2><?= $e($str['account.title'] ?? 'Mon compte') ?></h2>
+    <h1><?= $e($str['account.title'] ?? 'Mon compte') ?></h1>
 
-    <table class="account__identity">
-        <tr>
-            <th><?= $e($str['account.username'] ?? 'Utilisateur') ?></th>
-            <th><?= $e($str['account.role'] ?? 'Rôle') ?></th>
-            <th><?= $e($str['account.email'] ?? 'Email') ?></th>
-        </tr>
-        <tr>
-            <td><?= $username ?></td>
-            <td><?= $role ?></td>
-            <td><?= $email ?></td>
-        </tr>
-        
-    </table>
+    <div class="wrapper">
+        <table class="table account__identity">
+            <thead>
+                <tr>
+                    <th class='username'><?= $e($str['account.username'] ?? 'Utilisateur') ?></th>
+                    <th class='<?= htmlspecialchars($user->role) ?>'><?= $e($str['account.role'] ?? 'Rôle') ?></th>
+                    <th class='email'><?= $e($str['account.email'] ?? 'Email') ?></th>
+                    <th>Gérer</th>
+
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="username"><?= $username ?></td>
+                    <td class="role"><p><?=$e($str['account.role'] ?? 'Rôle') ?></p></td>
+                    <td class="email"><?= $email ?></td>
+                    <td><button class="edit-btn" type="button">Gérer</button></td>
+                </tr>
+            </tbody>
+            
+        </table>
+    </div>
 
 
     <?php if (!empty($flash)): ?>
@@ -46,7 +55,7 @@ $action   = $e($accountPasswordAction ?? '/dashboard/account/password');
     <?php endif; ?>
 
     <div id="update-password-form">
-        <h1><?= $e($str['account.change_password'] ?? 'Changer de mot de passe') ?></h1>
+        <h4><?= $e($str['account.change_password'] ?? 'Changer de mot de passe') ?></h4>
         <form method="post" action="<?= $action ?>" autocomplete="off" novalidate>
             <?php if (!empty($csrfToken)): ?>
                 <input type="hidden" name="_csrf" value="<?= $e($csrfToken) ?>">
