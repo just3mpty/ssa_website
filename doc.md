@@ -57,7 +57,7 @@ On gère les traductions avec une classe statique `Translate` et un loader dynam
 ## 4. DTO & données
 
 * Les données métier sont passées en **DTOs** immutables (ex: `ArticleDTO`), avec des propriétés typées
-* Dans les vues, tu peux accéder aux propriétés comme `$article->titre`, `$article->date_article` etc.
+* Dans les vues, tu peux accéder aux propriétés comme `$article->titre`, `$article->date_event` etc.
 * Pour les tableaux simples, pareil : utiliser les helpers d’échappement
 
 ---

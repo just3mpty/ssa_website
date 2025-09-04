@@ -36,11 +36,11 @@ $join = static fn(string $base, string|int $id) => rtrim($base, '/') . '/' . raw
                         <?php
                         // Date tolérante
                         $dateStr = '';
-                        if (!empty($article->date_article)) {
+                        if (!empty($article->date_event)) {
                             try {
-                                $dateStr = (new DateTime($article->date_article))->format('d/m/Y');
+                                $dateStr = (new DateTime($article->date_event))->format('d/m/Y');
                             } catch (\Throwable) {
-                                $dateStr = (string)$article->date_article;
+                                $dateStr = (string)$article->date_event;
                             }
                         }
                         $editUrl   = $join($editBaseUrl, $article->id);
