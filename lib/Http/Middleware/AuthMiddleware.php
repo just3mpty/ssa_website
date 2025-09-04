@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CapsuleLib\Http\Middleware;
 
-use CapsuleLib\Security\Authenticator;
+use CapsuleLib\Security\CurrentUserProvider;
 
 /**
  * Middleware d’authentification.
@@ -32,7 +32,7 @@ class AuthMiddleware
             session_start();
         }
 
-        if (!Authenticator::isAuthenticated()) {
+        if (!CurrentUserProvider::isAuthenticated()) {
             header('Location: /login');
             exit;
         }
@@ -52,7 +52,7 @@ class AuthMiddleware
             session_start();
         }
 
-        $user = Authenticator::getUser();
+        $user = CurrentUserProvider::getUser();
 
         if (!$user || ($user['role'] ?? null) !== $role) {
             header('Location: /login');

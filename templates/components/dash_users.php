@@ -26,13 +26,13 @@
                                 <!-- On transmet un tableau user_ids[] pour pouvoir supprimer plusieurs utilisateurs -->
                                 <input class="user-checkbox" type="checkbox" name="user_ids[]" value="<?php echo htmlspecialchars($user->id); ?>">
                             </td>
-                            <td><?php echo htmlspecialchars($user->username); ?></td>
-                            <td><?php echo htmlspecialchars($user->email); ?></td>
-                            <td class="<?= htmlspecialchars($user->role) ?>">
+                            <td class="username"><?php echo htmlspecialchars($user->username); ?></td>
+                            <td class="email"><?php echo htmlspecialchars($user->email); ?></td>
+                            <td class="<?= htmlspecialchars($user->role) ?> role">
                                 <p><?php echo htmlspecialchars($user->role); ?></p>
                             </td>
                             <td><?php echo htmlspecialchars((new DateTime($user->created_at))->format('d/m/Y')) ?></td>
-                            <td><button type="button">Gérer</button></td>
+                            <td><button class="edit-btn" type="button">Gérer</button></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

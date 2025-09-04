@@ -5,146 +5,155 @@ declare(strict_types=1);
 namespace CapsuleLib\Repository;
 
 use PDO;
+use Stringable;
 
 /**
- * BaseRepository ultra-générique pour opérations CRUD minimales sur une table.
+ * BaseRepository générique (CRUD minimal).
  *
- * Cette classe abstraite fournit une implémentation basique pour :
- * - Trouver un enregistrement par clé primaire
- * - Récupérer tous les enregistrements
- * - Exécuter des requêtes préparées (retour unique ou multiples lignes)
- * - Insérer, mettre à jour et supprimer un enregistrement
- *
- * Elle est conçue pour être étendue par des classes métier spécifiques (ex : EventRepository).
- * Elle ne contient aucune logique métier, elle est indépendante du domaine applicatif.
- *
- * Compatible avec PDO (MySQL, SQLite, etc.).
+ * @psalm-type SqlRow = array<string,mixed>
  */
 abstract class BaseRepository
 {
-    /**
-     * @var PDO Instance PDO pour la connexion à la base.
-     */
     protected PDO $pdo;
-
-    /**
-     * @var string Nom de la table dans la base de données.
-     *             Doit être défini dans la classe enfant.
-     */
     protected string $table;
-
-    /**
-     * @var string Nom de la clé primaire de la table.
-     *             Doit être défini dans la classe enfant (exemple : "id").
-     */
     protected string $primaryKey;
 
-    /**
-     * Constructeur.
-     *
-     * @param PDO $pdo Instance PDO connectée à la base.
-     */
     public function __construct(PDO $pdo)
     {
+        // On standardise le fetch mode pour tout le repo.
+        $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
         $this->pdo = $pdo;
     }
 
     /**
      * Trouve un enregistrement par son identifiant (clé primaire).
      *
-     * @param mixed $id Valeur de la clé primaire à rechercher.
-     * @return array|null Tableau associatif de la ligne trouvée ou null si non trouvé.
+     * @param int|string $id
+     * @return array<string,mixed>|null
      */
-    public function find($id): ?array
+    public function find(int|string $id): ?array
     {
         $stmt = $this->pdo->prepare("SELECT * FROM {$this->table} WHERE {$this->primaryKey} = :id");
         $stmt->execute(['id' => $id]);
+        /** @var array<string,mixed>|false $row */
         $row = $stmt->fetch();
         return $row === false ? null : $row;
     }
 
     /**
-     * Récupère tous les enregistrements de la table.
+     * Récupère tous les enregistrements.
      *
-     * @return array Liste de tableaux associatifs représentant chaque ligne.
+     * @return array<int,array<string,mixed>>
      */
     public function all(): array
     {
         $stmt = $this->pdo->query("SELECT * FROM {$this->table}");
-        return $stmt->fetchAll();
+        /** @var array<int,array<string,mixed>> $rows */
+        $rows = $stmt->fetchAll(); // FETCH_ASSOC par défaut
+        return $rows;
     }
 
     /**
-     * Exécute une requête préparée retournant une seule ligne.
+     * Exécute une requête retournant une seule ligne.
      *
-     * @param string $sql    Requête SQL avec placeholders nommés.
-     * @param array  $params Paramètres à binder dans la requête.
-     * @return array|null Ligne retournée ou null si aucune.
+     * @param string $sql
+     * @param array<string,int|float|string|bool|null|Stringable> $params
+     * @return array<string,mixed>|null
      */
     protected function queryOne(string $sql, array $params = []): ?array
     {
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($params);
+        $stmt->execute(self::stringifyParams($params));
+        /** @var array<string,mixed>|false $row */
         $row = $stmt->fetch();
         return $row === false ? null : $row;
     }
 
     /**
-     * Exécute une requête préparée retournant plusieurs lignes.
+     * Exécute une requête retournant plusieurs lignes.
      *
-     * @param string $sql    Requête SQL avec placeholders nommés.
-     * @param array  $params Paramètres à binder dans la requête.
-     * @return array Liste des lignes retournées.
+     * @param string $sql
+     * @param array<string,int|float|string|bool|null|Stringable> $params
+     * @return array<int,array<string,mixed>>
      */
     protected function query(string $sql, array $params = []): array
     {
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($params);
-        return $stmt->fetchAll();
+        $stmt->execute(self::stringifyParams($params));
+        /** @var array<int,array<string,mixed>> $rows */
+        $rows = $stmt->fetchAll();
+        return $rows;
     }
 
     /**
-     * Insère un nouvel enregistrement dans la table.
+     * Insère un enregistrement.
      *
-     * @param array $data Tableau associatif colonne => valeur.
-     * @return int ID du nouvel enregistrement inséré.
+     * @param array<string,mixed> $data colonne => valeur
+     * @return int nouvel ID
      */
     public function insert(array $data): int
     {
         $cols = array_keys($data);
         $fields = implode(', ', $cols);
-        $placeholders = implode(', ', array_map(fn($c) => ':' . $c, $cols));
+        $placeholders = implode(', ', array_map(static fn($c) => ':' . $c, $cols));
+
         $sql = "INSERT INTO {$this->table} ($fields) VALUES ($placeholders)";
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($data);
-        return (int)$this->pdo->lastInsertId();
+        $stmt->execute(self::stringifyParams($data));
+
+        return (int) $this->pdo->lastInsertId();
     }
 
     /**
-     * Met à jour un enregistrement existant par son ID.
+     * Met à jour par ID.
      *
-     * @param mixed $id    Identifiant de l’enregistrement à modifier.
-     * @param array $data  Données à mettre à jour (colonne => valeur).
-     * @return bool True si succès, false sinon.
+     * @param int|string $id
+     * @param array<string,mixed> $data
+     * @return bool
      */
-    public function update($id, array $data): bool
+    public function update(int|string $id, array $data): bool
     {
-        $set = implode(', ', array_map(fn($c) => "$c = :$c", array_keys($data)));
-        $data[$this->primaryKey] = $id;
-        $sql = "UPDATE {$this->table} SET $set WHERE {$this->primaryKey} = :{$this->primaryKey}";
+        $set = implode(', ', array_map(static fn($c) => "$c = :$c", array_keys($data)));
+        $sql = "UPDATE {$this->table} SET $set WHERE {$this->primaryKey} = :__pk";
         $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute($data);
+
+        $params = self::stringifyParams($data + ['__pk' => $id]);
+        return $stmt->execute($params);
     }
 
     /**
-     * Supprime un enregistrement par son ID.
+     * Supprime par ID.
      *
-     * @param mixed $id Identifiant de l’enregistrement à supprimer.
-     * @return bool True si succès, false sinon.
+     * @param int|string $id
+     * @return bool
      */
-    public function delete($id): bool
+    public function delete(int|string $id): bool
     {
         $stmt = $this->pdo->prepare("DELETE FROM {$this->table} WHERE {$this->primaryKey} = :id");
         return $stmt->execute(['id' => $id]);
+    }
+
+    /**
+     * Normalise les valeurs scalaires/bool/Stringable en string si nécessaire.
+     * (PDO sait gérer, mais PHPStan est plus strict sur les types)
+     *
+     * @param array<string,int|float|string|bool|null|Stringable> $params
+     * @return array<string,int|float|string|null>
+     */
+    private static function stringifyParams(array $params): array
+    {
+        $out = [];
+        foreach ($params as $k => $v) {
+            if ($v instanceof Stringable) {
+                $out[$k] = (string) $v;
+            } elseif (is_bool($v)) {
+                // au besoin, on laisse PDO caster le bool en int
+                $out[$k] = $v ? 1 : 0;
+            } else {
+                /** @var int|float|string|null $v */
+                $out[$k] = $v;
+            }
+        }
+        return $out;
     }
 }

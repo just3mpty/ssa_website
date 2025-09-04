@@ -22,19 +22,19 @@
     <h2>Agenda</h2>
     <p><?= secure_html($str['agenda_intro']) ?></p>
 
-    <div class="events">
-        <?php if (empty($events)): ?>
-            <p class="no-events"><?= secure_html($str['no_upcoming_events']) ?></p>
+    <div class="articles">
+        <?php if (empty($articles)): ?>
+            <p class="no-articles"><?= secure_html($str['no_upcoming_articles']) ?></p>
         <?php else: ?>
-            <?php foreach ($events as $event): ?>
-                <article class="event">
+            <?php foreach ($articles as $article): ?>
+                <article class="article">
                     <div class="date-time">
-                        <p><?= secure_html($event->date_event) ?></p>
-                        <p><?= secure_html(substr($event->hours, 0, 5)) ?></p>
+                        <p><?= secure_html($article->date_event) ?></p>
+                        <p><?= secure_html(substr($article->hours, 0, 5)) ?></p>
                     </div>
                     <div class="description">
-                        <h3><?= secure_html($event->titre) ?></h3>
-                        <p><?= nl2br(secure_html($event->resume)) ?></p>
+                        <h3><?= secure_html($article->titre) ?></h3>
+                        <p><?= nl2br(secure_html($article->resume)) ?></p>
                     </div>
                     <button>
                         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
     created_at    DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
-CREATE TABLE IF NOT EXISTS events (
+CREATE TABLE IF NOT EXISTS articles (
     id          INT AUTO_INCREMENT PRIMARY KEY,
     titre       VARCHAR(255) NOT NULL,
     resume      TEXT NOT NULL,
@@ -38,7 +38,7 @@ VALUES ('admin', '$2y$12$DdRaR1i6wNQbPGxbmgeB9OvAnhSzFvN98/wIBdO3w0Qcqsu62BMEy',
 
 -- Exemples d'événements supplémentaires pour alimenter ta table
 
-INSERT INTO events (titre, resume, description, date_event, hours, lieu, image, author_id) VALUES
+INSERT INTO articles (titre, resume, description, date_event, hours, lieu, image, author_id) VALUES
 ('Conférence : Vers une agriculture bio locale', 
  'Regards croisés sur la production bio en Bretagne.', 
  'Un panel d’agriculteurs et d’experts partagera ses pratiques et répondra aux questions du public. Dégustation en fin de séance.', 

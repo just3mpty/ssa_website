@@ -19,7 +19,7 @@ namespace App\Dto;
  * @property string $created_at Date/heure de création de l'événement
  * @property int $author_id Identifiant de l'auteur/organisateur
  */
-class EventDTO
+class ArticleDTO
 {
     /**
      * @param int $id Identifiant unique de l'événement

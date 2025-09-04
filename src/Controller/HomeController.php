@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Lang\TranslationLoader;
-use App\Service\EventService;
+use App\Service\ArticleService;
 use CapsuleLib\Core\RenderController;
 
 /**
@@ -18,20 +18,13 @@ use CapsuleLib\Core\RenderController;
  */
 class HomeController extends RenderController
 {
-    /**
-     * Service pour accéder aux événements.
-     */
-    private EventService $eventService;
 
     /**
      * Constructeur.
      *
-     * @param EventService $eventService Service d'accès aux événements.
+     * @param ArticleService $articleService Service d'accès aux événements.
      */
-    public function __construct(EventService $eventService)
-    {
-        $this->eventService = $eventService;
-    }
+    public function __construct(private ArticleService $articleService) {}
 
     /**
      * Prépare un tableau associatif de chaînes traduites pour layout et contenu.
@@ -56,7 +49,7 @@ class HomeController extends RenderController
             'str'    => $this->getStrings(),
             'showHeader' => true,
             'showFooter' => true,
-            'events' => $this->eventService->getUpcoming(),
+            'articles' => $this->articleService->getUpcoming(),
         ]);
     }
 
@@ -71,7 +64,7 @@ class HomeController extends RenderController
             'str'    => $this->getStrings(),
             'showHeader' => true,
             'showFooter' => true,
-            'events' => $this->eventService->getUpcoming(),
+            'articles' => $this->articleService->getUpcoming(),
         ]);
     }
 
@@ -86,7 +79,7 @@ class HomeController extends RenderController
             'showHeader' => true,
             'showFooter' => true,
             'str'    => $this->getStrings(),
-            'events' => $this->eventService->getUpcoming(),
+            'articles' => $this->articleService->getUpcoming(),
         ]);
     }
 }

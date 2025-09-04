@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Controller;
+namespace CapsuleLib\Core;
 
 use CapsuleLib\Core\RenderController;
 use CapsuleLib\Security\Authenticator;
@@ -19,7 +19,7 @@ use PDO;
  *
  * Applique la vérification CSRF et la gestion des sessions.
  */
-class AdminController extends RenderController
+class LoginController extends RenderController
 {
     /**
      * Instance PDO pour les opérations liées à la base de données.

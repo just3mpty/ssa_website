@@ -5,24 +5,25 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use CapsuleLib\Core\RenderController;
-use CapsuleLib\Security\Authenticator;
 use CapsuleLib\Http\Middleware\AuthMiddleware;
 use App\Lang\TranslationLoader;
 use CapsuleLib\Service\UserService;
 use CapsuleLib\Service\PasswordService;
-use App\Service\EventService;
+use App\Service\ArticleService;
+use App\Navigation\SidebarLinksProvider;
+use CapsuleLib\Security\CurrentUserProvider;
 
 final class DashboardController extends RenderController
 {
     public function __construct(
         private readonly UserService $userService,
-        private readonly EventService $eventService,
+        private readonly ArticleService $articleService,
         private readonly PasswordService $passwords,
+        private readonly SidebarLinksProvider $linksProvider,
     ) {}
 
     /** Cache par requête */
     private ?array $strings = null;
-    private ?array $links   = null;
 
     /** ---- DRY helpers ---- */
     private function strings(): array
@@ -31,36 +32,20 @@ final class DashboardController extends RenderController
     }
 
     // TODO: Idéalement, injecter un UrlGenerator et une ACL pour filtrer par rôle.
-    private function links(bool $isAdmin): array
-    {
-        if ($this->links !== null) {
-            return $this->links;
-        }
-
-        $links = [
-            ['title' => 'Accueil',      'url' => 'home',     'icon' => 'home'],
-            ['title' => 'Utilisateurs', 'url' => 'users',    'icon' => 'users'],
-            ['title' => 'Mes articles', 'url' => 'articles', 'icon' => 'articles'],
-            ['title' => 'Mon compte',   'url' => 'account',  'icon' => 'account'],
-            ['title' => 'Déconnexion',  'url' => '/logout',  'icon' => 'logout'],
-        ];
-
-        if (!$isAdmin) {
-            $links = array_values(array_filter($links, fn($l) => $l['url'] !== 'users'));
-        }
-
-        return $this->links = $links;
-    }
 
     private function currentUser(): array
     {
-        // TODO: itération B: injecter CurrentUserInterface plutôt que statique
-        return Authenticator::getUser() ?? [];
+        return CurrentUserProvider::getUser() ?? [];
     }
 
     private function isAdmin(array $user): bool
     {
         return ($user['role'] ?? null) === 'admin';
+    }
+
+    private function links(bool $isAdmin): array
+    {
+        return $this->linksProvider->get($isAdmin);
     }
 
     /** Base payload commun au layout Dashboard */
@@ -179,6 +164,7 @@ final class DashboardController extends RenderController
 
     public function users(): void
     {
+
         AuthMiddleware::requireRole('admin');
         $users = $this->userService->getAllUsers();
         echo $this->renderView('dashboard/home.php', [
@@ -230,18 +216,6 @@ final class DashboardController extends RenderController
         }
         $_SESSION['flash'] = "Utilisateur(s) supprimé(s).";
         header('Location: /dashboard/users', true, 303);
-    }
-
-    public function articles(): void
-    {
-        $articles = $this->eventService->getAll();
-        foreach ($articles as &$article) {
-            $author = $this->userService->getUserById($article->author_id);
-            $article->author = $author->username ?? 'Inconnu';
-        }
-        $this->renderDashboard('Mes articles', 'dash_articles.php', [
-            'articles' => $articles,
-        ]);
     }
 
     public function index(): void

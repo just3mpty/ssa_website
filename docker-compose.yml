@@ -9,6 +9,9 @@ services:
       - ./src:/var/www/html/src:Z
       - ./lib:/var/www/html/lib:Z
       - ./templates:/var/www/html/templates:Z
+      - ./bootstrap:/var/www/html/bootstrap:Z
+      - ./config:/var/www/html/config:Z
+      # - ./vendor:/var/www/html/vendor:Z
     environment:
       - APACHE_RUN_USER=www-data
       - APACHE_RUN_GROUP=www-data

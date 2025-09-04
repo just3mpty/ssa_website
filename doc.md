@@ -13,8 +13,8 @@ On ne fait **pas** de moteur de template à proprement parler (pas Twig/Blade), 
 > **Exemple classique :**
 >
 > ```php
-> <h3><?= secure_html($event->titre) ?></h3>
-> <a href="<?= secure_url($event->url) ?>" title="<?= secure_attr($event->titre) ?>">Lien</a>
+> <h3><?= secure_html($article->titre) ?></h3>
+> <a href="<?= secure_url($article->url) ?>" title="<?= secure_attr($article->titre) ?>">Lien</a>
 > ```
 
 ---
@@ -56,8 +56,8 @@ On gère les traductions avec une classe statique `Translate` et un loader dynam
 
 ## 4. DTO & données
 
-* Les données métier sont passées en **DTOs** immutables (ex: `EventDTO`), avec des propriétés typées
-* Dans les vues, tu peux accéder aux propriétés comme `$event->titre`, `$event->date_event` etc.
+* Les données métier sont passées en **DTOs** immutables (ex: `ArticleDTO`), avec des propriétés typées
+* Dans les vues, tu peux accéder aux propriétés comme `$article->titre`, `$article->date_event` etc.
 * Pour les tableaux simples, pareil : utiliser les helpers d’échappement
 
 ---
@@ -93,10 +93,10 @@ Voici un aperçu des routes dispo et leurs méthodes (GET, POST) :
 | `/login`              | GET/POST | AdminController::loginForm / loginSubmit   | Authentification         |
 | `/dashboard`          | GET      | AdminController::dashboard                 | Tableau de bord admin    |
 | `/logout`             | GET      | AdminController::logout                    | Déconnexion              |
-| `/events`             | GET      | EventController::listEvents                | Liste des événements     |
-| `/events/create`      | GET/POST | EventController::createForm / createSubmit | Création d’événement     |
-| `/events/edit/{id}`   | GET/POST | EventController::editForm / editSubmit     | Modification d’événement |
-| `/events/delete/{id}` | POST     | EventController::deleteSubmit              | Suppression d’événement  |
+| `/articles`             | GET      | ArticleController::listArticles                | Liste des événements     |
+| `/articles/create`      | GET/POST | ArticleController::createForm / createSubmit | Création d’événement     |
+| `/articles/edit/{id}`   | GET/POST | ArticleController::editForm / editSubmit     | Modification d’événement |
+| `/articles/delete/{id}` | POST     | ArticleController::deleteSubmit              | Suppression d’événement  |
 
 ---
 
