@@ -16,18 +16,22 @@ $action   = $e($accountPasswordAction ?? '/dashboard/account/password');
 ?>
 
 <section class="account">
-    <h1><?= $e($str['account.title'] ?? 'Mon compte') ?></h1>
+    <h2><?= $e($str['account.title'] ?? 'Mon compte') ?></h2>
 
-    <dl class="account__identity">
-        <dt><?= $e($str['account.username'] ?? 'Utilisateur') ?></dt>
-        <dd><?= $username ?></dd>
+    <table class="account__identity">
+        <tr>
+            <th><?= $e($str['account.username'] ?? 'Utilisateur') ?></th>
+            <th><?= $e($str['account.role'] ?? 'Rôle') ?></th>
+            <th><?= $e($str['account.email'] ?? 'Email') ?></th>
+        </tr>
+        <tr>
+            <td><?= $username ?></td>
+            <td><?= $role ?></td>
+            <td><?= $email ?></td>
+        </tr>
+        
+    </table>
 
-        <dt><?= $e($str['account.role'] ?? 'Rôle') ?></dt>
-        <dd><?= $role ?></dd>
-
-        <dt><?= $e($str['account.email'] ?? 'Email') ?></dt>
-        <dd><?= $email ?></dd>
-    </dl>
 
     <?php if (!empty($flash)): ?>
         <p class="notice notice--success"><?= $e($flash) ?></p>
@@ -42,7 +46,7 @@ $action   = $e($accountPasswordAction ?? '/dashboard/account/password');
     <?php endif; ?>
 
     <div id="update-password-form">
-        <h2><?= $e($str['account.change_password'] ?? 'Changer de mot de passe') ?></h2>
+        <h1><?= $e($str['account.change_password'] ?? 'Changer de mot de passe') ?></h1>
         <form method="post" action="<?= $action ?>" autocomplete="off" novalidate>
             <?php if (!empty($csrfToken)): ?>
                 <input type="hidden" name="_csrf" value="<?= $e($csrfToken) ?>">
@@ -51,6 +55,9 @@ $action   = $e($accountPasswordAction ?? '/dashboard/account/password');
             <label for="old_password">
                 <span><?= $e($str['account.old_password'] ?? 'Ancien mot de passe') ?></span>
             </label>
+
+
+
             <input
                 type="password"
                 name="old_password"
@@ -73,6 +80,7 @@ $action   = $e($accountPasswordAction ?? '/dashboard/account/password');
             <label for="confirm_new_password">
                 <span><?= $e($str['account.confirm_new_password'] ?? 'Confirmer le nouveau mot de passe') ?></span>
             </label>
+
             <input
                 type="password"
                 name="confirm_new_password"
@@ -80,7 +88,7 @@ $action   = $e($accountPasswordAction ?? '/dashboard/account/password');
                 required
                 autocomplete="new-password"
                 minlength="8">
-
+            
             <button type="submit" id="submit-update-password">
                 <?= $e($str['account.update_password_cta'] ?? 'Mettre à jour') ?>
             </button>
