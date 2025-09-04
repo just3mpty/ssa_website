@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CapsuleLib\Core;
+namespace App\Controller;
 
 use CapsuleLib\Core\RenderController;
 use CapsuleLib\Security\Authenticator;

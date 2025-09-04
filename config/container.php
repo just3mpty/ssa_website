@@ -6,12 +6,12 @@ use CapsuleLib\Core\DIContainer;
 use CapsuleLib\Database\MariaDBConnection;
 use CapsuleLib\Repository\UserRepository;
 use CapsuleLib\Service\UserService;
-use CapsuleLib\Core\LoginController;
 
 use App\Repository\ArticleRepository;
 use App\Service\ArticleService;
 use App\Navigation\SidebarLinksProvider;
 use App\Controller\HomeController;
+use App\Controller\LoginController;
 use App\Controller\ArticlesController;
 use App\Controller\DashboardController;
 

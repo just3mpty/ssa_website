@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Controller\HomeController;
 use App\Controller\DashboardController;
+use App\Controller\LoginController;
 use App\Controller\ArticlesController;
 use CapsuleLib\Core\DIContainer;
 
@@ -17,7 +18,7 @@ return static function (DIContainer $c): array {
     $hc = $c->get(HomeController::class);
     $dc = $c->get(DashboardController::class);
     $aa = $c->get(ArticlesController::class);
-    $lc = $c->get(\CapsuleLib\Core\LoginController::class);
+    $lc = $c->get(LoginController::class);
 
     return [
         // Public
