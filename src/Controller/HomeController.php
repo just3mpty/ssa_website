@@ -57,4 +57,14 @@ final class HomeController extends RenderController
     {
         echo $this->renderView('pages/galerie.php', $this->base());
     }
+
+    public function articleDetails(): void
+    {
+        $id = (int)($_GET['id'] ?? 2);
+        $article = $this->articleService->getById($id);
+
+        echo $this->renderView('pages/articleDetails.php', $this->base([
+            'article' => $article
+        ], false));
+    }
 }
