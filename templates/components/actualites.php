@@ -19,7 +19,7 @@ $articles = [
         'image'    => '/assets/img/banner.webp',
         'link'     => 'actualites.html',
         'createdAt' => '2024-06-15',
-        'id' => '12'
+        'id' => '3'
     ],
     [
         'title'    => 'Marche citoyenne pour le climat',
@@ -28,7 +28,7 @@ $articles = [
         'image'    => '/assets/img/banner.webp',
         'link'     => '/#news',
         'createdAt' => '2024-06-15',
-        'id' => '987'
+        'id' => '4'
     ],
 ];
 ?>

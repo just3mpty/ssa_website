@@ -58,9 +58,14 @@ final class HomeController extends RenderController
         echo $this->renderView('pages/galerie.php', $this->base());
     }
 
-    public function articleDetails(): void
+    public function articleDetails(string $slug): void
     {
-        $id = (int)($_GET['id'] ?? 2);
+        $id = (int)$slug;
+
+        if ($id <= 0) {
+            throw new \InvalidArgumentException("ID d'article invalide");
+        }
+
         $article = $this->articleService->getById($id);
 
         echo $this->renderView('pages/articleDetails.php', $this->base([
