@@ -25,6 +25,7 @@ return static function (DIContainer $c): array {
         ['GET',  '/projet',  [$hc, 'projet']],
         ['GET',  '/galerie', [$hc, 'galerie']],
         ['GET',  '/wiki',    [$hc, 'wiki']],
+        ['GET',  '/article/{id}', [$hc, 'articleDetails']],
 
         // Auth
         ['GET',  '/login',  [$lc, 'loginForm']],

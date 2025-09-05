@@ -8,7 +8,9 @@ $articles = [
         'content'  => 'Participez à notre atelier pour découvrir les bienfaits d’une alimentation durable.',
         'category' => 'sante',
         'image'    => '/assets/img/banner.webp',
-        'link'     => 'actualites.html',
+        'link'     => '/article/1',
+        'createdAt' => '2024-06-15',
+        'id' => '2'
     ],
     [
         'title'    => 'Rencontre avec les paysans locaux',
@@ -16,6 +18,8 @@ $articles = [
         'category' => 'environnement',
         'image'    => '/assets/img/banner.webp',
         'link'     => 'actualites.html',
+        'createdAt' => '2024-06-15',
+        'id' => '12'
     ],
     [
         'title'    => 'Marche citoyenne pour le climat',
@@ -23,6 +27,8 @@ $articles = [
         'category' => 'mobilisation',
         'image'    => '/assets/img/banner.webp',
         'link'     => '/#news',
+        'createdAt' => '2024-06-15',
+        'id' => '987'
     ],
 ];
 ?>
@@ -43,7 +49,7 @@ $articles = [
                 <h3><?= secure_html($article['title']) ?></h3>
                 <p><?= secure_html($article['content']) ?></p>
                 <img src="<?= $article['image'] ?>" alt="illustration article">
-                <a href="<?= secure_url($article['link']) ?>" class="read-more">
+                <a href="/article/<?= $article['id'] ?>" class="read-more">
                     <?= secure_html($str['read_more']) ?>
                 </a>
             </article>

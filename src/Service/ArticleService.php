@@ -147,6 +147,33 @@ class ArticleService
     }
 
     /**
+     * Rend les détails d'un article par son ID.
+     */
+    public function getById(int $id): ?ArticleDTO
+    {
+        /** @var array<string,mixed>|null $row */
+        $row = $this->articleRepository->find($id);
+
+        if ($row === null) {
+            return null;
+        }
+
+        return new ArticleDTO(
+            id: (int)$row['id'],
+            titre: (string)$row['titre'],
+            resume: (string)$row['resume'],
+            description: isset($row['description']) ? (string)$row['description'] : null,
+            date_event: (string)$row['date_event'],
+            hours: (string)$row['hours'],
+            lieu: isset($row['lieu']) ? (string)$row['lieu'] : null,
+            image: isset($row['image']) ? (string)$row['image'] : null,
+            created_at: (string)$row['created_at'],
+            author_id: (int)$row['author_id'],
+            author: $row['author'] ?? null
+        );
+    }
+
+    /**
      * Nettoie et prépare les données brutes du formulaire.
      *
      * @param array<string,mixed> $input
