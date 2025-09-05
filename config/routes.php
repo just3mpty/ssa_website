@@ -25,6 +25,7 @@ return static function (DIContainer $c): array {
         ['GET',  '/projet',  [$hc, 'projet']],
         ['GET',  '/galerie', [$hc, 'galerie']],
         ['GET',  '/wiki',    [$hc, 'wiki']],
+        ['POST', '/home/generate_ics',   [$aa, 'generateICS']],
 
         // Auth
         ['GET',  '/login',  [$lc, 'loginForm']],
@@ -46,5 +47,6 @@ return static function (DIContainer $c): array {
         ['GET',  '/dashboard/articles/edit/{id}',     [$aa, 'editForm']],
         ['POST', '/dashboard/articles/edit/{id}',     [$aa, 'editSubmit']],
         ['POST', '/dashboard/articles/delete/{id}',   [$aa, 'deleteSubmit']],
+        
     ];
 };

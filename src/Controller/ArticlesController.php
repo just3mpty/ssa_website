@@ -41,6 +41,9 @@ final class ArticlesController extends RenderController
             'links'            => $this->links(true),
             'dashboardContent' => $this->renderComponent($component, $vars + ['str' => $this->str()]),
             'str'              => $this->str(),
+//            'csrf'             => CsrfTokenManager::getToken(),
+            //'articleGenerateIcsAction' => $articleGenerateIcsAction
+            'articleGenerateIcsAction' => '/home/generate_ics',
         ]);
     }
 
@@ -189,4 +192,58 @@ final class ArticlesController extends RenderController
         $_SESSION['flash'] = 'Article supprimé.';
         header('Location: /dashboard/articles', true, 303);
     }
+
+
+    public function handlePost(): void
+    {
+        AuthMiddleware::requireRole('admin');
+
+        $this->generateICS();
+
+        // if (isset($_POST['event_id']) && $_POST['event_id'] === 'generer_ics') {
+        //     $this->generateICS();
+        // } else {
+        //     // Gérer le cas où 'event_id' n'est pas défini ou a une autre valeur
+        //     echo "ID d'événement non spécifié ou invalide.";
+        // }
+
+        // if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+        //     header('Location: /dashboard/articles/', true, 303);
+        //     return;
+        // }
+
+        
+    }
+
+    public function generateICS(): void
+    {
+        
+        AuthMiddleware::requireRole('admin');
+
+        // Exemple de données d'événement
+        $date_debut = strtotime('2025-09-10 14:00:00');
+        $date_fin = strtotime('2025-09-10 15:30:00');
+        $objet = "Titre de l'événement";
+        $lieu = "Paris";
+        $details = "Description de l'événement";
+
+        // Génération du contenu ICS
+        $ics = "BEGIN:VCALENDAR\n";
+        $ics .= "VERSION:2.0\n";
+        $ics .= "PRODID:-//MonSite//FR\n";
+        $ics .= "BEGIN:VEVENT\n";
+        $ics .= "DTSTART:" . date('Ymd\THis\Z', $date_debut) . "\n";
+        $ics .= "DTEND:" . date('Ymd\THis\Z', $date_fin) . "\n";
+        $ics .= "SUMMARY:" . addcslashes($objet, ",;\\") . "\n";
+        $ics .= "LOCATION:" . addcslashes($lieu, ",;\\") . "\n";
+        $ics .= "DESCRIPTION:" . addcslashes($details, ",;\\") . "\n";
+        $ics .= "END:VEVENT\n";
+        $ics .= "END:VCALENDAR";
+
+        // Envoi des en-têtes pour le téléchargement du fichier ICS
+        header('Content-Type: text/calendar; charset=utf-8');
+        header('Content-Disposition: attachment; filename="event.ics"');
+        echo $ics;
+    }
 }
+
