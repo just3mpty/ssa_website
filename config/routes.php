@@ -17,11 +17,11 @@ return static function (Router $router, DIContainer $c): void {
     $aa = $c->get(ArticlesController::class);
     $lc = $c->get(LoginController::class);
 
-
     $router->get('/health', function () {
         header('Content-Type: text/plain');
         echo "OK";
     });
+
     // Public
     $router->get('/',        [$hc, 'home'],   [], name: 'home');
     $router->get('/projet',  [$hc, 'projet']);
@@ -39,20 +39,20 @@ return static function (Router $router, DIContainer $c): void {
         $r->post('/account/password', [$dc, 'accountPassword']);
 
         // Users (admin)
-        $r->group('', [MiddlewareAuth::role('admin')], function (Router $r2) use ($dc) {
+        $r->group('/', [MiddlewareAuth::role('admin')], function (Router $r2) use ($dc) {
             $r2->get('/users',            [$dc, 'users'],        name: 'dash.users');
             $r2->post('/users/create',    [$dc, 'usersCreate']);
             $r2->post('/users/delete',    [$dc, 'usersDelete']);
         });
 
         // Articles admin (admin)
-        $r->group('/articles', [MiddlewareAuth::role('admin')], function (Router $r3) use ($aa) {
-            $r3->get('',                 [$aa, 'index'],      name: 'dash.articles.index');
-            $r3->get('/create',          [$aa, 'createForm'], name: 'dash.articles.create');
-            $r3->post('/create',         [$aa, 'createSubmit']);
-            $r3->get('/edit/{id:\d+}',   [$aa, 'editForm'],   name: 'dash.articles.edit');
-            $r3->post('/edit/{id:\d+}',  [$aa, 'editSubmit']);
-            $r3->post('/delete/{id:\d+}', [$aa, 'deleteSubmit'], name: 'dash.articles.delete');
+        $r->group('/', [MiddlewareAuth::role('admin')], function (Router $r3) use ($aa) {
+            $r3->get('/articles', [$aa, 'index'], name: 'dash.articles.index'); // /dashboard/articles/
+            $r3->get('/articles/create',         [$aa, 'createForm'],  name: 'dash.articles.create');
+            $r3->post('/articles/create',        [$aa, 'createSubmit']);
+            $r3->get('/articles/edit/{id:\d+}',  [$aa, 'editForm'],    name: 'dash.articles.edit');
+            $r3->post('/articles/edit/{id:\d+}', [$aa, 'editSubmit']);
+            $r3->post('/articles/delete/{id:\d+}', [$aa, 'deleteSubmit'], name: 'dash.articles.delete');
         });
     });
 };
