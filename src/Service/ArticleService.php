@@ -2,57 +2,57 @@
 
 declare(strict_types=1);
 
-namespace app\service;
+namespace App\Service;
 
-use app\repository\articlerepository;
-use app\dto\articledto;
+use App\Repository\ArticleRepository;
+use App\Dto\ArticleDTO;
 
-final class articleservice
+final class ArticleService
 {
-    public function __construct(private articlerepository $articlerepository) {}
+    public function __construct(private ArticleRepository $articleRepository) {}
 
-    /** champs requis et optionnels (pour lisibilité & évolutivité) */
-    private const required_fields  = ['titre', 'resume', 'description', 'date_article', 'hours'];
-    private const optional_fields  = ['lieu', 'image'];
+    /** Champs requis et optionnels (pour lisibilité & évolutivité) */
+    private const REQUIRED_FIELDS  = ['titre', 'resume', 'description', 'date_article', 'hours'];
+    private const OPTIONAL_FIELDS  = ['lieu', 'image'];
 
     /* =======================
-       ======= queries =======
+       ======= Queries =======
        ======================= */
 
-    /** @return articledto[] */
-    public function getupcoming(): array
+    /** @return ArticleDTO[] */
+    public function getUpcoming(): array
     {
         /** @var array<array<string,mixed>> $rows */
-        return $this->articlerepository->upcoming();
+        return $this->articleRepository->upcoming();
     }
 
-    /** @return articledto[] */
-    public function getall(): array
+    /** @return ArticleDTO[] */
+    public function getAll(): array
     {
         /** @var array<array<string,mixed>> $rows */
-        return $this->articlerepository->all();
+        return $this->articleRepository->all();
     }
 
-    public function getbyid(int $id): ?articledto
+    public function getById(int $id): ?ArticleDTO
     {
         if ($id <= 0) {
-            throw new \invalidargumentexception('id doit être positif.');
+            throw new \InvalidArgumentException('ID doit être positif.');
         }
-        return $this->articlerepository->findbyid($id);
+        return $this->articleRepository->findById($id);
     }
 
-    /** @deprecated préfère getbyid(); gardé pour compat temporaire */
+    /** @deprecated Préfère getById(); gardé pour compat temporaire */
     public function find(int $id): ?array
     {
         if ($id <= 0) {
-            throw new \invalidargumentexception('id doit être positif.');
+            throw new \InvalidArgumentException('ID doit être positif.');
         }
         /** @var array<string,mixed>|null $row */
-        return $this->articlerepository->find($id);
+        return $this->articleRepository->find($id);
     }
 
     /* =======================
-       ===== mutations =======
+       ===== Mutations =======
        ======================= */
 
     /**
@@ -70,12 +70,12 @@ final class articleservice
         }
 
         try {
-            $payload = $this->topersistencearray($data) + [
+            $payload = $this->toPersistenceArray($data) + [
                 'author_id' => isset($user['id']) ? (int)$user['id'] : null,
             ];
-            $this->articlerepository->create($payload);
-        } catch (\throwable $e) {
-            return ['errors' => ['_global' => 'erreur lors de la création.'], 'data' => $data];
+            $this->articleRepository->create($payload);
+        } catch (\Throwable $e) {
+            return ['errors' => ['_global' => 'Erreur lors de la création.'], 'data' => $data];
         }
 
         return [];
@@ -88,7 +88,7 @@ final class articleservice
     public function update(int $id, array $input): array
     {
         if ($id <= 0) {
-            return ['errors' => ['_global' => 'identifiant invalide.'], 'data' => $input];
+            return ['errors' => ['_global' => 'Identifiant invalide.'], 'data' => $input];
         }
 
         $data   = $this->sanitize($input);
@@ -99,10 +99,10 @@ final class articleservice
         }
 
         try {
-            $payload = $this->topersistencearray($data);
-            $this->articlerepository->update($id, $payload);
-        } catch (\throwable $e) {
-            return ['errors' => ['_global' => 'erreur lors de la mise à jour.'], 'data' => $data];
+            $payload = $this->toPersistenceArray($data);
+            $this->articleRepository->update($id, $payload);
+        } catch (\Throwable $e) {
+            return ['errors' => ['_global' => 'Erreur lors de la mise à jour.'], 'data' => $data];
         }
 
         return [];
@@ -111,17 +111,17 @@ final class articleservice
     public function delete(int $id): void
     {
         if ($id <= 0) {
-            throw new \invalidargumentexception('id doit être positif.');
+            throw new \InvalidArgumentException('ID doit être positif.');
         }
-        $this->articlerepository->delete($id);
+        $this->articleRepository->delete($id);
     }
 
     /* =======================
-       ===== helpers =======
+       ===== Helpers =======
        ======================= */
 
     /**
-     * normalise les données utilisateur (sans sécurité xss ici).
+     * Normalise les données utilisateur (sans sécurité XSS ici).
      * - trim global
      * - requis: string non vide
      * - optionnels: null si vide
@@ -133,13 +133,13 @@ final class articleservice
     {
         $out = [];
 
-        foreach (array_merge(self::required_fields, self::optional_fields) as $field) {
+        foreach (array_merge(self::REQUIRED_FIELDS, self::OPTIONAL_FIELDS) as $field) {
             $val = isset($input[$field]) ? trim((string)$input[$field]) : '';
             $out[$field] = $val;
         }
 
-        // optionnels → null si vide
-        foreach (self::optional_fields as $opt) {
+        // Optionnels → null si vide
+        foreach (self::OPTIONAL_FIELDS as $opt) {
             if ($out[$opt] === '') {
                 $out[$opt] = null;
             }
@@ -156,28 +156,28 @@ final class articleservice
     {
         $errors = [];
 
-        // requis non vides
-        foreach (self::required_fields as $f) {
+        // Requis non vides
+        foreach (self::REQUIRED_FIELDS as $f) {
             if ($data[$f] === '' || $data[$f] === null) {
-                $errors[$f] = 'ce champ est obligatoire.';
+                $errors[$f] = 'Ce champ est obligatoire.';
             }
         }
 
-        // date (yyyy-mm-dd) valide
+        // Date (YYYY-MM-DD) valide
         if (!empty($data['date_article'])) {
-            $d = \datetime::createfromformat('y-m-d', (string)$data['date_article']);
-            $ok = $d && $d->format('y-m-d') === $data['date_article'];
+            $d = \DateTime::createFromFormat('Y-m-d', (string)$data['date_article']);
+            $ok = $d && $d->format('Y-m-d') === $data['date_article'];
             if (!$ok) {
-                $errors['date_article'] = "format date invalide (attendu : aaaa-mm-jj)";
+                $errors['date_article'] = "Format date invalide (attendu : AAAA-MM-JJ)";
             }
         }
 
-        // heure (hh:mm ou hh:mm:ss) → on normalise en hh:mm:ss lors de la persistance
+        // Heure (HH:MM ou HH:MM:SS) → on normalise en HH:MM:SS lors de la persistance
         if (!empty($data['hours'])) {
-            $h = \datetime::createfromformat('h:i:s', (string)$data['hours'])
-                ?: \datetime::createfromformat('h:i', (string)$data['hours']);
+            $h = \DateTime::createFromFormat('H:i:s', (string)$data['hours'])
+                ?: \DateTime::createFromFormat('H:i', (string)$data['hours']);
             if (!$h) {
-                $errors['hours'] = "format heure invalide (attendu : hh:mm ou hh:mm:ss)";
+                $errors['hours'] = "Format heure invalide (attendu : HH:MM ou HH:MM:SS)";
             }
         }
 
@@ -185,28 +185,28 @@ final class articleservice
     }
 
     /**
-     * transforme les données validées en format prêt pour la db.
-     * - date_article : yyyy-mm-dd
-     * - hours        : normalisé en hh:mm:ss
+     * Transforme les données validées en format prêt pour la DB.
+     * - date_article : YYYY-MM-DD
+     * - hours        : normalisé en HH:MM:SS
      *
      * @param array<string,mixed> $data
      * @return array<string,mixed>
      */
-    private function topersistencearray(array $data): array
+    private function toPersistenceArray(array $data): array
     {
         $out = $data;
 
-        // hours → hh:mm:ss
+        // hours → HH:MM:SS
         if (!empty($out['hours'])) {
-            $h = \datetime::createfromformat('h:i:s', (string)$out['hours'])
-                ?: \datetime::createfromformat('h:i', (string)$out['hours']);
+            $h = \DateTime::createFromFormat('H:i:s', (string)$out['hours'])
+                ?: \DateTime::createFromFormat('H:i', (string)$out['hours']);
             if ($h) {
-                $out['hours'] = $h->format('h:i:s');
+                $out['hours'] = $h->format('H:i:s');
             }
         }
 
-        // date_article → garde yyyy-mm-dd tel quel (déjà validé)
-        // optionnels: null accepté
+        // date_article → garde YYYY-MM-DD tel quel (déjà validé)
+        // Optionnels: null accepté
 
         return $out;
     }
