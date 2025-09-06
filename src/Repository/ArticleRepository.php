@@ -52,11 +52,13 @@ class ArticleRepository extends BaseRepository
     public function upcoming(): array
     {
         $stmt = $this->pdo->prepare(
-            "SELECT * FROM {$this->table} WHERE date_article >= :today ORDER BY date_article ASC"
+            "SELECT * FROM {$this->table}
+             WHERE date_article >= :today
+             ORDER BY date_article ASC"
         );
         $stmt->execute(['today' => date('Y-m-d')]);
-        $rows = $stmt->fetchAll();
-        return array_map([$this, 'hydrate'], $rows);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return array_map([$this, 'hydrate'], $rows ?: []);
     }
 
     /**
@@ -73,7 +75,7 @@ class ArticleRepository extends BaseRepository
             "SELECT * FROM {$this->table} WHERE author_id = :author_id ORDER BY date_article DESC",
             ['author_id' => $authorId]
         );
-        return array_map([$this, 'hydrate'], $rows);
+        return array_map([$this, 'hydrate'], $rows ?: []);
     }
 
     /**
@@ -85,7 +87,19 @@ class ArticleRepository extends BaseRepository
     public function findById(int $id): ?ArticleDTO
     {
         $row = $this->find($id);
-        return $row ? $this->hydrate($row) : null;
+        return is_array($row) ? $this->hydrate($row) : null;
+    }
+
+    /**
+     * Récupère tous les événements (DTO).
+     *
+     * @return ArticleDTO[]
+     */
+    public function all(): array
+    {
+        $stmt = $this->pdo->query("SELECT * FROM {$this->table} ORDER BY date_article DESC");
+        $rows = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+        return array_map([$this, 'hydrate'], $rows ?: []);
     }
 
     /**
@@ -125,17 +139,17 @@ class ArticleRepository extends BaseRepository
     private function hydrate(array $data): ArticleDTO
     {
         return new ArticleDTO(
-            id: (int)$data['id'],
-            titre: $data['titre'],
-            resume: $data['resume'],
-            description: $data['description'] ?? null,
-            date_article: $data['date_article'],
-            hours: $data['hours'],
-            image: $data['image'] ?? null,
-            lieu: $data['lieu'] ?? null,
-            created_at: $data['created_at'],
-            author_id: (int)$data['author_id'],
-            author: $data['author']
+            id: (int)($data['id'] ?? 0),
+            titre: (string)($data['titre'] ?? ''),
+            resume: (string)($data['resume'] ?? ''),
+            description: isset($data['description']) ? (string)$data['description'] : null,
+            date_article: (string)($data['date_article'] ?? ''),
+            hours: (string)($data['hours'] ?? ''),
+            image: isset($data['image']) ? (string)$data['image'] : null,
+            lieu: isset($data['lieu']) ? (string)$data['lieu'] : null,
+            created_at: (string)($data['created_at'] ?? ''),
+            author_id: (int)($data['author_id'] ?? 0),
+            author: isset($data['author']) ? (string)$data['author'] : null
         );
     }
 }
