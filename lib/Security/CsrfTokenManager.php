@@ -15,7 +15,7 @@ class CsrfTokenManager
     /**
      * Clé de stockage du token CSRF dans la session.
      */
-    const TOKEN_KEY = '_csrf_token';
+    const TOKEN_KEY = '_csrf';
 
     /**
      * Récupère ou génère un token CSRF unique pour la session.

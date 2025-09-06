@@ -11,7 +11,12 @@ use CapsuleLib\Service\PasswordService;
 use App\Service\ArticleService;
 use App\Navigation\SidebarLinksProvider;
 use CapsuleLib\Security\CurrentUserProvider;
-use CapsuleLib\Http\Redirect; // <-- helper de redirection (si tu l'as ajouté)
+
+use CapsuleLib\Http\RequestUtils;
+use CapsuleLib\Http\FlashBag;
+use CapsuleLib\Http\Redirect;
+use CapsuleLib\Http\FormState;
+use CapsuleLib\Security\CsrfTokenManager;
 
 final class DashboardController extends RenderController
 {
@@ -25,8 +30,9 @@ final class DashboardController extends RenderController
     /** Cache par requête */
     private ?array $strings = null;
 
-    /** ---- DRY helpers ---- */
-    private function strings(): array
+    /* -------------------- Helpers -------------------- */
+
+    private function str(): array
     {
         return $this->strings ??= TranslationLoader::load(defaultLang: 'fr');
     }
@@ -36,38 +42,36 @@ final class DashboardController extends RenderController
         return $this->linksProvider->get($isAdmin);
     }
 
-    /** Base payload commun au layout Dashboard */
+    /** Payload commun au layout Dashboard */
     private function basePayload(array $extra = []): array
     {
         $user    = CurrentUserProvider::getUser() ?? [];
         $isAdmin = ($user['role'] ?? null) === 'admin';
 
         $base = [
-            'isDashboard'      => true,
-            'title'            => '',
-            'user'             => $user,
-            'username'         => $user['username'] ?? '',
-            'isAdmin'          => $isAdmin,
-            'links'            => $this->links($isAdmin),
-            'str'              => $this->strings(),
-            'dashboardContent' => null,
+            'isDashboard' => true,
+            'title'       => '',
+            'user'        => $user,
+            'username'    => $user['username'] ?? '',
+            'isAdmin'     => $isAdmin,
+            'links'       => $this->links($isAdmin),
+            'str'         => $this->str(),
+            // commun
+            'flash'       => FlashBag::consume(),
         ];
 
         return array_replace($base, $extra);
     }
 
     /**
-     * Point unique de rendu du dashboard.
+     * Point unique de rendu du dashboard (DRY).
      */
-    private function renderDashboard(
-        string $title,
-        ?string $component = null,
-        array $componentVars = [],
-    ): void {
+    private function renderDash(string $title, ?string $component = null, array $vars = []): void
+    {
         $content = null;
         if ($component !== null) {
-            $componentVars += ['str' => $this->strings()];
-            $content = $this->renderComponent($component, $componentVars);
+            $vars += ['str' => $this->str()];
+            $content = $this->renderComponent($component, $vars);
         }
 
         echo $this->renderView('dashboard/home.php', $this->basePayload([
@@ -76,122 +80,157 @@ final class DashboardController extends RenderController
         ]));
     }
 
-    /** ---- Actions minces ---- */
+    /* -------------------- Routes -------------------- */
+
+    public function index(): void
+    {
+        $this->home();
+    }
 
     public function home(): void
     {
-        $this->renderDashboard('Dashboard');
+        $this->renderDash('Dashboard');
     }
+
+    /* ===== Compte (GET/POST) ===== */
 
     public function account(): void
     {
-        // PRG (flash/errors)
-        $flash  = $_SESSION['flash']  ?? null;
-        unset($_SESSION['flash']);
-        $errors = $_SESSION['errors'] ?? null;
-        unset($_SESSION['errors']);
+        $errors  = FormState::consumeErrors();
+        $prefill = FormState::consumeData();
 
-        $this->renderDashboard('Mon compte', 'dash_account.php', [
-            'flash'                 => $flash,
+        $this->renderDash('Mon compte', 'dash_account.php', [
             'errors'                => $errors,
             'accountPasswordAction' => '/dashboard/account/password',
+            // éventuel pré-remplissage d’autres champs du compte
+            'prefill'               => $prefill,
         ]);
     }
 
     /** POST /dashboard/account/password */
     public function accountPassword(): void
     {
-        $user = CurrentUserProvider::getUser();
-        $userId = (int)($user['id'] ?? 0);
+        RequestUtils::ensurePostOrRedirect('/dashboard/account');
+        CsrfTokenManager::requireValidToken();
+
+        $user    = CurrentUserProvider::getUser();
+        $userId  = (int)($user['id'] ?? 0);
         if ($userId <= 0) {
             http_response_code(403);
             echo 'Forbidden';
             return;
         }
 
-        $old     = trim($_POST['old_password'] ?? '');
-        $new     = trim($_POST['new_password'] ?? '');
-        $confirm = trim($_POST['confirm_new_password'] ?? '');
+        $old     = trim((string)($_POST['old_password'] ?? ''));
+        $new     = trim((string)($_POST['new_password'] ?? ''));
+        $confirm = trim((string)($_POST['confirm_new_password'] ?? ''));
 
         $errors = [];
-        if ($new !== $confirm) {
-            $errors[] = 'Les nouveaux mots de passe ne correspondent pas.';
+        if ($new === '' || $old === '') {
+            $errors['_global'] = 'Champs requis manquants.';
+        } elseif ($new !== $confirm) {
+            $errors['confirm_new_password'] = 'Les nouveaux mots de passe ne correspondent pas.';
         }
 
-        if (!$errors) {
+        if ($errors === []) {
             [$ok, $svcErrors] = $this->passwords->changePassword($userId, $old, $new);
             if ($ok) {
-                $_SESSION['flash'] = 'Mot de passe modifié avec succès.';
-            } else {
-                $errors = $svcErrors;
+                FlashBag::add('success', 'Mot de passe modifié avec succès.');
+                Redirect::to('/dashboard/account', 303);
             }
+            $errors = $svcErrors ?: ['_global' => 'Échec de la modification du mot de passe.'];
         }
 
-        if ($errors) {
-            $_SESSION['errors'] = $errors;
-        }
-
-        // PRG
-        Redirect::to('/dashboard/account'); // ou header('Location: /dashboard/account', true, 303);
+        // PRG avec erreurs
+        FormState::set($errors, [
+            // pas de repop sur les mots de passe pour sécurité
+        ]);
+        FlashBag::add('error', 'Le formulaire contient des erreurs.');
+        Redirect::to('/dashboard/account', 303);
     }
+
+    /* ===== Utilisateurs (admin) ===== */
 
     public function users(): void
     {
-        // L’accès admin est géré par le middleware au niveau du routeur
+        // Accès admin géré par middleware
         $users = $this->userService->getAllUsers();
 
-        $flash  = $_SESSION['flash']  ?? null;
-        unset($_SESSION['flash']);
-        $errors = $_SESSION['errors'] ?? null;
-        unset($_SESSION['errors']);
+        $errors  = FormState::consumeErrors();
+        $prefill = FormState::consumeData();
 
-        echo $this->renderView('dashboard/home.php', [
-            'title'            => 'Utilisateurs',
-            'isDashboard'      => true,
-            'links'            => $this->links(true),
-            'isAdmin'          => true,
-            'dashboardContent' => $this->renderComponent('dash_users.php', [
-                'users'        => $users,
-                'flash'        => $flash,
-                'errors'       => $errors,
-                'str'          => $this->strings(),
-                'createAction' => '/dashboard/users/create',
-                'deleteAction' => '/dashboard/users/delete',
-            ]),
-            'str'              => $this->strings(),
+        $this->renderDash('Utilisateurs', 'dash_users.php', [
+            'users'        => $users,
+            'errors'       => $errors,
+            'prefill'      => $prefill,
+            'createAction' => '/dashboard/users/create',
+            'deleteAction' => '/dashboard/users/delete',
         ]);
     }
 
+    /** POST /dashboard/users/create */
     public function usersCreate(): void
     {
-        $username = filter_input(INPUT_POST, 'username');
-        $password = $_POST['password'] ?? null;
-        $email    = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
-        $role     = $_POST['role'] ?? 'employee';
+        RequestUtils::ensurePostOrRedirect('/dashboard/users');
+        CsrfTokenManager::requireValidToken();
 
-        if ($username && $password && $email) {
-            $this->userService->createUser($username, $password, $email, $role);
-            $_SESSION['flash'] = "Utilisateur créé avec succès.";
-        } else {
-            $_SESSION['flash'] = "Erreur : champs invalides.";
+        $username = trim((string)($_POST['username'] ?? ''));
+        $password = (string)($_POST['password'] ?? '');
+        $email    = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL) ?: null;
+        $role     = trim((string)($_POST['role'] ?? 'employee'));
+
+        $errors = [];
+        if ($username === '') $errors['username'] = 'Requis.';
+        if ($password === '') $errors['password'] = 'Requis.';
+        if (!$email)          $errors['email']    = 'Email invalide.';
+
+        if ($errors !== []) {
+            FormState::set($errors, ['username' => $username, 'email' => (string)$email, 'role' => $role]);
+            FlashBag::add('error', 'Le formulaire contient des erreurs.');
+            Redirect::to('/dashboard/users', 303);
         }
 
-        Redirect::to('/dashboard/users');
+        try {
+            $this->userService->createUser($username, $password, (string)$email, $role);
+            FlashBag::add('success', 'Utilisateur créé avec succès.');
+        } catch (\Throwable $e) {
+            FormState::set(['_global' => 'Création impossible.'], ['username' => $username, 'email' => (string)$email, 'role' => $role]);
+            FlashBag::add('error', 'Erreur lors de la création.');
+        }
+
+        Redirect::to('/dashboard/users', 303);
     }
 
+    /** POST /dashboard/users/delete */
     public function usersDelete(): void
     {
-        $ids = array_map('intval', $_POST['user_ids'] ?? []);
-        foreach ($ids as $id) {
-            $this->userService->deleteUser($id);
+        RequestUtils::ensurePostOrRedirect('/dashboard/users');
+        CsrfTokenManager::requireValidToken();
+
+        $ids = array_map('intval', (array)($_POST['user_ids'] ?? []));
+        $ids = array_values(array_filter($ids, fn(int $id) => $id > 0));
+
+        if ($ids === []) {
+            FlashBag::add('error', 'Aucun utilisateur sélectionné.');
+            Redirect::to('/dashboard/users', 303);
         }
-        $_SESSION['flash'] = "Utilisateur(s) supprimé(s).";
 
-        Redirect::to('/dashboard/users');
-    }
+        $deleted = 0;
+        foreach ($ids as $id) {
+            try {
+                $this->userService->deleteUser($id);
+                $deleted++;
+            } catch (\Throwable $e) {
+                // on continue pour les autres
+            }
+        }
 
-    public function index(): void
-    {
-        $this->home();
+        if ($deleted > 0) {
+            FlashBag::add('success', "Utilisateur(s) supprimé(s) : {$deleted}.");
+        } else {
+            FlashBag::add('error', 'Aucune suppression effectuée.');
+        }
+
+        Redirect::to('/dashboard/users', 303);
     }
 }
