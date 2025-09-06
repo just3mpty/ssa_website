@@ -6,6 +6,7 @@ use App\Controller\HomeController;
 use App\Controller\DashboardController;
 use App\Controller\LoginController;
 use App\Controller\ArticlesController;
+use App\Controller\UserController;
 use CapsuleLib\Core\DIContainer;
 use CapsuleLib\Routing\Router;
 use CapsuleLib\Middleware\MiddlewareAuth;
@@ -15,6 +16,7 @@ return static function (Router $router, DIContainer $c): void {
     $hc = $c->get(HomeController::class);
     $dc = $c->get(DashboardController::class);
     $aa = $c->get(ArticlesController::class);
+    $uc = $c->get(UserController::class);
     $lc = $c->get(LoginController::class);
 
     $router->get('/health', function () {
@@ -33,16 +35,16 @@ return static function (Router $router, DIContainer $c): void {
     $router->get('/logout', [$lc, 'logout']);
 
     // Dashboard (auth requis)
-    $router->group('/dashboard', [MiddlewareAuth::auth()], function (Router $r) use ($dc, $aa) {
-        $r->get('/home',    [$dc, 'home'],   name: 'dash.home');
+    $router->group('/dashboard', [MiddlewareAuth::auth()], function (Router $r) use ($dc, $aa, $uc) {
+        $r->get('/home',    [$dc, 'index'],  [], name: 'dash.home');
         $r->get('/account', [$dc, 'account'], name: 'dash.account');
+        $r->get('/users',   [$dc, 'users'],        name: 'dash.users');
         $r->post('/account/password', [$dc, 'accountPassword']);
 
         // Users (admin)
-        $r->group('/', [MiddlewareAuth::role('admin')], function (Router $r2) use ($dc) {
-            $r2->get('/users',            [$dc, 'users'],        name: 'dash.users');
-            $r2->post('/users/create',    [$dc, 'usersCreate']);
-            $r2->post('/users/delete',    [$dc, 'usersDelete']);
+        $r->group('/', [MiddlewareAuth::role('admin')], function (Router $r2) use ($uc) {
+            $r2->post('/users/create',    [$uc, 'usersCreate']);
+            $r2->post('/users/delete',    [$uc, 'usersDelete']);
         });
 
         // Articles admin (admin)

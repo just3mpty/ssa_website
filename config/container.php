@@ -14,7 +14,7 @@ use App\Controller\HomeController;
 use App\Controller\LoginController;
 use App\Controller\ArticlesController;
 use App\Controller\DashboardController;
-
+use App\Controller\UserController;
 
 //HACK : (Optionnel) Interfaces lib → impls src 
 
@@ -50,9 +50,12 @@ return (function (): DIContainer {
     $container->set(LoginController::class,       fn($container) => new LoginController($container->get('pdo')));
     $container->set(DashboardController::class,   fn($container) => new DashboardController(
         $container->get(UserService::class),
-        $container->get(ArticleService::class),
         $container->get('passwords'),
         $container->get(SidebarLinksProvider::class),
+    ));
+    $container->set(UserController::class,   fn($container) => new UserController(
+        $container->get(UserService::class),
+        $container->get('passwords'),
     ));
     $container->set(ArticlesController::class, fn($container) => new ArticlesController(
         $container->get(ArticleService::class),
