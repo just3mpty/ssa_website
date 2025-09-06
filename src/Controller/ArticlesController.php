@@ -10,6 +10,8 @@ use App\Service\ArticleService;
 use CapsuleLib\Core\RenderController;
 use CapsuleLib\Http\RequestUtils;
 use CapsuleLib\Http\FlashBag;
+use CapsuleLib\Http\Redirect;
+use CapsuleLib\Http\FormState;
 use CapsuleLib\Security\CsrfTokenManager;
 
 final class ArticlesController extends RenderController
@@ -33,6 +35,7 @@ final class ArticlesController extends RenderController
 
     private function renderDash(string $title, string $component, array $vars = []): void
     {
+        $flashes = FlashBag::consume();
 
         echo $this->renderView('dashboard/home.php', [
             'title'            => $title,
@@ -40,16 +43,14 @@ final class ArticlesController extends RenderController
             'isAdmin'          => true,
             'user'             => $_SESSION['admin'] ?? [],
             'links'            => $this->links(true),
+            'flash'            => $flashes,
             'dashboardContent' => $this->renderComponent($component, $vars + ['str' => $this->str()]),
             'str'              => $this->str(),
-            //            'csrf'             => CsrfTokenManager::getToken(),
-            //'articleGenerateIcsAction' => $articleGenerateIcsAction
             'articleGenerateIcsAction' => '/home/generate_ics',
         ]);
     }
 
-    /** Normalise un id provenant du routeur (array|scalar). */
-    private function normId(string|int|array $param): int
+    private function idFrom(string|int|array $param): int
     {
         return RequestUtils::intFromParam($param);
     }
@@ -58,7 +59,6 @@ final class ArticlesController extends RenderController
 
     public function index(): void
     {
-
         $list = $this->articles->getAll();
         $this->renderDash('Articles', 'dash_articles.php', [
             'articles'      => $list,
@@ -73,85 +73,63 @@ final class ArticlesController extends RenderController
 
     public function createForm(): void
     {
-
-        // PRG: réaffiche les erreurs/data si présents
-        $errors = $_SESSION['errors'] ?? null;
-        unset($_SESSION['errors']);
-        $data   = $_SESSION['data']   ?? null;
-        unset($_SESSION['data']);
+        $errors = FormState::consumeErrors();
+        $data   = FormState::consumeData();
 
         $this->renderDash('Créer un article', 'dash_article_form.php', [
             'action'  => '/dashboard/articles/create',
             'article' => $data ?? null,
             'errors'  => $errors,
-            'csrf'    => CsrfTokenManager::getToken(),
+            'csrf'          => CsrfTokenManager::getToken(),
         ]);
     }
 
     public function createSubmit(): void
     {
-
-        if (!RequestUtils::isPost()) {
-            header('Location: /dashboard/articles', true, 303);
-            return;
-        }
-
+        RequestUtils::ensurePostOrRedirect('/dashboard/articles');
         CsrfTokenManager::requireValidToken();
 
-        // Délégation au service puis PRG
         $result = $this->articles->create($_POST, $_SESSION['admin'] ?? []);
         if (!empty($result['errors'])) {
-            $_SESSION['errors'] = $result['errors'];
-            $_SESSION['data']   = $result['data'] ?? $_POST;
+            FormState::set($result['errors'], $result['data'] ?? $_POST);
             FlashBag::add('error', 'Le formulaire contient des erreurs.');
-            header('Location: /dashboard/articles/create', true, 303);
-            return;
+            Redirect::to('/dashboard/articles/create', 303);
         }
 
         FlashBag::add('success', 'Article créé.');
-        header('Location: /dashboard/articles', true, 303);
+        Redirect::to('/dashboard/articles', 303);
     }
 
     /* -------------------- Edit -------------------- */
 
     public function editForm(string|array $params): void
     {
-
-        $id = $this->normId($params);
-        $article = $this->articles->find($id);
-        if (!$article) {
+        $id  = $this->idFrom($params);
+        $dto = $this->articles->getById($id);
+        if (!$dto) {
             http_response_code(404);
             echo 'Not Found';
             return;
         }
 
-        // PRG: réaffiche les erreurs/data si présents
-        $prefill = $_SESSION['data'] ?? [];
-        unset($_SESSION['data']);
-        $errors  = $_SESSION['errors'] ?? null;
-        unset($_SESSION['errors']);
+        $errors  = FormState::consumeErrors();
+        $prefill = FormState::consumeData();
 
         $this->renderDash('Modifier un article', 'dash_article_form.php', [
             'action'  => "/dashboard/articles/edit/{$id}",
-            'article' => $prefill ? \array_replace($article, $prefill) : $article,
+            'article' => $prefill ?: $dto,
             'errors'  => $errors,
-            'csrf'    => CsrfTokenManager::getToken(),
+            'csrf'          => CsrfTokenManager::getToken(),
         ]);
     }
 
     public function editSubmit(string|array $params): void
     {
-
-        if (!RequestUtils::isPost()) {
-            header('Location: /dashboard/articles', true, 303);
-            return;
-        }
-
+        RequestUtils::ensurePostOrRedirect('/dashboard/articles');
         CsrfTokenManager::requireValidToken();
 
-        $id = $this->normId($params);
-        $article = $this->articles->find($id);
-        if (!$article) {
+        $id = $this->idFrom($params);
+        if (!$this->articles->getById($id)) {
             http_response_code(404);
             echo 'Not Found';
             return;
@@ -159,83 +137,26 @@ final class ArticlesController extends RenderController
 
         $result = $this->articles->update($id, $_POST);
         if (!empty($result['errors'])) {
-            $_SESSION['errors'] = $result['errors'];
-            $_SESSION['data']   = $result['data'] ?? $_POST;
+            FormState::set($result['errors'], $result['data'] ?? $_POST);
             FlashBag::add('error', 'Le formulaire contient des erreurs.');
-            header("Location: /dashboard/articles/edit/{$id}", true, 303);
-            return;
+            Redirect::to("/dashboard/articles/edit/{$id}", 303);
         }
 
         FlashBag::add('success', 'Article mis à jour.');
-        header('Location: /dashboard/articles', true, 303);
+        Redirect::to('/dashboard/articles', 303);
     }
 
     /* -------------------- Delete -------------------- */
 
     public function deleteSubmit(string|array $params): void
     {
-
-        if (!RequestUtils::isPost()) {
-            header('Location: /dashboard/articles', true, 303);
-            return;
-        }
-
+        RequestUtils::ensurePostOrRedirect('/dashboard/articles');
         CsrfTokenManager::requireValidToken();
 
-        $id = $this->normId($params);
+        $id = $this->idFrom($params);
         $this->articles->delete($id);
 
         FlashBag::add('success', 'Article supprimé.');
-        header('Location: /dashboard/articles', true, 303);
-    }
-
-
-    public function handlePost(): void
-    {
-
-        $this->generateICS();
-
-        // if (isset($_POST['article_id']) && $_POST['article_id'] === 'generer_ics') {
-        //     $this->generateICS();
-        // } else {
-        //     // Gérer le cas où 'article_id' n'est pas défini ou a une autre valeur
-        //     echo "ID d'événement non spécifié ou invalide.";
-        // }
-
-        // if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
-        //     header('Location: /dashboard/articles/', true, 303);
-        //     return;
-        // }
-
-
-    }
-
-    public function generateICS(): void
-    {
-
-        // Exemple de données d'événement
-        $date_debut = strtotime('2025-09-10 14:00:00');
-        $date_fin = strtotime('2025-09-10 15:30:00');
-        $objet = "Titre de l'événement";
-        $lieu = "Paris";
-        $details = "Description de l'événement";
-
-        // Génération du contenu ICS
-        $ics = "BEGIN:VCALENDAR\n";
-        $ics .= "VERSION:2.0\n";
-        $ics .= "PRODID:-//MonSite//FR\n";
-        $ics .= "BEGIN:ARTICLE\n";
-        $ics .= "DTSTART:" . date('Ymd\THis\Z', $date_debut) . "\n";
-        $ics .= "DTEND:" . date('Ymd\THis\Z', $date_fin) . "\n";
-        $ics .= "SUMMARY:" . addcslashes($objet, ",;\\") . "\n";
-        $ics .= "LOCATION:" . addcslashes($lieu, ",;\\") . "\n";
-        $ics .= "DESCRIPTION:" . addcslashes($details, ",;\\") . "\n";
-        $ics .= "END:VARTICLE\n";
-        $ics .= "END:VCALENDAR";
-
-        // Envoi des en-têtes pour le téléchargement du fichier ICS
-        header('Content-Type: text/calendar; charset=utf-8');
-        header('Content-Disposition: attachment; filename="article.ics"');
-        echo $ics;
+        Redirect::to('/dashboard/articles', 303);
     }
 }
