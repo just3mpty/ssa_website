@@ -163,7 +163,7 @@ class ArticleService
             titre: (string)$row['titre'],
             resume: (string)$row['resume'],
             description: isset($row['description']) ? (string)$row['description'] : null,
-            date_event: (string)$row['date_event'],
+            date_article: (string)$row['date_article'],
             hours: (string)$row['hours'],
             lieu: isset($row['lieu']) ? (string)$row['lieu'] : null,
             image: isset($row['image']) ? (string)$row['image'] : null,

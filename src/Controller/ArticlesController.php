@@ -42,7 +42,7 @@ final class ArticlesController extends RenderController
             'links'            => $this->links(true),
             'dashboardContent' => $this->renderComponent($component, $vars + ['str' => $this->str()]),
             'str'              => $this->str(),
-//            'csrf'             => CsrfTokenManager::getToken(),
+            //            'csrf'             => CsrfTokenManager::getToken(),
             //'articleGenerateIcsAction' => $articleGenerateIcsAction
             'articleGenerateIcsAction' => '/home/generate_ics',
         ]);
@@ -192,14 +192,13 @@ final class ArticlesController extends RenderController
 
     public function handlePost(): void
     {
-        AuthMiddleware::requireRole('admin');
 
         $this->generateICS();
 
-        // if (isset($_POST['event_id']) && $_POST['event_id'] === 'generer_ics') {
+        // if (isset($_POST['article_id']) && $_POST['article_id'] === 'generer_ics') {
         //     $this->generateICS();
         // } else {
-        //     // Gérer le cas où 'event_id' n'est pas défini ou a une autre valeur
+        //     // Gérer le cas où 'article_id' n'est pas défini ou a une autre valeur
         //     echo "ID d'événement non spécifié ou invalide.";
         // }
 
@@ -208,13 +207,11 @@ final class ArticlesController extends RenderController
         //     return;
         // }
 
-        
+
     }
 
     public function generateICS(): void
     {
-        
-        AuthMiddleware::requireRole('admin');
 
         // Exemple de données d'événement
         $date_debut = strtotime('2025-09-10 14:00:00');
@@ -227,19 +224,18 @@ final class ArticlesController extends RenderController
         $ics = "BEGIN:VCALENDAR\n";
         $ics .= "VERSION:2.0\n";
         $ics .= "PRODID:-//MonSite//FR\n";
-        $ics .= "BEGIN:VEVENT\n";
+        $ics .= "BEGIN:ARTICLE\n";
         $ics .= "DTSTART:" . date('Ymd\THis\Z', $date_debut) . "\n";
         $ics .= "DTEND:" . date('Ymd\THis\Z', $date_fin) . "\n";
         $ics .= "SUMMARY:" . addcslashes($objet, ",;\\") . "\n";
         $ics .= "LOCATION:" . addcslashes($lieu, ",;\\") . "\n";
         $ics .= "DESCRIPTION:" . addcslashes($details, ",;\\") . "\n";
-        $ics .= "END:VEVENT\n";
+        $ics .= "END:VARTICLE\n";
         $ics .= "END:VCALENDAR";
 
         // Envoi des en-têtes pour le téléchargement du fichier ICS
         header('Content-Type: text/calendar; charset=utf-8');
-        header('Content-Disposition: attachment; filename="event.ics"');
+        header('Content-Disposition: attachment; filename="article.ics"');
         echo $ics;
     }
 }
-
