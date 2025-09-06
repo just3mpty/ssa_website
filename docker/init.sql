@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS articles (
     titre       VARCHAR(255) NOT NULL,
     resume      TEXT NOT NULL,
     description TEXT,
-    date_event  DATE NOT NULL,
+    date_article  DATE NOT NULL,
     hours       TIME NOT NULL,
     lieu        VARCHAR(255),
     image       VARCHAR(255),
@@ -38,7 +38,7 @@ VALUES ('admin', '$2y$12$DdRaR1i6wNQbPGxbmgeB9OvAnhSzFvN98/wIBdO3w0Qcqsu62BMEy',
 
 -- Exemples d'événements supplémentaires pour alimenter ta table
 
-INSERT INTO articles (titre, resume, description, date_event, hours, lieu, image, author_id) VALUES
+INSERT INTO articles (titre, resume, description, date_article, hours, lieu, image, author_id) VALUES
 ('Conférence : Vers une agriculture bio locale', 
  'Regards croisés sur la production bio en Bretagne.', 
  'Un panel d’agriculteurs et d’experts partagera ses pratiques et répondra aux questions du public. Dégustation en fin de séance.', 

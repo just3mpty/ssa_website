@@ -38,7 +38,7 @@ $action   = $e($articleGenerateIcsAction ?? '/home/generate_ics');
             <?php foreach ($articles as $article): ?>
                 <article class="article">
                     <div class="date-time">
-                        <p><?= secure_html($article->date_event) ?></p>
+                        <p><?= secure_html($article->date_article) ?></p>
                         <p><?= secure_html(substr($article->hours, 0, 5)) ?></p>
                     </div>
                     <div class="description">

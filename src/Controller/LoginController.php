@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-namespace CapsuleLib\Core;
+namespace App\Controller;
 
 use CapsuleLib\Core\RenderController;
 use CapsuleLib\Security\Authenticator;
 use CapsuleLib\Security\CsrfTokenManager;
-use CapsuleLib\Http\Middleware\AuthMiddleware;
 use App\Lang\TranslationLoader;
 use PDO;
 
@@ -81,7 +80,7 @@ class LoginController extends RenderController
         );
 
         if ($success) {
-            header('Location: ../dashboard/home');
+            header('Location: /dashboard/home', true, 302); // ✅ absolu
             exit;
         }
 

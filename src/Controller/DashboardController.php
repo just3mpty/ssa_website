@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use CapsuleLib\Core\RenderController;
-use CapsuleLib\Http\Middleware\AuthMiddleware;
 use App\Lang\TranslationLoader;
 use CapsuleLib\Service\UserService;
 use CapsuleLib\Service\PasswordService;
 use App\Service\ArticleService;
 use App\Navigation\SidebarLinksProvider;
 use CapsuleLib\Security\CurrentUserProvider;
+use CapsuleLib\Http\Redirect; // <-- helper de redirection (si tu l'as ajouté)
 
 final class DashboardController extends RenderController
 {
@@ -31,18 +31,6 @@ final class DashboardController extends RenderController
         return $this->strings ??= TranslationLoader::load(defaultLang: 'fr');
     }
 
-    // TODO: Idéalement, injecter un UrlGenerator et une ACL pour filtrer par rôle.
-
-    private function currentUser(): array
-    {
-        return CurrentUserProvider::getUser() ?? [];
-    }
-
-    private function isAdmin(array $user): bool
-    {
-        return ($user['role'] ?? null) === 'admin';
-    }
-
     private function links(bool $isAdmin): array
     {
         return $this->linksProvider->get($isAdmin);
@@ -51,8 +39,8 @@ final class DashboardController extends RenderController
     /** Base payload commun au layout Dashboard */
     private function basePayload(array $extra = []): array
     {
-        $user    = $this->currentUser();
-        $isAdmin = $this->isAdmin($user);
+        $user    = CurrentUserProvider::getUser() ?? [];
+        $isAdmin = ($user['role'] ?? null) === 'admin';
 
         $base = [
             'isDashboard'      => true,
@@ -75,15 +63,7 @@ final class DashboardController extends RenderController
         string $title,
         ?string $component = null,
         array $componentVars = [],
-        bool $requireAdmin = false,
-        bool $requireAuth = true,
     ): void {
-        if ($requireAdmin) {
-            AuthMiddleware::requireRole('admin');
-        } elseif ($requireAuth) {
-            AuthMiddleware::handle();
-        }
-
         $content = null;
         if ($component !== null) {
             $componentVars += ['str' => $this->strings()];
@@ -105,14 +85,13 @@ final class DashboardController extends RenderController
 
     public function account(): void
     {
-        // Consommer les flash/errors de la session (PRG)
+        // PRG (flash/errors)
         $flash  = $_SESSION['flash']  ?? null;
         unset($_SESSION['flash']);
         $errors = $_SESSION['errors'] ?? null;
         unset($_SESSION['errors']);
 
         $this->renderDashboard('Mon compte', 'dash_account.php', [
-            'user'                  => $this->currentUser(),
             'flash'                 => $flash,
             'errors'                => $errors,
             'accountPasswordAction' => '/dashboard/account/password',
@@ -122,14 +101,8 @@ final class DashboardController extends RenderController
     /** POST /dashboard/account/password */
     public function accountPassword(): void
     {
-        AuthMiddleware::handle();
-
-        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
-            header('Location: /dashboard/account', true, 303);
-            return;
-        }
-
-        $userId = (int)($this->currentUser()['id'] ?? 0);
+        $user = CurrentUserProvider::getUser();
+        $userId = (int)($user['id'] ?? 0);
         if ($userId <= 0) {
             http_response_code(403);
             echo 'Forbidden';
@@ -159,13 +132,12 @@ final class DashboardController extends RenderController
         }
 
         // PRG
-        header('Location: /dashboard/account', true, 303);
+        Redirect::to('/dashboard/account'); // ou header('Location: /dashboard/account', true, 303);
     }
 
     public function users(): void
     {
-
-        AuthMiddleware::requireRole('admin');
+        // L’accès admin est géré par le middleware au niveau du routeur
         $users = $this->userService->getAllUsers();
 
         $flash  = $_SESSION['flash']  ?? null;
@@ -174,29 +146,24 @@ final class DashboardController extends RenderController
         unset($_SESSION['errors']);
 
         echo $this->renderView('dashboard/home.php', [
-            'title' => 'Utilisateurs',
-            'isDashboard' => true,
-            'links' => $this->links(true),
-            'isAdmin' => true,
+            'title'            => 'Utilisateurs',
+            'isDashboard'      => true,
+            'links'            => $this->links(true),
+            'isAdmin'          => true,
             'dashboardContent' => $this->renderComponent('dash_users.php', [
-                'users' => $users,
-                'flash' => $flash,
-                'errors' => $errors,
-                'str' => $this->strings(),
+                'users'        => $users,
+                'flash'        => $flash,
+                'errors'       => $errors,
+                'str'          => $this->strings(),
                 'createAction' => '/dashboard/users/create',
                 'deleteAction' => '/dashboard/users/delete',
             ]),
-            'str' => $this->strings(),
+            'str'              => $this->strings(),
         ]);
     }
 
     public function usersCreate(): void
     {
-        AuthMiddleware::requireRole('admin');
-        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
-            header('Location: /dashboard/users/create', true, 303);
-            return;
-        }
         $username = filter_input(INPUT_POST, 'username');
         $password = $_POST['password'] ?? null;
         $email    = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
@@ -208,22 +175,19 @@ final class DashboardController extends RenderController
         } else {
             $_SESSION['flash'] = "Erreur : champs invalides.";
         }
-        header('Location: /dashboard/users', true, 303);
+
+        Redirect::to('/dashboard/users');
     }
 
     public function usersDelete(): void
     {
-        AuthMiddleware::requireRole('admin');
-        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
-            header('Location: /dashboard/users/delete', true, 303);
-            return;
-        }
         $ids = array_map('intval', $_POST['user_ids'] ?? []);
         foreach ($ids as $id) {
             $this->userService->deleteUser($id);
         }
         $_SESSION['flash'] = "Utilisateur(s) supprimé(s).";
-        header('Location: /dashboard/users', true, 303);
+
+        Redirect::to('/dashboard/users');
     }
 
     public function index(): void

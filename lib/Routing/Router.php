@@ -4,135 +4,145 @@ declare(strict_types=1);
 
 namespace CapsuleLib\Routing;
 
-/**
- * Router minimaliste basé sur les méthodes HTTP et les patterns d’URL.
- *
- * Permet de définir des routes avec leurs handlers (méthode et contrôleur),
- * de gérer les routes GET, POST, ou "any" (toutes méthodes principales),
- * et de dispatcher la requête courante vers le handler adéquat.
- *
- * Le pattern d’URL peut contenir des paramètres nommés {param}, accessibles dans la méthode appelée.
- *
- * Exemple :
- *  $router->get('/user/{id}', [$userController, 'show']);
- *  $router->dispatch();
- */
-class Router
+use CapsuleLib\Middleware\MiddlewareRunner;
+
+final class Router
 {
-    /** @var array<string, array<string, array{0: object, 1: string}>> Liste des routes par méthode HTTP */
+    /** @var Route[] */
     private array $routes = [];
 
-    /** @var callable|null Handler pour les routes non trouvées (404) */
-    private $notFoundHandler = null;
+    /** @var array<int, array{prefix:string, mws:array<int, callable>}> */
+    private array $groupStack = [];
 
-    /**
-     * Définit une route HTTP GET.
-     *
-     * @param string $path Pattern de l’URL (ex: /user/{id})
-     * @param array{0: object, 1: string} $handler Couple [contrôleur, méthode]
-     * @return void
-     */
-    public function get(string $path, array $handler): void
+    /** @var array<string, Route> */
+    private array $named = [];
+
+    /** @var callable():void */
+    private $notFound = null;
+
+    /* ---------- Enregistrement ---------- */
+
+    public function get(string $path, callable $handler, array $middlewares = [], ?string $name = null): void
     {
-        $this->addRoute('GET', $path, $handler);
+        $this->map('GET', $path, $handler, $middlewares, $name);
+    }
+    public function post(string $path, callable $handler, array $middlewares = [], ?string $name = null): void
+    {
+        $this->map('POST', $path, $handler, $middlewares, $name);
+    }
+    public function put(string $path, callable $handler, array $middlewares = [], ?string $name = null): void
+    {
+        $this->map('PUT', $path, $handler, $middlewares, $name);
+    }
+    public function delete(string $path, callable $handler, array $middlewares = [], ?string $name = null): void
+    {
+        $this->map('DELETE', $path, $handler, $middlewares, $name);
+    }
+    public function patch(string $path, callable $handler, array $middlewares = [], ?string $name = null): void
+    {
+        $this->map('PATCH', $path, $handler, $middlewares, $name);
     }
 
-    /**
-     * Définit une route HTTP POST.
-     *
-     * @param string $path Pattern de l’URL
-     * @param array{0: object, 1: string} $handler Couple [contrôleur, méthode]
-     * @return void
-     */
-    public function post(string $path, array $handler): void
+    public function map(string $method, string $path, callable $handler, array $middlewares = [], ?string $name = null): void
     {
-        $this->addRoute('POST', $path, $handler);
-    }
+        [$prefixed, $mergedMws] = $this->applyGroupContext($path, $middlewares);
+        $route = new Route($method, $prefixed, $handler, $mergedMws, $name);
 
-    /**
-     * Définit une route accessible par toutes les méthodes HTTP principales.
-     *
-     * @param string $path Pattern de l’URL
-     * @param array{0: object, 1: string} $handler Couple [contrôleur, méthode]
-     * @return void
-     */
-    public function any(string $path, array $handler): void
-    {
-        foreach (['GET', 'POST', 'PUT', 'DELETE', 'PATCH'] as $method) {
-            $this->addRoute($method, $path, $handler);
+        $this->routes[] = $route;
+        if ($name) {
+            $this->named[$name] = $route;
         }
     }
 
     /**
-     * Définit un handler custom pour les requêtes non matchées (404).
-     *
-     * @param callable $handler Fonction à exécuter en cas de 404
-     * @return void
+     * Groupes de routes avec préfixe et middlewares.
+     * Usage:
+     *   $router->group('/dashboard', [mw1, mw2], function (Router $r) { ... });
      */
-    public function setNotFoundHandler(callable $handler): void
+    public function group(string $prefix, array $middlewares, callable $callback): void
     {
-        $this->notFoundHandler = $handler;
+        $this->groupStack[] = ['prefix' => rtrim($prefix, '/'), 'mws' => $middlewares];
+        $callback($this);
+        array_pop($this->groupStack);
     }
 
-    /**
-     * Ajoute une route pour une méthode HTTP donnée.
-     *
-     * Convertit le pattern d’URL en regex et stocke le handler.
-     *
-     * @param string $method Méthode HTTP (GET, POST, etc.)
-     * @param string $path Pattern de l’URL
-     * @param array{0: object, 1: string} $handler Couple [contrôleur, méthode]
-     * @return void
-     */
-    private function addRoute(string $method, string $path, array $handler): void
+    private function applyGroupContext(string $path, array $middlewares): array
     {
-        $pattern = $this->convertPathToRegex($path);
-        $this->routes[$method][$pattern] = $handler;
+        $prefix = '';
+        $merged = [];
+
+        foreach ($this->groupStack as $g) {
+            $prefix .= $g['prefix'];
+            $merged = array_merge($merged, $g['mws']);
+        }
+
+        $prefixed = rtrim($prefix, '/') . '/' . ltrim($path, '/');
+        if ($prefixed === '') $prefixed = '/';
+        $prefixed = '/' . ltrim($prefixed, '/');
+
+        return [$prefixed, array_merge($merged, $middlewares)];
     }
 
-    /**
-     * Convertit un pattern d’URL avec paramètres en expression régulière.
-     *
-     * Exemple : /user/{id} → /^user\/(?P<id>[^/]+)$/
-     *
-     * @param string $path Pattern d’URL
-     * @return string Expression régulière délimitée pour preg_match
-     */
-    private function convertPathToRegex(string $path): string
+    /* ---------- Dispatch ---------- */
+
+    public function dispatch(?string $method = null, ?string $path = null): void
     {
-        $pattern = preg_replace('#\{([a-z]+)\}#i', '(?P<$1>[^/]+)', trim($path, '/'));
-        return '#^' . $pattern . '$#';
-    }
+        $method ??= $_SERVER['REQUEST_METHOD'] ?? 'GET';
+        $uri = $path ?? parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+        $uri = $uri ?: '/';
 
-    /**
-     * Traite la requête HTTP courante, cherche une route correspondante et exécute son handler.
-     *
-     * Passe les paramètres extraits de l’URL à la méthode cible.
-     * Si aucune route ne correspond, exécute le handler 404 ou affiche un message.
-     *
-     * @return void
-     */
-    public function dispatch(): void
-    {
-        $method = $_SERVER['REQUEST_METHOD'];
-        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-        $uri = trim($uri, '/');
+        foreach ($this->routes as $route) {
+            if ($route->method !== $method) continue;
 
-        foreach ($this->routes[$method] ?? [] as $pattern => $handler) {
-            if (preg_match($pattern, $uri, $matches)) {
-                $params = array_filter($matches, fn($k) => !is_int($k), ARRAY_FILTER_USE_KEY);
-
-                [$controller, $methodName] = $handler;
-                $controller->$methodName(...array_values($params));
+            if (preg_match($route->toRegex(), $uri, $m)) {
+                // params nommés
+                $params = [];
+                foreach ($m as $k => $v) {
+                    if (!is_int($k)) $params[$k] = $v;
+                }
+                // run middlewares + handler
+                $callable = MiddlewareRunner::with($route->handler, $route->middlewares);
+                $callable($params);
                 return;
             }
         }
 
-        http_response_code(404);
-        if (isset($this->notFoundHandler)) {
-            call_user_func($this->notFoundHandler);
-        } else {
-            echo "404 Not Found";
+        if ($this->notFound) {
+            ($this->notFound)();
+            return;
         }
+        http_response_code(404);
+        echo '404 Not Found';
+    }
+
+    /* ---------- Divers ---------- */
+
+    public function setNotFoundHandler(callable $handler): void
+    {
+        $this->notFound = $handler;
+    }
+
+    /** Génération d’URL par nom: route('article.edit', ['id'=>12]) → /dashboard/articles/edit/12 */
+    public function route(string $name, array $params = []): string
+    {
+        if (!isset($this->named[$name])) {
+            throw new \RuntimeException("Route name not found: $name");
+        }
+        $pattern = $this->named[$name]->pathPattern;
+
+        // Remplace {name:regex} et {name}
+        $url = preg_replace_callback(
+            '/\{([a-zA-Z_][a-zA-Z0-9_]*)\:([^}]+)\}|\{([a-zA-Z_][a-zA-Z0-9_]*)\}/',
+            function ($m) use ($params) {
+                $key = $m[1] ?: $m[3];
+                if (!array_key_exists($key, $params)) {
+                    throw new \RuntimeException("Missing param '$key' for route generation");
+                }
+                return rawurlencode((string)$params[$key]);
+            },
+            $pattern
+        );
+
+        return $url ?? $pattern;
     }
 }

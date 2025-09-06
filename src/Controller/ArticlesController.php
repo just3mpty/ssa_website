@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use CapsuleLib\Core\RenderController;
-use CapsuleLib\Http\Middleware\AuthMiddleware;
-use CapsuleLib\Security\CsrfTokenManager;
 use App\Lang\TranslationLoader;
-use App\Service\ArticleService;
 use App\Navigation\SidebarLinksProvider;
+use App\Service\ArticleService;
+use CapsuleLib\Core\RenderController;
+use CapsuleLib\Http\RequestUtils;
+use CapsuleLib\Http\FlashBag;
+use CapsuleLib\Security\CsrfTokenManager;
 
 final class ArticlesController extends RenderController
 {
@@ -18,6 +19,7 @@ final class ArticlesController extends RenderController
         private readonly SidebarLinksProvider $linksProvider
     ) {}
 
+    /* -------------------- Helpers -------------------- */
 
     private function str(): array
     {
@@ -31,7 +33,6 @@ final class ArticlesController extends RenderController
 
     private function renderDash(string $title, string $component, array $vars = []): void
     {
-        AuthMiddleware::requireRole('admin');
 
         echo $this->renderView('dashboard/home.php', [
             'title'            => $title,
@@ -47,20 +48,16 @@ final class ArticlesController extends RenderController
         ]);
     }
 
-    /** Normalise un id provenant du routeur (array|scalar) */
+    /** Normalise un id provenant du routeur (array|scalar). */
     private function normId(string|int|array $param): int
     {
-        if (\is_array($param)) {
-            return (int)($param['id'] ?? 0);
-        }
-        return (int)$param;
+        return RequestUtils::intFromParam($param);
     }
 
-    /* ---------- Listing ---------- */
+    /* -------------------- Listing -------------------- */
 
     public function index(): void
     {
-        AuthMiddleware::requireRole('admin');
 
         $list = $this->articles->getAll();
         $this->renderDash('Articles', 'dash_articles.php', [
@@ -68,17 +65,16 @@ final class ArticlesController extends RenderController
             'createUrl'     => '/dashboard/articles/create',
             'editBaseUrl'   => '/dashboard/articles/edit',
             'deleteBaseUrl' => '/dashboard/articles/delete',
-            'csrf'          => \CapsuleLib\Security\CsrfTokenManager::getToken(),
+            'csrf'          => CsrfTokenManager::getToken(),
         ]);
     }
 
-    /* ---------- Create ---------- */
+    /* -------------------- Create -------------------- */
 
     public function createForm(): void
     {
-        AuthMiddleware::requireRole('admin');
 
-        // Réaffiche les erreurs/data PRG si présents
+        // PRG: réaffiche les erreurs/data si présents
         $errors = $_SESSION['errors'] ?? null;
         unset($_SESSION['errors']);
         $data   = $_SESSION['data']   ?? null;
@@ -94,32 +90,32 @@ final class ArticlesController extends RenderController
 
     public function createSubmit(): void
     {
-        AuthMiddleware::requireRole('admin');
 
-        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+        if (!RequestUtils::isPost()) {
             header('Location: /dashboard/articles', true, 303);
             return;
         }
+
         CsrfTokenManager::requireValidToken();
 
-        // même logique : on délègue au service puis PRG
+        // Délégation au service puis PRG
         $result = $this->articles->create($_POST, $_SESSION['admin'] ?? []);
         if (!empty($result['errors'])) {
             $_SESSION['errors'] = $result['errors'];
             $_SESSION['data']   = $result['data'] ?? $_POST;
+            FlashBag::add('error', 'Le formulaire contient des erreurs.');
             header('Location: /dashboard/articles/create', true, 303);
             return;
         }
 
-        $_SESSION['flash'] = 'Article créé.';
+        FlashBag::add('success', 'Article créé.');
         header('Location: /dashboard/articles', true, 303);
     }
 
-    /* ---------- Edit ---------- */
+    /* -------------------- Edit -------------------- */
 
     public function editForm(string|array $params): void
     {
-        AuthMiddleware::requireRole('admin');
 
         $id = $this->normId($params);
         $article = $this->articles->find($id);
@@ -129,7 +125,7 @@ final class ArticlesController extends RenderController
             return;
         }
 
-        // Réaffiche les erreurs/data PRG si présents
+        // PRG: réaffiche les erreurs/data si présents
         $prefill = $_SESSION['data'] ?? [];
         unset($_SESSION['data']);
         $errors  = $_SESSION['errors'] ?? null;
@@ -145,12 +141,12 @@ final class ArticlesController extends RenderController
 
     public function editSubmit(string|array $params): void
     {
-        AuthMiddleware::requireRole('admin');
 
-        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+        if (!RequestUtils::isPost()) {
             header('Location: /dashboard/articles', true, 303);
             return;
         }
+
         CsrfTokenManager::requireValidToken();
 
         $id = $this->normId($params);
@@ -161,35 +157,35 @@ final class ArticlesController extends RenderController
             return;
         }
 
-        // même logique : on délègue au service, ré-affiche si erreurs, sinon PRG
         $result = $this->articles->update($id, $_POST);
         if (!empty($result['errors'])) {
             $_SESSION['errors'] = $result['errors'];
             $_SESSION['data']   = $result['data'] ?? $_POST;
+            FlashBag::add('error', 'Le formulaire contient des erreurs.');
             header("Location: /dashboard/articles/edit/{$id}", true, 303);
             return;
         }
 
-        $_SESSION['flash'] = 'Article mis à jour.';
+        FlashBag::add('success', 'Article mis à jour.');
         header('Location: /dashboard/articles', true, 303);
     }
 
-    /* ---------- Delete ---------- */
+    /* -------------------- Delete -------------------- */
 
     public function deleteSubmit(string|array $params): void
     {
-        AuthMiddleware::requireRole('admin');
 
-        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+        if (!RequestUtils::isPost()) {
             header('Location: /dashboard/articles', true, 303);
             return;
         }
+
         CsrfTokenManager::requireValidToken();
 
         $id = $this->normId($params);
         $this->articles->delete($id);
 
-        $_SESSION['flash'] = 'Article supprimé.';
+        FlashBag::add('success', 'Article supprimé.');
         header('Location: /dashboard/articles', true, 303);
     }
 

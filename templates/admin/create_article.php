@@ -12,8 +12,8 @@
         <label for="resume"><?= secure_html($str['create_article_label_desc']) ?></label>
         <textarea name="resume" id="resume" required rows="4" maxlength="1000"></textarea>
 
-        <label for="date_event"><?= secure_html($str['create_article_label_date']) ?></label>
-        <input type="date" name="date_event" id="date_event" required>
+        <label for="date_article"><?= secure_html($str['create_article_label_date']) ?></label>
+        <input type="date" name="date_article" id="date_article" required>
 
         <label for="hours"><?= secure_html($str['create_article_label_time']) ?></label>
         <input type="time" name="hours" id="hours" required>

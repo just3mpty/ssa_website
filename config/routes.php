@@ -4,50 +4,55 @@ declare(strict_types=1);
 
 use App\Controller\HomeController;
 use App\Controller\DashboardController;
+use App\Controller\LoginController;
 use App\Controller\ArticlesController;
 use CapsuleLib\Core\DIContainer;
+use CapsuleLib\Routing\Router;
+use CapsuleLib\Middleware\MiddlewareAuth;
 
-/**
- * Retourne un tableau de routes [METHOD, PATH, HANDLER].
- * On injecte le container pour construire les handlers.
- *
- * @return array<int, array{0:string,1:string,2:array{0:object,1:string}}>
- */
-return static function (DIContainer $c): array {
+/** @return callable(Router, DIContainer): void */
+return static function (Router $router, DIContainer $c): void {
     $hc = $c->get(HomeController::class);
     $dc = $c->get(DashboardController::class);
     $aa = $c->get(ArticlesController::class);
-    $lc = $c->get(\CapsuleLib\Core\LoginController::class);
+    $lc = $c->get(LoginController::class);
 
-    return [
-        // Public
-        ['GET',  '/',        [$hc, 'home']],
-        ['GET',  '/projet',  [$hc, 'projet']],
-        ['GET',  '/galerie', [$hc, 'galerie']],
-        ['GET',  '/wiki',    [$hc, 'wiki']],
-        ['POST', '/home/generate_ics',   [$aa, 'generateICS']],
-        ['GET',  '/article/{id}', [$hc, 'articleDetails']],
 
-        // Auth
-        ['GET',  '/login',  [$lc, 'loginForm']],
-        ['POST', '/login',  [$lc, 'loginSubmit']],
-        ['GET',  '/logout', [$lc, 'logout']],
+    $router->get('/health', function () {
+        header('Content-Type: text/plain');
+        echo "OK";
+    });
+    // Public
+    $router->get('/',        [$hc, 'home'],   [], name: 'home');
+    $router->get('/projet',  [$hc, 'projet']);
+    $router->get('/galerie', [$hc, 'galerie']);
 
-        // Dashboard (profil, users)
-        ['GET',  '/dashboard/home',             [$dc, 'home']],
-        ['GET',  '/dashboard/account',          [$dc, 'account']],
-        ['POST', '/dashboard/account/password', [$dc, 'accountPassword']],
-        ['GET',  '/dashboard/users',            [$dc, 'users']],
-        ['POST', '/dashboard/users/create',     [$dc, 'usersCreate']],
-        ['POST', '/dashboard/users/delete',     [$dc, 'usersDelete']],
+    // Auth
+    $router->get('/login',  [$lc, 'loginForm']);
+    $router->post('/login', [$lc, 'loginSubmit']);
+    $router->get('/logout', [$lc, 'logout']);
 
-        // Dashboard articles (admin) —  WARN: doublon /dashboard/articles
-        ['GET',  '/dashboard/articles',               [$aa, 'index']],
-        ['GET',  '/dashboard/articles/create',        [$aa, 'createForm']],
-        ['POST', '/dashboard/articles/create',        [$aa, 'createSubmit']],
-        ['GET',  '/dashboard/articles/edit/{id}',     [$aa, 'editForm']],
-        ['POST', '/dashboard/articles/edit/{id}',     [$aa, 'editSubmit']],
-        ['POST', '/dashboard/articles/delete/{id}',   [$aa, 'deleteSubmit']],
-        
-    ];
+    // Dashboard (auth requis)
+    $router->group('/dashboard', [MiddlewareAuth::auth()], function (Router $r) use ($dc, $aa) {
+        $r->get('/home',    [$dc, 'home'],   name: 'dash.home');
+        $r->get('/account', [$dc, 'account'], name: 'dash.account');
+        $r->post('/account/password', [$dc, 'accountPassword']);
+
+        // Users (admin)
+        $r->group('', [MiddlewareAuth::role('admin')], function (Router $r2) use ($dc) {
+            $r2->get('/users',            [$dc, 'users'],        name: 'dash.users');
+            $r2->post('/users/create',    [$dc, 'usersCreate']);
+            $r2->post('/users/delete',    [$dc, 'usersDelete']);
+        });
+
+        // Articles admin (admin)
+        $r->group('/articles', [MiddlewareAuth::role('admin')], function (Router $r3) use ($aa) {
+            $r3->get('',                 [$aa, 'index'],      name: 'dash.articles.index');
+            $r3->get('/create',          [$aa, 'createForm'], name: 'dash.articles.create');
+            $r3->post('/create',         [$aa, 'createSubmit']);
+            $r3->get('/edit/{id:\d+}',   [$aa, 'editForm'],   name: 'dash.articles.edit');
+            $r3->post('/edit/{id:\d+}',  [$aa, 'editSubmit']);
+            $r3->post('/delete/{id:\d+}', [$aa, 'deleteSubmit'], name: 'dash.articles.delete');
+        });
+    });
 };

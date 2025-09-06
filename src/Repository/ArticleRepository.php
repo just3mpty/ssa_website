@@ -52,7 +52,7 @@ class ArticleRepository extends BaseRepository
     public function upcoming(): array
     {
         $stmt = $this->pdo->prepare(
-            "SELECT * FROM {$this->table} WHERE date_event >= :today ORDER BY date_event ASC"
+            "SELECT * FROM {$this->table} WHERE date_article >= :today ORDER BY date_article ASC"
         );
         $stmt->execute(['today' => date('Y-m-d')]);
         $rows = $stmt->fetchAll();
@@ -70,7 +70,7 @@ class ArticleRepository extends BaseRepository
     public function findByAuthor(int $authorId): array
     {
         $rows = $this->query(
-            "SELECT * FROM {$this->table} WHERE author_id = :author_id ORDER BY date_event DESC",
+            "SELECT * FROM {$this->table} WHERE author_id = :author_id ORDER BY date_article DESC",
             ['author_id' => $authorId]
         );
         return array_map([$this, 'hydrate'], $rows);
@@ -129,7 +129,7 @@ class ArticleRepository extends BaseRepository
             titre: $data['titre'],
             resume: $data['resume'],
             description: $data['description'] ?? null,
-            date_event: $data['date_event'],
+            date_article: $data['date_article'],
             hours: $data['hours'],
             image: $data['image'] ?? null,
             lieu: $data['lieu'] ?? null,
