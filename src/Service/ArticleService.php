@@ -7,59 +7,61 @@ namespace App\Service;
 use App\Repository\ArticleRepository;
 use App\Dto\ArticleDTO;
 
-/**
- * Service de gestion métier des événements.
- *
- * Encapsule la logique de création, mise à jour, suppression et validation
- * des événements, en déléguant la persistance au repository.
- */
-class ArticleService
+final class ArticleService
 {
-    private ArticleRepository $articleRepository;
+    public function __construct(private ArticleRepository $articleRepository) {}
 
-    public function __construct(ArticleRepository $articleRepository)
-    {
-        $this->articleRepository = $articleRepository;
-    }
+    /** Champs requis et optionnels (pour lisibilité & évolutivité) */
+    private const REQUIRED_FIELDS  = ['titre', 'resume', 'description', 'date_article', 'hours'];
+    private const OPTIONAL_FIELDS  = ['lieu', 'image'];
 
-    /**
-     * Récupère tous les événements à venir.
-     *
-     * @return array<ArticleDTO> Liste d’articles à venir sous forme de DTO.
-     */
+    /* =======================
+       ======= Queries =======
+       ======================= */
+
+    /** @return ArticleDTO[] */
     public function getUpcoming(): array
     {
-        // Si ton repository retourne déjà des DTO, laisse tel quel.
-        // Sinon, hydrate comme dans getAll().
-        /** @var array<ArticleDTO> $rows */
+        /** @var array<array<string,mixed>> $rows */
         $rows = $this->articleRepository->upcoming();
-        return $rows;
+        return array_map($this->hydrateRow(...), $rows);
     }
 
-    /**
-     * Récupère un événement par son ID.
-     *
-     * @param int $id Identifiant de l’événement.
-     * @return array<string,mixed>|null Données de l’événement (row) ou null si non trouvé.
-     */
+    /** @return ArticleDTO[] */
+    public function getAll(): array
+    {
+        /** @var array<array<string,mixed>> $rows */
+        $rows = $this->articleRepository->all();
+        return array_map($this->hydrateRow(...), $rows);
+    }
+
+    public function getById(int $id): ?ArticleDTO
+    {
+        if ($id <= 0) {
+            throw new \InvalidArgumentException('ID doit être positif.');
+        }
+        $row = $this->articleRepository->find($id);
+        return $row ? $this->hydrateRow($row) : null;
+    }
+
+    /** @deprecated Préfère getById(); gardé pour compat temporaire */
     public function find(int $id): ?array
     {
         if ($id <= 0) {
-            throw new \InvalidArgumentException('ID doit être positif');
+            throw new \InvalidArgumentException('ID doit être positif.');
         }
         /** @var array<string,mixed>|null $row */
-        $row = $this->articleRepository->find($id);
-        return $row;
+        return $this->articleRepository->find($id);
     }
 
+    /* =======================
+       ===== Mutations =======
+       ======================= */
+
     /**
-     * Crée un nouvel événement à partir des données du formulaire et de l’utilisateur.
-     *
-     * @param array<string,mixed> $input Données brutes issues du formulaire.
-     * @param array<string,mixed> $user  Données utilisateur (doit contenir au moins 'id').
-     * @return array{errors?: array<string,string>, data?: array{
-     *     titre:string, resume:string, description:string, date_article:string, hours:string, lieu:string
-     * }}
+     * @param array<string,mixed> $input
+     * @param array<string,mixed> $user  (doit contenir au moins 'id')
+     * @return array{errors?: array<string,string>, data?: array<string,mixed>}
      */
     public function create(array $input, array $user): array
     {
@@ -70,25 +72,28 @@ class ArticleService
             return ['errors' => $errors, 'data' => $data];
         }
 
-        $this->articleRepository->create([
-            ...$data,
-            'author_id'  => $user['id'] ?? null,
-        ]);
+        try {
+            $payload = $this->toPersistenceArray($data) + [
+                'author_id' => isset($user['id']) ? (int)$user['id'] : null,
+            ];
+            $this->articleRepository->create($payload);
+        } catch (\Throwable $e) {
+            return ['errors' => ['_global' => 'Erreur lors de la création.'], 'data' => $data];
+        }
 
-        return []; // pas d’erreurs
+        return [];
     }
 
     /**
-     * Met à jour un événement existant.
-     *
-     * @param int $id Identifiant de l’événement à mettre à jour.
-     * @param array<string,mixed> $input Données mises à jour issues du formulaire.
-     * @return array{errors?: array<string,string>, data?: array{
-     *     titre:string, resume:string, description:string, date_article:string, hours:string, lieu:string
-     * }}
+     * @param array<string,mixed> $input
+     * @return array{errors?: array<string,string>, data?: array<string,mixed>}
      */
     public function update(int $id, array $input): array
     {
+        if ($id <= 0) {
+            return ['errors' => ['_global' => 'Identifiant invalide.'], 'data' => $input];
+        }
+
         $data   = $this->sanitize($input);
         $errors = $this->validate($data);
 
@@ -96,146 +101,134 @@ class ArticleService
             return ['errors' => $errors, 'data' => $data];
         }
 
-        $this->articleRepository->update($id, [
-            ...$data,
-            // si besoin (selon ton format SQL)
-            'date_article' => \str_replace('T', ' ', $data['date_article']),
-        ]);
+        try {
+            $payload = $this->toPersistenceArray($data);
+            $this->articleRepository->update($id, $payload);
+        } catch (\Throwable $e) {
+            return ['errors' => ['_global' => 'Erreur lors de la mise à jour.'], 'data' => $data];
+        }
 
-        return []; // pas d’erreurs
+        return [];
     }
 
-    /**
-     * Supprime un événement par son ID.
-     */
     public function delete(int $id): void
     {
+        if ($id <= 0) {
+            throw new \InvalidArgumentException('ID doit être positif.');
+        }
         $this->articleRepository->delete($id);
     }
 
-    /**
-     * Récupère tous les événements/articles (admin/dashboard).
-     *
-     * @return array<ArticleDTO>
-     */
-    public function getAll(): array
+    /* =======================
+       ===== Helpers =======
+       ======================= */
+
+    /** @param array<string,mixed> $row */
+    private function hydrateRow(array $row): ArticleDTO
     {
-        /** @var array<array<string,mixed>> $rows */
-        $rows = $this->articleRepository->all();
-
-        return array_map(
-            /**
-             * @param array<string,mixed> $row
-             */
-            static function (array $row): ArticleDTO {
-                return new ArticleDTO(
-                    id: (int)$row['id'],
-                    titre: (string)$row['titre'],
-                    resume: (string)$row['resume'],
-                    description: isset($row['description']) ? (string)$row['description'] : null,
-                    date_article: (string)$row['date_article'],
-                    hours: (string)$row['hours'],
-                    lieu: isset($row['lieu']) ? (string)$row['lieu'] : null,
-                    image: isset($row['image']) ? (string)$row['image'] : null,
-                    created_at: (string)$row['created_at'],
-                    author_id: (int)$row['author_id'],
-                    author: $row['author'] ?? null
-                );
-            },
-            $rows
-        );
-    }
-
-    /**
-     * Rend les détails d'un article par son ID.
-     */
-    public function getById(int $id): ?ArticleDTO
-    {
-        /** @var array<string,mixed>|null $row */
-        $row = $this->articleRepository->find($id);
-
-        if ($row === null) {
-            return null;
-        }
-
         return new ArticleDTO(
-            id: (int)$row['id'],
-            titre: (string)$row['titre'],
-            resume: (string)$row['resume'],
+            id: (int)($row['id'] ?? 0),
+            titre: (string)($row['titre'] ?? ''),
+            resume: (string)($row['resume'] ?? ''),
             description: isset($row['description']) ? (string)$row['description'] : null,
-            date_article: (string)$row['date_article'],
-            hours: (string)$row['hours'],
+            date_article: (string)($row['date_article'] ?? ''), // stocké tel quel (YYYY-MM-DD)
+            hours: (string)($row['hours'] ?? ''),        // HH:MM:SS
             lieu: isset($row['lieu']) ? (string)$row['lieu'] : null,
             image: isset($row['image']) ? (string)$row['image'] : null,
-            created_at: (string)$row['created_at'],
-            author_id: (int)$row['author_id'],
-            author: $row['author'] ?? null
+            created_at: (string)($row['created_at'] ?? ''),
+            author_id: (int)($row['author_id'] ?? 0),
+            author: isset($row['author']) ? (string)$row['author'] : null
         );
     }
 
     /**
-     * Nettoie et prépare les données brutes du formulaire.
+     * Normalise les données utilisateur (sans sécurité XSS ici).
+     * - trim global
+     * - requis: string non vide
+     * - optionnels: null si vide
      *
      * @param array<string,mixed> $input
-     * @return array{
-     *   titre:string,
-     *   resume:string,
-     *   description:string,
-     *   date_article:string,
-     *   hours:string,
-     *   lieu:string
-     * }
+     * @return array<string,mixed>
      */
     private function sanitize(array $input): array
     {
-        $fields = ['titre', 'description', 'date_article', 'hours', 'lieu', 'resume'];
-        $clean = [
-            'titre'        => '',
-            'resume'       => '',
-            'description'  => '',
-            'date_article' => '',
-            'hours'        => '',
-            'lieu'         => '',
-        ];
+        $out = [];
 
-        foreach ($fields as $field) {
-            $value = \trim((string)($input[$field] ?? ''));
-            $clean[$field] = ($field === 'description') ? $value : \strip_tags($value);
+        foreach (array_merge(self::REQUIRED_FIELDS, self::OPTIONAL_FIELDS) as $field) {
+            $val = isset($input[$field]) ? trim((string)$input[$field]) : '';
+            $out[$field] = $val;
         }
 
-        /** @var array{
-         *   titre:string, resume:string, description:string, date_article:string, hours:string, lieu:string
-         * } $clean */
-        return $clean;
+        // Optionnels → null si vide
+        foreach (self::OPTIONAL_FIELDS as $opt) {
+            if ($out[$opt] === '') {
+                $out[$opt] = null;
+            }
+        }
+
+        return $out;
     }
 
     /**
-     * Valide les données nettoyées.
-     *
-     * @param array{
-     *   titre:string, resume:string, description:string, date_article:string, hours:string, lieu:string
-     * } $data
-     * @return array<string,string> Tableau associatif champ => message d’erreur, vide si valide.
+     * @param array<string,mixed> $data
+     * @return array<string,string> champ => message
      */
     private function validate(array $data): array
     {
         $errors = [];
 
-        foreach (['titre', 'resume', 'description', 'date_article', 'hours', 'lieu'] as $field) {
-            if ($data[$field] === '') {
-                $errors[$field] = 'Ce champ est obligatoire.';
+        // Requis non vides
+        foreach (self::REQUIRED_FIELDS as $f) {
+            if ($data[$f] === '' || $data[$f] === null) {
+                $errors[$f] = 'Ce champ est obligatoire.';
             }
         }
 
-        // YYYY-MM-DD
-        if ($data['date_article'] !== '' && !\preg_match('/^\d{4}-\d{2}-\d{2}$/', $data['date_article'])) {
-            $errors['date_article'] = "Format date invalide (attendu : AAAA-MM-JJ)";
+        // Date (YYYY-MM-DD) valide
+        if (!empty($data['date_article'])) {
+            $d = \DateTime::createFromFormat('Y-m-d', (string)$data['date_article']);
+            $ok = $d && $d->format('Y-m-d') === $data['date_article'];
+            if (!$ok) {
+                $errors['date_article'] = "Format date invalide (attendu : AAAA-MM-JJ)";
+            }
         }
-        // HH:MM ou HH:MM:SS
-        if ($data['hours'] !== '' && !\preg_match('/^\d{2}:\d{2}(:\d{2})?$/', $data['hours'])) {
-            $errors['hours'] = "Format heure invalide (attendu : HH:MM ou HH:MM:SS)";
+
+        // Heure (HH:MM ou HH:MM:SS) → on normalise en HH:MM:SS lors de la persistance
+        if (!empty($data['hours'])) {
+            $h = \DateTime::createFromFormat('H:i:s', (string)$data['hours'])
+                ?: \DateTime::createFromFormat('H:i', (string)$data['hours']);
+            if (!$h) {
+                $errors['hours'] = "Format heure invalide (attendu : HH:MM ou HH:MM:SS)";
+            }
         }
 
         return $errors;
+    }
+
+    /**
+     * Transforme les données validées en format prêt pour la DB.
+     * - date_article : YYYY-MM-DD
+     * - hours        : normalisé en HH:MM:SS
+     *
+     * @param array<string,mixed> $data
+     * @return array<string,mixed>
+     */
+    private function toPersistenceArray(array $data): array
+    {
+        $out = $data;
+
+        // hours → HH:MM:SS
+        if (!empty($out['hours'])) {
+            $h = \DateTime::createFromFormat('H:i:s', (string)$out['hours'])
+                ?: \DateTime::createFromFormat('H:i', (string)$out['hours']);
+            if ($h) {
+                $out['hours'] = $h->format('H:i:s');
+            }
+        }
+
+        // date_article → garde YYYY-MM-DD tel quel (déjà validé)
+        // Optionnels: null accepté
+
+        return $out;
     }
 }
