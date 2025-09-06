@@ -8,7 +8,6 @@ use App\Lang\TranslationLoader;
 use App\Navigation\SidebarLinksProvider;
 use App\Service\ArticleService;
 use CapsuleLib\Core\RenderController;
-use CapsuleLib\Middleware\AuthMiddleware;
 use CapsuleLib\Http\RequestUtils;
 use CapsuleLib\Http\FlashBag;
 use CapsuleLib\Security\CsrfTokenManager;
@@ -34,7 +33,6 @@ final class ArticlesController extends RenderController
 
     private function renderDash(string $title, string $component, array $vars = []): void
     {
-        AuthMiddleware::requireRole('admin');
 
         echo $this->renderView('dashboard/home.php', [
             'title'            => $title,
@@ -57,7 +55,6 @@ final class ArticlesController extends RenderController
 
     public function index(): void
     {
-        AuthMiddleware::requireRole('admin');
 
         $list = $this->articles->getAll();
         $this->renderDash('Articles', 'dash_articles.php', [
@@ -73,7 +70,6 @@ final class ArticlesController extends RenderController
 
     public function createForm(): void
     {
-        AuthMiddleware::requireRole('admin');
 
         // PRG: réaffiche les erreurs/data si présents
         $errors = $_SESSION['errors'] ?? null;
@@ -91,7 +87,6 @@ final class ArticlesController extends RenderController
 
     public function createSubmit(): void
     {
-        AuthMiddleware::requireRole('admin');
 
         if (!RequestUtils::isPost()) {
             header('Location: /dashboard/articles', true, 303);
@@ -118,7 +113,6 @@ final class ArticlesController extends RenderController
 
     public function editForm(string|array $params): void
     {
-        AuthMiddleware::requireRole('admin');
 
         $id = $this->normId($params);
         $article = $this->articles->find($id);
@@ -144,7 +138,6 @@ final class ArticlesController extends RenderController
 
     public function editSubmit(string|array $params): void
     {
-        AuthMiddleware::requireRole('admin');
 
         if (!RequestUtils::isPost()) {
             header('Location: /dashboard/articles', true, 303);
@@ -178,7 +171,6 @@ final class ArticlesController extends RenderController
 
     public function deleteSubmit(string|array $params): void
     {
-        AuthMiddleware::requireRole('admin');
 
         if (!RequestUtils::isPost()) {
             header('Location: /dashboard/articles', true, 303);

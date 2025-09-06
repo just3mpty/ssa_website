@@ -80,7 +80,7 @@ class LoginController extends RenderController
         );
 
         if ($success) {
-            header('Location: ../dashboard/home');
+            header('Location: /dashboard/home', true, 302); // ✅ absolu
             exit;
         }
 
