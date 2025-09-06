@@ -8,6 +8,10 @@ use CapsuleLib\Core\RenderController;
 use CapsuleLib\Security\Authenticator;
 use CapsuleLib\Security\CsrfTokenManager;
 use App\Lang\TranslationLoader;
+use CapsuleLib\Http\RequestUtils;
+use CapsuleLib\Http\Redirect;
+use CapsuleLib\Http\FlashBag;
+use CapsuleLib\Http\FormState;
 use PDO;
 
 /**
@@ -52,63 +56,55 @@ class LoginController extends RenderController
      */
     public function loginForm(): void
     {
+        $errors  = FormState::consumeErrors();
+        $prefill = FormState::consumeData();
         echo $this->renderView('admin/login.php', [
             'showHeader' => true,
             'showFooter' => true,
             'title' => 'Connexion',
-            'error' => null,
+            'error' => $errors['_global'] ?? null,
+            'errors' => $errors,
+            'prefill' => $prefill,
             'str'   => $this->getStrings(),
         ]);
     }
 
     /**
      * Traite la soumission du formulaire de connexion.
-     * Vérifie le token CSRF, tente d'authentifier l'utilisateur.
-     * En cas de succès, redirige vers le dashboard.
-     * Sinon, réaffiche le formulaire avec un message d'erreur.
-     *
-     * @return void
      */
     public function loginSubmit(): void
     {
+        RequestUtils::ensurePostOrRedirect('/login');
         CsrfTokenManager::requireValidToken();
+
+        $username = trim((string)($_POST['username'] ?? ''));
+        $password = (string)($_POST['password'] ?? '');
+
+        if ($username === '' || $password === '') {
+            FormState::set(['_global' => 'Champs requis manquants.'], ['username' => $username]);
+            FlashBag::add('error', 'Le formulaire contient des erreurs.');
+            Redirect::to('/login');
+        }
 
         $success = Authenticator::login(
             $this->pdo,
-            $_POST['username'] ?? '',
-            $_POST['password'] ?? ''
+            $username,
+            $password
         );
 
         if ($success) {
-            header('Location: /dashboard/home', true, 302); // ✅ absolu
-            exit;
+            Redirect::to('/dashboard/home', 302);
         }
 
-        echo $this->renderView('admin/login.php', [
-            'title' => 'Connexion',
-            'showHeader' => true,
-            'showFooter' => true,
-            'error' => 'Identifiants incorrects.',
-            'str'   => $this->getStrings(),
-        ]);
+        // PRG en cas d'échec d’authentification
+        FormState::set(['_global' => 'Identifiants incorrects.'], ['username' => $username]);
+        FlashBag::add('error', 'Identifiants incorrects.');
+        Redirect::to('/login');
     }
 
-    /**
-     * Affiche le tableau de bord de l'administration.
-     * Vérifie que l'utilisateur est authentifié.
-     * Fournit les données utilisateur et permissions au template.
-     *
-     * @return void
-     */
-    /**
-     * Déconnecte l'utilisateur, détruit la session et redirige vers la page de login.
-     *
-     * @return void
-     */
     public function logout(): void
     {
         Authenticator::logout();
-        header('Location: /login');
-        exit;
+        Redirect::to('/login');
     }
 }

@@ -135,18 +135,11 @@ final class DashboardController extends RenderController
         if ($errors === []) {
             [$ok, $svcErrors] = $this->passwords->changePassword($userId, $old, $new);
             if ($ok) {
-                FlashBag::add('success', 'Mot de passe modifié avec succès.');
-                Redirect::to('/dashboard/account', 303);
+                Redirect::withSuccess('/dashboard/account', 'Mot de passe modifié avec succès.');
             }
             $errors = $svcErrors ?: ['_global' => 'Échec de la modification du mot de passe.'];
         }
-
-        // PRG avec erreurs
-        FormState::set($errors, [
-            // pas de repop sur les mots de passe pour sécurité
-        ]);
-        FlashBag::add('error', 'Le formulaire contient des erreurs.');
-        Redirect::to('/dashboard/account', 303);
+        Redirect::withErrors('/dashboard/account', 'Le formulaire contient des erreurs.', $errors, []);
     }
 
     /* ===== Utilisateurs (admin) ===== */
@@ -185,20 +178,25 @@ final class DashboardController extends RenderController
         if (!$email)          $errors['email']    = 'Email invalide.';
 
         if ($errors !== []) {
-            FormState::set($errors, ['username' => $username, 'email' => (string)$email, 'role' => $role]);
-            FlashBag::add('error', 'Le formulaire contient des erreurs.');
-            Redirect::to('/dashboard/users', 303);
+            Redirect::withErrors(
+                '/dashboard/users',
+                'Le formulaire contient des erreurs.',
+                $errors,
+                ['username' => $username, 'email' => (string)$email, 'role' => $role]
+            );
         }
 
         try {
             $this->userService->createUser($username, $password, (string)$email, $role);
-            FlashBag::add('success', 'Utilisateur créé avec succès.');
+            Redirect::withSuccess('/dashboard/users', 'Utilisateur créé avec succès.');
         } catch (\Throwable $e) {
-            FormState::set(['_global' => 'Création impossible.'], ['username' => $username, 'email' => (string)$email, 'role' => $role]);
-            FlashBag::add('error', 'Erreur lors de la création.');
+            Redirect::withErrors(
+                '/dashboard/users',
+                'Erreur lors de la création.',
+                ['_global' => 'Création impossible.'],
+                ['username' => $username, 'email' => (string)$email, 'role' => $role]
+            );
         }
-
-        Redirect::to('/dashboard/users', 303);
     }
 
     /** POST /dashboard/users/delete */
@@ -211,8 +209,7 @@ final class DashboardController extends RenderController
         $ids = array_values(array_filter($ids, fn(int $id) => $id > 0));
 
         if ($ids === []) {
-            FlashBag::add('error', 'Aucun utilisateur sélectionné.');
-            Redirect::to('/dashboard/users', 303);
+            Redirect::withErrors('/dashboard/users', 'Aucun utilisateur sélectionné.', ['_global' => 'Aucun utilisateur sélectionné.']);
         }
 
         $deleted = 0;
@@ -226,11 +223,8 @@ final class DashboardController extends RenderController
         }
 
         if ($deleted > 0) {
-            FlashBag::add('success', "Utilisateur(s) supprimé(s) : {$deleted}.");
-        } else {
-            FlashBag::add('error', 'Aucune suppression effectuée.');
+            Redirect::withSuccess('/dashboard/users', "Utilisateur(s) supprimé(s) : {$deleted}.");
         }
-
-        Redirect::to('/dashboard/users', 303);
+        Redirect::withErrors('/dashboard/users', 'Aucune suppression effectuée.', ['_global' => 'Aucune suppression effectuée.']);
     }
 }

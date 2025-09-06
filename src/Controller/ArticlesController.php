@@ -89,13 +89,15 @@ final class ArticlesController extends RenderController
 
         $result = $this->articles->create($_POST, $_SESSION['admin'] ?? []);
         if (!empty($result['errors'])) {
-            FormState::set($result['errors'], $result['data'] ?? $_POST);
-            FlashBag::add('error', 'Le formulaire contient des erreurs.');
-            Redirect::to('/dashboard/articles/create', 303);
+            Redirect::withErrors(
+                '/dashboard/articles/create',
+                'Le formulaire contient des erreurs',
+                $result['errors'],
+                $result['data'] ?? $_POST
+            );
         }
 
-        FlashBag::add('success', 'Article créé.');
-        Redirect::to('/dashboard/articles', 303);
+        Redirect::withSuccess('/dashboard/articles', 'Article créé.');
     }
 
     /* -------------------- Edit -------------------- */
@@ -134,13 +136,14 @@ final class ArticlesController extends RenderController
 
         $result = $this->articles->update($id, $_POST);
         if (!empty($result['errors'])) {
-            FormState::set($result['errors'], $result['data'] ?? $_POST);
-            FlashBag::add('error', 'Le formulaire contient des erreurs.');
-            Redirect::to("/dashboard/articles/edit/{$id}", 303);
+            Redirect::withErrors(
+                '/dashboard/articles/create',
+                'Le formulaire contient des erreurs',
+                $result['errors'],
+                $result['data'] ?? $_POST
+            );
         }
-
-        FlashBag::add('success', 'Article mis à jour.');
-        Redirect::to('/dashboard/articles', 303);
+        Redirect::withSuccess('/dashboard/articles', 'Article mis à jour.');
     }
 
     /* -------------------- Delete -------------------- */
@@ -153,7 +156,6 @@ final class ArticlesController extends RenderController
         $id = $this->idFrom($params);
         $this->articles->delete($id);
 
-        FlashBag::add('success', 'Article supprimé.');
-        Redirect::to('/dashboard/articles', 303);
+        Redirect::withSuccess('/dashboard/articles', 'Article supprimé.');
     }
 }
