@@ -5,7 +5,6 @@
 /** @var string|null $flash */
 /** @var array<string>|null $errors */
 /** @var string|null $accountPasswordAction */
-/** @var string|null $csrfToken */
 
 $e = static fn($v) => htmlspecialchars((string)($v ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
@@ -59,9 +58,7 @@ $action   = $e($accountPasswordAction ?? '/dashboard/account/password');
     <div id="update-password-form">
         <h4><?= $e($str['account.change_password'] ?? 'Changer de mot de passe') ?></h4>
         <form method="post" action="<?= $action ?>" autocomplete="off" novalidate>
-            <?php if (!empty($csrfToken)): ?>
-                <input type="hidden" name="_csrf" value="<?= $e($csrfToken) ?>">
-            <?php endif; ?>
+            <?= \CapsuleLib\Security\CsrfTokenManager::insertInput(); ?>
 
             <label for="old_password">
                 <span><?= $e($str['account.old_password'] ?? 'Ancien mot de passe') ?></span>

@@ -41,16 +41,6 @@ final class ArticleService
         return $this->articleRepository->findById($id);
     }
 
-    /** @deprecated Préfère getById(); gardé pour compat temporaire */
-    public function find(int $id): ?array
-    {
-        if ($id <= 0) {
-            throw new \InvalidArgumentException('ID doit être positif.');
-        }
-        /** @var array<string,mixed>|null $row */
-        return $this->articleRepository->find($id);
-    }
-
     /* =======================
        ===== Mutations =======
        ======================= */

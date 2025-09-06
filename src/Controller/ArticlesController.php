@@ -65,7 +65,6 @@ final class ArticlesController extends RenderController
             'createUrl'     => '/dashboard/articles/create',
             'editBaseUrl'   => '/dashboard/articles/edit',
             'deleteBaseUrl' => '/dashboard/articles/delete',
-            'csrf'          => CsrfTokenManager::getToken(),
         ]);
     }
 
@@ -80,7 +79,6 @@ final class ArticlesController extends RenderController
             'action'  => '/dashboard/articles/create',
             'article' => $data ?? null,
             'errors'  => $errors,
-            'csrf'          => CsrfTokenManager::getToken(),
         ]);
     }
 
@@ -119,7 +117,6 @@ final class ArticlesController extends RenderController
             'action'  => "/dashboard/articles/edit/{$id}",
             'article' => $prefill ?: $dto,
             'errors'  => $errors,
-            'csrf'          => CsrfTokenManager::getToken(),
         ]);
     }
 
