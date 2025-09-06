@@ -5,24 +5,21 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use CapsuleLib\Core\RenderController;
-use App\Lang\TranslationLoader;
-use CapsuleLib\Service\UserService;
-use CapsuleLib\Service\PasswordService;
-use App\Service\ArticleService;
 use App\Navigation\SidebarLinksProvider;
+use App\Lang\TranslationLoader;
+use CapsuleLib\Service\PasswordService;
 use CapsuleLib\Security\CurrentUserProvider;
-
 use CapsuleLib\Http\RequestUtils;
 use CapsuleLib\Http\FlashBag;
 use CapsuleLib\Http\Redirect;
 use CapsuleLib\Http\FormState;
 use CapsuleLib\Security\CsrfTokenManager;
+use CapsuleLib\Service\UserService;
 
 final class DashboardController extends RenderController
 {
     public function __construct(
         private readonly UserService $userService,
-        private readonly ArticleService $articleService,
         private readonly PasswordService $passwords,
         private readonly SidebarLinksProvider $linksProvider,
     ) {}
@@ -84,16 +81,28 @@ final class DashboardController extends RenderController
 
     public function index(): void
     {
-        $this->home();
-    }
-
-    public function home(): void
-    {
         $this->renderDash('Dashboard');
     }
 
-    /* ===== Compte (GET/POST) ===== */
 
+    public function users(): void
+    {
+        // Accès admin géré par middleware
+        $users = $this->userService->getAllUsers();
+
+        $errors  = FormState::consumeErrors();
+        $prefill = FormState::consumeData();
+
+        $this->renderDash('Utilisateurs', 'dash_users.php', [
+            'users'        => $users,
+            'errors'       => $errors,
+            'prefill'      => $prefill,
+            'createAction' => '/dashboard/users/create',
+            'deleteAction' => '/dashboard/users/delete',
+        ]);
+    }
+
+    /* ===== Compte (GET/POST) ===== */
     public function account(): void
     {
         $errors  = FormState::consumeErrors();
@@ -102,7 +111,6 @@ final class DashboardController extends RenderController
         $this->renderDash('Mon compte', 'dash_account.php', [
             'errors'                => $errors,
             'accountPasswordAction' => '/dashboard/account/password',
-            // éventuel pré-remplissage d’autres champs du compte
             'prefill'               => $prefill,
         ]);
     }
@@ -140,91 +148,5 @@ final class DashboardController extends RenderController
             $errors = $svcErrors ?: ['_global' => 'Échec de la modification du mot de passe.'];
         }
         Redirect::withErrors('/dashboard/account', 'Le formulaire contient des erreurs.', $errors, []);
-    }
-
-    /* ===== Utilisateurs (admin) ===== */
-
-    public function users(): void
-    {
-        // Accès admin géré par middleware
-        $users = $this->userService->getAllUsers();
-
-        $errors  = FormState::consumeErrors();
-        $prefill = FormState::consumeData();
-
-        $this->renderDash('Utilisateurs', 'dash_users.php', [
-            'users'        => $users,
-            'errors'       => $errors,
-            'prefill'      => $prefill,
-            'createAction' => '/dashboard/users/create',
-            'deleteAction' => '/dashboard/users/delete',
-        ]);
-    }
-
-    /** POST /dashboard/users/create */
-    public function usersCreate(): void
-    {
-        RequestUtils::ensurePostOrRedirect('/dashboard/users');
-        CsrfTokenManager::requireValidToken();
-
-        $username = trim((string)($_POST['username'] ?? ''));
-        $password = (string)($_POST['password'] ?? '');
-        $email    = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL) ?: null;
-        $role     = trim((string)($_POST['role'] ?? 'employee'));
-
-        $errors = [];
-        if ($username === '') $errors['username'] = 'Requis.';
-        if ($password === '') $errors['password'] = 'Requis.';
-        if (!$email)          $errors['email']    = 'Email invalide.';
-
-        if ($errors !== []) {
-            Redirect::withErrors(
-                '/dashboard/users',
-                'Le formulaire contient des erreurs.',
-                $errors,
-                ['username' => $username, 'email' => (string)$email, 'role' => $role]
-            );
-        }
-
-        try {
-            $this->userService->createUser($username, $password, (string)$email, $role);
-            Redirect::withSuccess('/dashboard/users', 'Utilisateur créé avec succès.');
-        } catch (\Throwable $e) {
-            Redirect::withErrors(
-                '/dashboard/users',
-                'Erreur lors de la création.',
-                ['_global' => 'Création impossible.'],
-                ['username' => $username, 'email' => (string)$email, 'role' => $role]
-            );
-        }
-    }
-
-    /** POST /dashboard/users/delete */
-    public function usersDelete(): void
-    {
-        RequestUtils::ensurePostOrRedirect('/dashboard/users');
-        CsrfTokenManager::requireValidToken();
-
-        $ids = array_map('intval', (array)($_POST['user_ids'] ?? []));
-        $ids = array_values(array_filter($ids, fn(int $id) => $id > 0));
-
-        if ($ids === []) {
-            Redirect::withErrors('/dashboard/users', 'Aucun utilisateur sélectionné.', ['_global' => 'Aucun utilisateur sélectionné.']);
-        }
-
-        $deleted = 0;
-        foreach ($ids as $id) {
-            try {
-                $this->userService->deleteUser($id);
-                $deleted++;
-            } catch (\Throwable $e) {
-                // on continue pour les autres
-            }
-        }
-
-        if ($deleted > 0) {
-            Redirect::withSuccess('/dashboard/users', "Utilisateur(s) supprimé(s) : {$deleted}.");
-        }
-        Redirect::withErrors('/dashboard/users', 'Aucune suppression effectuée.', ['_global' => 'Aucune suppression effectuée.']);
     }
 }
