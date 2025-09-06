@@ -16,15 +16,10 @@ use App\Controller\ArticlesController;
 use App\Controller\DashboardController;
 use App\Controller\UserController;
 
-//HACK : (Optionnel) Interfaces lib → impls src 
-
-// use CapsuleLib\Security\AuthenticatorInterface;
-// use App\Security\SessionAuthenticator;
 
 return (function (): DIContainer {
     $container = new DIContainer();
     $LENGTH_PASSWORD = 8;
-
 
     // --- Core deps ---
     $container->set('pdo', fn() => MariaDBConnection::getInstance());
@@ -43,7 +38,7 @@ return (function (): DIContainer {
     ));
 
     // --- Navigation ---
-    $container->set(SidebarLinksProvider::class, fn($container) => new SidebarLinksProvider());
+    $container->set(SidebarLinksProvider::class, fn() => new SidebarLinksProvider());
 
     // --- Controllers ---
     $container->set(HomeController::class,      fn($container) => new HomeController($container->get(ArticleService::class)));
