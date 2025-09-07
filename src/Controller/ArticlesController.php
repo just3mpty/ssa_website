@@ -9,7 +9,6 @@ use App\Navigation\SidebarLinksProvider;
 use App\Service\ArticleService;
 use CapsuleLib\Core\RenderController;
 use CapsuleLib\Http\RequestUtils;
-use CapsuleLib\Http\FlashBag;
 use CapsuleLib\Http\Redirect;
 use CapsuleLib\Http\FormState;
 use CapsuleLib\Security\CsrfTokenManager;
@@ -35,15 +34,14 @@ final class ArticlesController extends RenderController
 
     private function renderDash(string $title, string $component, array $vars = []): void
     {
-        $flashes = FlashBag::consume();
-
+        // On laisse FlashBag consommé par le layout si tu as déjà un global ;
+        // sinon tu peux réactiver un consume() ici.
         echo $this->renderView('dashboard/home.php', [
             'title'            => $title,
             'isDashboard'      => true,
             'isAdmin'          => true,
             'user'             => $_SESSION['admin'] ?? [],
             'links'            => $this->links(true),
-            'flash'            => $flashes,
             'dashboardContent' => $this->renderComponent($component, $vars + ['str' => $this->str()]),
             'str'              => $this->str(),
             'articleGenerateIcsAction' => '/home/generate_ics',
@@ -65,6 +63,25 @@ final class ArticlesController extends RenderController
             'createUrl'     => '/dashboard/articles/create',
             'editBaseUrl'   => '/dashboard/articles/edit',
             'deleteBaseUrl' => '/dashboard/articles/delete',
+            'showBaseUrl'   => '/dashboard/articles/show', // <-- pour le lien "Voir"
+        ]);
+    }
+
+    /* -------------------- Details -------------------- */
+
+    public function show(string|array $params): void
+    {
+        $id  = $this->idFrom($params);
+        $dto = $this->articles->getById($id);
+        if (!$dto) {
+            http_response_code(404);
+            echo 'Not Found';
+            return;
+        }
+
+        $this->renderDash('Détail de l’article', 'dash_article_show.php', [
+            'article' => $dto,
+            'backUrl' => '/dashboard/articles',
         ]);
     }
 
@@ -137,7 +154,7 @@ final class ArticlesController extends RenderController
         $result = $this->articles->update($id, $_POST);
         if (!empty($result['errors'])) {
             Redirect::withErrors(
-                '/dashboard/articles/create',
+                "/dashboard/articles/edit/{$id}",
                 'Le formulaire contient des erreurs',
                 $result['errors'],
                 $result['data'] ?? $_POST

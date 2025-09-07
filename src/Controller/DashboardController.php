@@ -53,7 +53,6 @@ final class DashboardController extends RenderController
             'isAdmin'     => $isAdmin,
             'links'       => $this->links($isAdmin),
             'str'         => $this->str(),
-            // commun
             'flash'       => FlashBag::consume(),
         ];
 
