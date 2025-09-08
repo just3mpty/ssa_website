@@ -13,7 +13,7 @@
                 <h3><?= secure_html($str['contact_coords_title']) ?></h3>
 
                 <p><strong><?= secure_html($str['contact_address_label']) ?></strong>
-                    39 bellevue de la madeleine, 29600 Morlaix
+                    Le Buzuk, 39 bellevue de la madeleine, 29600 Morlaix
                 </p>
 
                 <p><strong><?= secure_html($str['contact_phone_label']) ?></strong>

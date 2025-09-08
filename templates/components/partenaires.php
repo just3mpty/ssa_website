@@ -3,12 +3,12 @@
 /** @var array<string, string> $str */
 
 $partenaires = [
-    ['name' => 'BUZUK', 'role' => 'partenaire', 'url' => '/', 'logo' => '/assets/img/buzuk.jpg'],
-    ['name' => 'Région Bretagne', 'role' => 'financeur', 'url' => '/', 'logo' => '/assets/img/region-bretagne.jpg'],
-    ['name' => 'ULAMIR-CPIE', 'role' => 'partenaire', 'url' => '/', 'logo' => '/assets/img/ulamircpie.png'],
-    ['name' => 'Pôle ESS Pays de Morlaix', 'role' => 'partenaire', 'url' => '/', 'logo' => '/assets/img/ess.jpg'],
-    ['name' => 'RESAM', 'role' => 'partenaire', 'url' => '/', 'logo' => '/assets/img/resam.png'],
-    ['name' => 'Leader financement Européen', 'role' => 'financeur', 'url' => '/', 'logo' => '/assets/img/feader.jpg'],
+    ['name' => 'BUZUK', 'role' => 'partenaire', 'url' => 'https://buzuk.bzh/', 'logo' => '/assets/img/buzuk.webp'],
+    ['name' => 'Région Bretagne', 'role' => 'financeur', 'url' => 'https://www.bretagne.bzh/', 'logo' => '/assets/img/bretagne.webp'],
+    ['name' => 'ULAMIR-CPIE', 'role' => 'partenaire', 'url' => 'https://ulamir-cpie.bzh/', 'logo' => '/assets/img/ulamircpie.webp'],
+    ['name' => 'Pôle ESS Pays de Morlaix', 'role' => 'partenaire', 'url' => 'https://www.adess29.fr/faire-reseau/le-pole-du-pays-de-morlaix/', 'logo' => '/assets/img/ess.webp'],
+    ['name' => 'RESAM', 'role' => 'partenaire', 'url' => 'https://www.resam.net/', 'logo' => '/assets/img/resam.webp'],
+    ['name' => 'Leader financement Européen', 'role' => 'financeur', 'url' => 'https://leaderfrance.fr/le-programme-leader/', 'logo' => '/assets/img/feader.webp'],
 ];
 
 // Séparer partenaires et financeurs
