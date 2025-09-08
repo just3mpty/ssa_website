@@ -8,6 +8,7 @@ use App\Lang\TranslationLoader;
 use App\Service\ArticleService;
 use CapsuleLib\Core\RenderController;
 
+// TODO: : Mettre les articles dans le home
 final class HomeController extends RenderController
 {
     private ?array $strings = null;
