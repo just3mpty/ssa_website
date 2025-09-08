@@ -74,7 +74,7 @@ final class HomeController extends RenderController
             return;
         }
 
-        echo $this->renderView('pages/article.php', $this->base([
+        echo $this->renderView('pages/articleDetails.php', $this->base([
             'article' => $dto,
         ], /* withArticles */ false));
     }

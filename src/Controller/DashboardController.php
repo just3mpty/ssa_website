@@ -106,11 +106,13 @@ final class DashboardController extends RenderController
     {
         $errors  = FormState::consumeErrors();
         $prefill = FormState::consumeData();
+        $user = CurrentUserProvider::getUser() ?? [];
 
         $this->renderDash('Mon compte', 'dash_account.php', [
             'errors'                => $errors,
             'accountPasswordAction' => '/dashboard/account/password',
             'prefill'               => $prefill,
+            'user'                  => $user,
         ]);
     }
 
