@@ -41,11 +41,13 @@ return static function (Router $router, DIContainer $c): void {
         $r->get('/account', [$dc, 'account'], name: 'dash.account');
         $r->get('/users',   [$dc, 'users'],        name: 'dash.users');
         $r->post('/account/password', [$dc, 'accountPassword']);
-
+        
         // Users (admin)
         $r->group('/', [MiddlewareAuth::role('admin')], function (Router $r2) use ($uc) {
             $r2->post('/users/create',    [$uc, 'usersCreate']);
             $r2->post('/users/delete',    [$uc, 'usersDelete']);
+            // ligne suivante ajoutée pour éditer user (username, email, role) via UI (qui marche pô encore...)
+            //$r2->post('/users/update/{id:\d+}',    [$uc, 'usersUpdate']);
         });
 
         // Articles admin (admin)

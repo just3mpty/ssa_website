@@ -113,6 +113,8 @@ final class DashboardController extends RenderController
             'accountPasswordAction' => '/dashboard/account/password',
             'prefill'               => $prefill,
             'user'                  => $user,
+            // ajout pour test UI modif user
+            //'editUserAction'        => '/dashboard/account/update', // à implémenter plus tard
         ]);
     }
 

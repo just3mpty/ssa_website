@@ -155,6 +155,7 @@ function toggleDeleteBtn() {
 checkboxes.forEach((cb) => cb.addEventListener("change", toggleDeleteBtn));
 
 // CREER UN USER (MODALE)
+if (createUser) {
 createUser.addEventListener("click", () => {
     const popup = document.querySelector(".popup");
     popup.classList.remove("hidden");
@@ -164,7 +165,111 @@ createUser.addEventListener("click", () => {
             popup.classList.add("hidden");
         }
     });
-});
+});}
+
+// EDIT USER INFO via UI sur DASH_ACCOUNT.PHP pour l'instant
+
+function editLeUser() {
+    const usernameCell = document.querySelector(".usernameValue").textContent;
+    const emailCell = document.querySelector(".emailValue").textContent;
+    let roleCell = '';
+
+    if (document.querySelector('.admin')) {
+        roleCell = 'admin';
+    }
+    if (document.querySelector('.employee')) {
+        roleCell = 'employee';
+    }
+
+    console.log('roleCell -> ' + roleCell);
+
+
+    document.querySelectorAll('tr td:not(:last-child)').forEach(td => {
+        if (td.querySelector('div[contenteditable="true"]')) return;
+        if (td.classList.value === 'admin' || td.classList.value === 'employee') {
+            let select = document.createElement('select');
+            let optionEmployee = document.createElement('option');
+            optionEmployee.value = 'employee';
+            optionEmployee.text = 'employee';
+            let optionAdmin = document.createElement('option');
+            optionAdmin.value = 'admin';
+            optionAdmin.text = 'admin';
+
+            select.appendChild(optionEmployee);
+            select.appendChild(optionAdmin);
+            td.innerHTML = '';
+            td.appendChild(select);
+
+            // On sélectionne la bonne option dans le select :
+            if (td.classList.value === 'admin') {
+                select.value = 'admin';
+            } else if (td.classList.value === 'employee') {
+                select.value = 'employee';
+            };
+
+        } else {
+            let div = document.createElement('div');
+            div.setAttribute('contenteditable', 'true');
+            div.setAttribute('data-text', 'Votre placeholder');
+            div.setAttribute('style', 'min-width: 100px; min-height: 20px; border: 1px solid #ccc; padding: 5px;');
+            div.classList.add(td.classList.value); // On conserve la classe (usernameValue ou emailValue)
+            div.classList.add('editable-div');
+
+            // On conserve l'ancien contenu si besoin :
+            div.innerText = td.innerText.trim();
+            
+            td.innerHTML = '';
+            td.appendChild(div);
+
+        };
+
+    document.querySelectorAll('tr td:last-child').forEach(td => {
+        let btnSave = document.createElement('button');
+        btnSave.textContent = 'Enregistrer';
+        btnSave.classList.add('save-btn');
+
+        let btnCancel = document.createElement('button');
+        btnCancel.textContent = 'Annuler';
+        btnCancel.classList.add('cancel-btn');
+
+        td.innerHTML = '';
+        td.appendChild(btnSave);
+        td.appendChild(btnCancel);
+
+        btnCancel.addEventListener('click', () => {
+            document.querySelector('.usernameValue').textContent = usernameCell;
+            document.querySelector('.emailValue').textContent = emailCell;
+            document.querySelector('.admin').textContent = roleCell;
+            td.innerHTML = '<button class="editBtn" type="button" onclick="editLeUser()">Gérer</button>';
+        });
+
+        // Enregistrement des modifications : cette partie n'est toujours pas fonctionnelle côté backend, le front me parait good 
+        btnSave.addEventListener('click', () => {
+            const newUsername = document.querySelector('.usernameValue div').innerText.trim();
+            const newEmail = document.querySelector('.emailValue div').innerText.trim();
+            const newRole = document.querySelector('.admin select, .employee select').value;
+
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/dashboard/users/update';
+
+            form.innerHTML = `
+                <input type="hidden" name="action" value="update">
+                <input type="hidden" name="username" value="${newUsername}">
+                <input type="hidden" name="email" value="${newEmail}">
+                <input type="hidden" name="role" value="${newRole}">
+            `;
+
+            document.body.appendChild(form);
+            form.submit();
+        });
+
+    });
+
+})};
+
+
+
 
 // UPDATE USER INFO VIA UI (EN TEST)
 document.querySelectorAll(".edit-btn").forEach((button) => {

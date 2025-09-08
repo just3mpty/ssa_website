@@ -125,4 +125,9 @@ class UserService
     {
         return $this->userRepository->allUsers();
     }
-}
+//     // à implémenter plus tard si besoin
+//     public function usersUpdate(int $id, array $data): bool
+//     {
+//         return $this->userRepository->update($id, $data);
+//     }
+// }

@@ -30,12 +30,12 @@ $action   = $e($accountPasswordAction ?? '/dashboard/account/password');
             </thead>
             <tbody>
                 <tr>
-                    <td class="username"><?= $username ?></td>
+                    <td class="usernameValue" name='Value'><?= $username ?></td>
                     <td class='<?= htmlspecialchars($user['role']) ?>'>
                         <p><?= $role ?></p>
                     </td>
-                    <td class="email"><?= $email ?></td>
-                    <td><button class="edit-btn" type="button">Gérer</button></td>
+                    <td class="emailValue" name='emailValue'><?= $email ?></td>
+                    <td><button class="editBtn" type="button" onclick='editLeUser()'>Gérer</button></td>
                 </tr>
             </tbody>
 
