@@ -39,7 +39,7 @@ $e = static fn($v) => htmlspecialchars((string)($v ?? ''), ENT_QUOTES | ENT_SUBS
                                 <p><?php echo htmlspecialchars($user->role); ?></p>
                             </td>
                             <td><?php echo htmlspecialchars((new DateTime($user->created_at))->format('d/m/Y')) ?></td>
-                            <td><button class="editBtn" type="button" onclick='editLeUser()'>Gérer</button></td>
+                            <td><button class="editBtn" type="button" onclick='editLeUser(event)'>Gérer</button></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

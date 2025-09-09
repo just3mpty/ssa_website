@@ -169,98 +169,84 @@ createUser.addEventListener("click", () => {
 
 // EDIT USER INFO via UI sur DASH_ACCOUNT.PHP pour l'instant
 
-function editLeUser() {
-    const usernameCell = document.querySelector(".usernameValue").textContent;
-    const emailCell = document.querySelector(".emailValue").textContent;
-    const checkboxCell = document.querySelector(".user-checkbox");
-    console.log('usernameCell -> ' + usernameCell);
-    console.log('emailCell -> ' + emailCell);
-    console.log('checkboxCell -> ' + typeof(checkboxCell));
-    let roleCell = '';
-
-    if (document.querySelector('.admin')) {
-        roleCell = 'admin';
-    }
-    if (document.querySelector('.employee')) {
-        roleCell = 'employee';
-    }
-
-    console.log('roleCell -> ' + roleCell);
 
 
-    // remplacer le contenu des td par des inputs/select/div contenteditable
-    let verif = 0;
-    let count = document.querySelectorAll('table th').length;
-    document.querySelectorAll('tr td:not(:last-child)').forEach(td => {
-        console.log('td -> ' + td.classList.value);
-        verif++;
-        console.log(verif);
-        //if (verif > count - 1) return; // on ne modifie que les 3 premières cellules (username, role, email)
-        if (td.querySelector('div[contenteditable="true"]')) return;
-        if (td.classList.value === 'admin' || td.classList.value === 'employee') {
-            // On crée la liste déroulante :
-            let select = document.createElement('select');
-            let optionEmployee = document.createElement('option');
-            optionEmployee.value = 'employee';
-            optionEmployee.text = 'employee';
-            let optionAdmin = document.createElement('option');
-            optionAdmin.value = 'admin';
-            optionAdmin.text = 'admin';
+function editLeUser(event) {
+    console.log("Bouton 'Gérer' cliqué");
+    // Récupérer la ligne (tr) correspondant au bouton "Gérer" cliqué
+    const row = event.target.closest('tr');
+    if (!row) return; // Sécurité si la ligne n'est pas trouvée
 
-            select.appendChild(optionEmployee);
-            select.appendChild(optionAdmin);
-            td.innerHTML = '';
-            td.appendChild(select);
+    // Récupérer les cellules spécifiques de cette ligne
+    const usernameCell = row.querySelector('.usernameValue');
+    const emailCell = row.querySelector('.emailValue');
+    const roleCell = row.querySelector('.admin, .employee');
+    const actionCell = row.querySelector('td:last-child');
 
-            // On sélectionne la bonne option dans le select :
-            if (td.classList.value === 'admin') {
-                select.value = 'admin';
-            } else if (td.classList.value === 'employee') {
-                select.value = 'employee';
-            };
+    // Stocker les valeurs initiales pour pouvoir les restaurer en cas d'annulation
+    const originalUsername = usernameCell.textContent.trim();
+    const originalEmail = emailCell.textContent.trim();
+    const originalRole = roleCell.classList.contains('admin') ? 'admin' : 'employee';
 
-        } else {
-            let div = document.createElement('div');
-            div.setAttribute('contenteditable', 'true');
-            div.setAttribute('data-text', 'Votre placeholder');
-            div.setAttribute('style', 'min-width: 100px; min-height: 20px; border: 1px solid #ccc; padding: 5px;');
-            //div.classList.add(td.classList.value); // On conserve la classe (usernameValue ou emailValue)
-            // div.classList.add('editable-div');
+    // Remplacer le contenu des cellules par des inputs/select
+    if (!usernameCell.querySelector('div[contenteditable="true"]')) {
+        // Username
+        const usernameDiv = document.createElement('div');
+        usernameDiv.setAttribute('contenteditable', 'true');
+        usernameDiv.setAttribute('style', 'min-width: 100px; min-height: 20px; border: 1px solid #ccc; padding: 5px;');
+        usernameDiv.textContent = originalUsername;
+        usernameCell.innerHTML = '';
+        usernameCell.appendChild(usernameDiv);
 
-            // On conserve l'ancien contenu si besoin :
-            div.innerText = td.innerText.trim();
-            
-            td.innerHTML = '';
-            td.appendChild(div);
-        };
+        // Email
+        const emailDiv = document.createElement('div');
+        emailDiv.setAttribute('contenteditable', 'true');
+        emailDiv.setAttribute('style', 'min-width: 100px; min-height: 20px; border: 1px solid #ccc; padding: 5px;');
+        emailDiv.textContent = originalEmail;
+        emailCell.innerHTML = '';
+        emailCell.appendChild(emailDiv);
 
-    document.querySelectorAll('tr td:last-child').forEach(td => {
-        let btnSave = document.createElement('button');
+        // Role
+        const select = document.createElement('select');
+        const optionEmployee = document.createElement('option');
+        optionEmployee.value = 'employee';
+        optionEmployee.text = 'employee';
+        const optionAdmin = document.createElement('option');
+        optionAdmin.value = 'admin';
+        optionAdmin.text = 'admin';
+        select.appendChild(optionEmployee);
+        select.appendChild(optionAdmin);
+        select.value = originalRole;
+        roleCell.innerHTML = '';
+        roleCell.appendChild(select);
+
+        // Remplacer le bouton "Gérer" par "Enregistrer" et "Annuler"
+        actionCell.innerHTML = '';
+        const btnSave = document.createElement('button');
         btnSave.textContent = 'Enregistrer';
         btnSave.classList.add('save-btn');
 
-        let btnCancel = document.createElement('button');
+        const btnCancel = document.createElement('button');
         btnCancel.textContent = 'Annuler';
         btnCancel.classList.add('cancel-btn');
 
-        td.innerHTML = '';
-        td.appendChild(btnSave);
-        td.appendChild(btnCancel);
+        actionCell.appendChild(btnSave);
+        actionCell.appendChild(btnCancel);
 
+        // Gestion du bouton "Annuler"
         btnCancel.addEventListener('click', () => {
-            document.querySelector('.usernameValue').textContent = usernameCell;
-            document.querySelector('.emailValue').textContent = emailCell;
-            document.querySelector('.admin').textContent = roleCell;
-            
-
-            td.innerHTML = '<button class="editBtn" type="button" onclick="editLeUser()">Gérer</button>';
+            usernameCell.textContent = originalUsername;
+            emailCell.textContent = originalEmail;
+            roleCell.textContent = originalRole;
+            roleCell.className = originalRole; // Restaurer la classe du rôle
+            actionCell.innerHTML = '<button class="editBtn" type="button" onclick="editLeUser(event)">Gérer</button>';
         });
 
-        // Enregistrement des modifications : cette partie n'est toujours pas fonctionnelle côté backend, le front me parait good 
+        // Gestion du bouton "Enregistrer"
         btnSave.addEventListener('click', () => {
-            const newUsername = document.querySelector('.usernameValue div').innerText.trim();
-            const newEmail = document.querySelector('.emailValue div').innerText.trim();
-            const newRole = document.querySelector('.admin select, .employee select').value;
+            const newUsername = usernameCell.querySelector('div').textContent.trim();
+            const newEmail = emailCell.querySelector('div').textContent.trim();
+            const newRole = select.value;
 
             const form = document.createElement('form');
             form.method = 'POST';
@@ -276,10 +262,8 @@ function editLeUser() {
             document.body.appendChild(form);
             form.submit();
         });
-
-    });
-
-})};
+    }
+}
 
 
 

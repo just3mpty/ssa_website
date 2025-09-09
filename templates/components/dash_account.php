@@ -35,7 +35,7 @@ $action   = $e($accountPasswordAction ?? '/dashboard/account/password');
                         <p><?= $role ?></p>
                     </td>
                     <td class="emailValue" name='emailValue'><?= $email ?></td>
-                    <td><button class="editBtn" type="button" onclick='editLeUser()'>Gérer</button></td>
+                    <td><button class="editBtn" type="button" onclick='editLeUser(event)'>Gérer</button></td>
                 </tr>
             </tbody>
 
