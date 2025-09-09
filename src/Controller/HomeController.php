@@ -47,7 +47,8 @@ final class HomeController extends RenderController
 
     public function home(): void
     {
-        echo $this->renderView('pages/home.php', $this->base());
+        $articles = $this->articleService->getUpcoming();
+        echo $this->renderView('pages/home.php', $this->base(['articles' => $articles]));
     }
 
     public function projet(): void

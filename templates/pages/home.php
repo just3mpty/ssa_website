@@ -48,7 +48,6 @@ $action   = $e($articleGenerateIcsAction ?? '/home/generate_ics');
                     </div>
                     <form action="<?= $action ?>" method="post">
                         <button type="submit" name="article_id" value="generer_ics">
-
                             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
                                 <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>

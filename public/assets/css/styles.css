@@ -122,7 +122,7 @@ body {
         &.hidden {
             opacity: 0;
             transform: translateY(-100%);
-            pointer-articles: none;
+            pointer-events: none;
         }
 
         & .logo-link {
@@ -323,7 +323,7 @@ body {
                     var(--orange) 100%
                 );
                 opacity: 0.25;
-                pointer-articles: none;
+                pointer-events: none;
             }
 
             & h1 {
@@ -635,7 +635,9 @@ body {
 
         /* ARTICLE DETAILS */
         & .details {
-            width: 100%;
+            width: 75%;
+            margin: 0 auto;
+            margin-top: 100px;
             display: flex;
             flex-direction: column;
             padding: 30px;
@@ -645,6 +647,7 @@ body {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
+                gap: 30px;
 
                 & .date {
                     background: #43c46625;
@@ -653,6 +656,10 @@ body {
                     color: var(--green);
                     width: fit-content;
                 }
+            }
+
+            & .description {
+                margin-top: 15px;
             }
 
             & img {
