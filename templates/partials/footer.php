@@ -1,7 +1,7 @@
 <footer>
     <div class="footer-infos">
         <div class="infos">
-            <p>39 bellevue de la madeleine, 29600 Morlaix</p>
+            <p>Le Buzuk, 39 bellevue de la madeleine, 29600 Morlaix</p>
             <p>
                 Tel: 06 15 06 82 08 |
                 Email :

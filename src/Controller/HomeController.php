@@ -9,6 +9,7 @@ use App\Service\ArticleService;
 use CapsuleLib\Core\RenderController;
 use CapsuleLib\Http\RequestUtils;
 
+// TODO: : Mettre les articles dans le home
 final class HomeController extends RenderController
 {
     private ?array $strings = null;
