@@ -29,7 +29,8 @@ return static function (Router $router, DIContainer $c): void {
     $router->get('/projet',  [$hc, 'projet']);
     $router->get('/galerie', [$hc, 'galerie']);
     $router->get('/article/{id:\d+}', [$hc, 'article'], [], name: 'article.show');
-
+    $router->post('/contact', [$hc, 'contactMail'], name: 'contact.mail');
+    
     // Auth
     $router->get('/login',  [$lc, 'loginForm']);
     $router->post('/login', [$lc, 'loginSubmit']);

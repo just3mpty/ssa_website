@@ -33,13 +33,13 @@ $e = static fn($v) => htmlspecialchars((string)($v ?? ''), ENT_QUOTES | ENT_SUBS
                             <td>
                                 <input class="user-checkbox" type="checkbox" name="user_ids[]" value="<?php echo htmlspecialchars($user->id); ?>">
                             </td>
-                            <td class="username"><?php echo htmlspecialchars($user->username); ?></td>
-                            <td class="email"><?php echo htmlspecialchars($user->email); ?></td>
+                            <td class="usernameValue"><?php echo htmlspecialchars($user->username); ?></td>
+                            <td class="emailValue"><?php echo htmlspecialchars($user->email); ?></td>
                             <td class="<?= htmlspecialchars($user->role) ?> role">
                                 <p><?php echo htmlspecialchars($user->role); ?></p>
                             </td>
                             <td><?php echo htmlspecialchars((new DateTime($user->created_at))->format('d/m/Y')) ?></td>
-                            <td><button class="edit-btn" type="button">Gérer</button></td>
+                            <td><button class="editBtn" type="button" onclick='editLeUser()'>Gérer</button></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

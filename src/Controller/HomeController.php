@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Lang\TranslationLoader;
 use App\Service\ArticleService;
 use CapsuleLib\Core\RenderController;
+use CapsuleLib\Http\RequestUtils;
 
 final class HomeController extends RenderController
 {
@@ -77,5 +78,31 @@ final class HomeController extends RenderController
         echo $this->renderView('pages/articleDetails.php', $this->base([
             'article' => $dto,
         ], /* withArticles */ false));
+    }
+
+    public function contactMail(): void 
+    {
+    RequestUtils::ensurePostOrRedirect('/contact');
+
+    if (isset($_POST['message']) && isset($_POST['email']) && isset($_POST['name'])) {
+            $to = 'noah.moaligou@gmail.com'; // Adresse qui recevra le mail
+            $subject = 'Message depuis le formulaire de contact ' . $_POST['name'];
+            $message = $_POST['message'];
+            $headers = 'From: ' . $_POST['email'] . "\r\n" .
+                    'Reply-To: ' . $_POST['email'] . "\r\n" .
+                    'X-Mailer: PHP/' . phpversion();
+
+            $sent = mail($to, $subject, $message, $headers);
+
+            if ($sent) {
+                echo "Votre message a bien été envoyé.";
+            } else {
+                $error = error_get_last();
+                $details = isset($error['message']) ? $error['message'] : 'Erreur inconnue.';
+                echo "Une erreur est survenue lors de l'envoi :<br><pre>{$details}</pre>";
+            }
+        } else {
+            echo "Veuillez remplir tous les champs du formulaire.";
+        }
     }
 }

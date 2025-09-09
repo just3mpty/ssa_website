@@ -1,6 +1,10 @@
 <?php
 
 /** @var array<string, string> $str */
+/** @var string|null $contactMailAction */
+$contactMailAction = '/contact';
+$e = static fn($v) => htmlspecialchars((string)($v ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+$action = $e($contactMailAction ?? '/contact'); // action du formulaire de contact
 ?>
 
 <div class="background">
@@ -28,7 +32,7 @@
             <div class="contact-form">
                 <h3><?= secure_html($str['contact_form_title']) ?></h3>
 
-                <form id="contact-form" method="post" action="/contact-handler.php">
+                <form id="contact-form" method="post" action="<?= $action ?>">
                     <label for="name"><?= secure_html($str['contact_form_name']) ?></label>
                     <input type="text" id="name" name="name" required>
 

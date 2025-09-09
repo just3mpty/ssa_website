@@ -172,6 +172,10 @@ createUser.addEventListener("click", () => {
 function editLeUser() {
     const usernameCell = document.querySelector(".usernameValue").textContent;
     const emailCell = document.querySelector(".emailValue").textContent;
+    const checkboxCell = document.querySelector(".user-checkbox");
+    console.log('usernameCell -> ' + usernameCell);
+    console.log('emailCell -> ' + emailCell);
+    console.log('checkboxCell -> ' + typeof(checkboxCell));
     let roleCell = '';
 
     if (document.querySelector('.admin')) {
@@ -184,9 +188,17 @@ function editLeUser() {
     console.log('roleCell -> ' + roleCell);
 
 
+    // remplacer le contenu des td par des inputs/select/div contenteditable
+    let verif = 0;
+    let count = document.querySelectorAll('table th').length;
     document.querySelectorAll('tr td:not(:last-child)').forEach(td => {
+        console.log('td -> ' + td.classList.value);
+        verif++;
+        console.log(verif);
+        //if (verif > count - 1) return; // on ne modifie que les 3 premières cellules (username, role, email)
         if (td.querySelector('div[contenteditable="true"]')) return;
         if (td.classList.value === 'admin' || td.classList.value === 'employee') {
+            // On crée la liste déroulante :
             let select = document.createElement('select');
             let optionEmployee = document.createElement('option');
             optionEmployee.value = 'employee';
@@ -212,15 +224,14 @@ function editLeUser() {
             div.setAttribute('contenteditable', 'true');
             div.setAttribute('data-text', 'Votre placeholder');
             div.setAttribute('style', 'min-width: 100px; min-height: 20px; border: 1px solid #ccc; padding: 5px;');
-            div.classList.add(td.classList.value); // On conserve la classe (usernameValue ou emailValue)
-            div.classList.add('editable-div');
+            //div.classList.add(td.classList.value); // On conserve la classe (usernameValue ou emailValue)
+            // div.classList.add('editable-div');
 
             // On conserve l'ancien contenu si besoin :
             div.innerText = td.innerText.trim();
             
             td.innerHTML = '';
             td.appendChild(div);
-
         };
 
     document.querySelectorAll('tr td:last-child').forEach(td => {
@@ -240,6 +251,8 @@ function editLeUser() {
             document.querySelector('.usernameValue').textContent = usernameCell;
             document.querySelector('.emailValue').textContent = emailCell;
             document.querySelector('.admin').textContent = roleCell;
+            
+
             td.innerHTML = '<button class="editBtn" type="button" onclick="editLeUser()">Gérer</button>';
         });
 
@@ -272,74 +285,75 @@ function editLeUser() {
 
 
 // UPDATE USER INFO VIA UI (EN TEST)
-document.querySelectorAll(".edit-btn").forEach((button) => {
-    button.addEventListener("click", (e) => {
-        const row = e.target.closest("tr");
-        const userId = row.dataset.userId;
-        const usernameCell = row.querySelector(".username");
-        const emailCell = row.querySelector(".email");
-        const roleCell = row.querySelector(".role");
-        const btn = row.querySelector(".edit-btn");
 
-        if (btn.textContent === "Gérer") {
-            // Passer en mode édition
-            const username = usernameCell.textContent.trim();
-            const email = emailCell.textContent.trim();
-            const role = roleCell.textContent.trim();
+// document.querySelectorAll(".edit-btn").forEach((button) => {
+//     button.addEventListener("click", (e) => {
+//         const row = e.target.closest("tr");
+//         const userId = row.dataset.userId;
+//         const usernameCell = row.querySelector(".username");
+//         const emailCell = row.querySelector(".email");
+//         const roleCell = row.querySelector(".role");
+//         const btn = row.querySelector(".edit-btn");
 
-            usernameCell.innerHTML = `<input type="text" name="username" value="${username}">`;
-            emailCell.innerHTML = `<input type="email" name="email" value="${email}">`;
-            roleCell.innerHTML = `
-                <select name="role">
-                    <option value="employee" ${
-                        role === "employee" ? "selected" : ""
-                    }>employee</option>
-                    <option value="admin" ${
-                        role === "admin" ? "selected" : ""
-                    }>admin</option>
-                </select>
-            `;
+//         if (btn.textContent === "Gérer") {
+//             // Passer en mode édition
+//             const username = usernameCell.textContent.trim();
+//             const email = emailCell.textContent.trim();
+//             const role = roleCell.textContent.trim();
 
-            btn.textContent = "Enregistrer";
+//             usernameCell.innerHTML = `<input type="text" name="username" value="${username}">`;
+//             emailCell.innerHTML = `<input type="email" name="email" value="${email}">`;
+//             roleCell.innerHTML = `
+//                 <select name="role">
+//                     <option value="employee" ${
+//                         role === "employee" ? "selected" : ""
+//                     }>employee</option>
+//                     <option value="admin" ${
+//                         role === "admin" ? "selected" : ""
+//                     }>admin</option>
+//                 </select>
+//             `;
 
-            if (!row.querySelector(".cancel-btn")) {
-                const cancelBtn = document.createElement("button");
-                cancelBtn.textContent = "Annuler";
-                cancelBtn.type = "button";
-                cancelBtn.classList.add("cancel-btn");
-                btn.insertAdjacentElement("afterend", cancelBtn);
+//             btn.textContent = "Enregistrer";
 
-                cancelBtn.addEventListener("click", () => {
-                    usernameCell.textContent = username;
-                    emailCell.textContent = email;
-                    roleCell.textContent = role;
-                    roleCell.className = `${role}`;
+//             if (!row.querySelector(".cancel-btn")) {
+//                 const cancelBtn = document.createElement("button");
+//                 cancelBtn.textContent = "Annuler";
+//                 cancelBtn.type = "button";
+//                 cancelBtn.classList.add("cancel-btn");
+//                 btn.insertAdjacentElement("afterend", cancelBtn);
 
-                    btn.textContent = "Gérer";
-                    cancelBtn.remove();
-                });
-            }
-        } else {
-            const newUsername = row.querySelector(
-                'input[name="username"]'
-            ).value;
-            const newEmail = row.querySelector('input[name="email"]').value;
-            const newRole = row.querySelector('select[name="role"]').value;
+//                 cancelBtn.addEventListener("click", () => {
+//                     usernameCell.textContent = username;
+//                     emailCell.textContent = email;
+//                     roleCell.textContent = role;
+//                     roleCell.className = `${role}`;
 
-            const form = document.createElement("form");
-            form.method = "POST";
-            form.action = "/dashboard/users/update";
+//                     btn.textContent = "Gérer";
+//                     cancelBtn.remove();
+//                 });
+//             }
+//         } else {
+//             const newUsername = row.querySelector(
+//                 'input[name="username"]'
+//             ).value;
+//             const newEmail = row.querySelector('input[name="email"]').value;
+//             const newRole = row.querySelector('select[name="role"]').value;
 
-            form.innerHTML = `
-                <input type="hidden" name="action" value="update">
-                <input type="hidden" name="id" value="${userId}">
-                <input type="hidden" name="username" value="${newUsername}">
-                <input type="hidden" name="email" value="${newEmail}">
-                <input type="hidden" name="role" value="${newRole}">
-            `;
+//             const form = document.createElement("form");
+//             form.method = "POST";
+//             form.action = "/dashboard/users/update";
 
-            document.body.appendChild(form);
-            form.submit();
-        }
-    });
-});
+//             form.innerHTML = `
+//                 <input type="hidden" name="action" value="update">
+//                 <input type="hidden" name="id" value="${userId}">
+//                 <input type="hidden" name="username" value="${newUsername}">
+//                 <input type="hidden" name="email" value="${newEmail}">
+//                 <input type="hidden" name="role" value="${newRole}">
+//             `;
+
+//             document.body.appendChild(form);
+//             form.submit();
+//         }
+//     });
+// });
