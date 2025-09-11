@@ -7,6 +7,7 @@ use App\Controller\DashboardController;
 use App\Controller\LoginController;
 use App\Controller\ArticlesController;
 use App\Controller\UserController;
+use App\Controller\CalendarController;
 use CapsuleLib\Core\DIContainer;
 use CapsuleLib\Routing\Router;
 use CapsuleLib\Middleware\MiddlewareAuth;
@@ -18,6 +19,7 @@ return static function (Router $router, DIContainer $c): void {
     $aa = $c->get(ArticlesController::class);
     $uc = $c->get(UserController::class);
     $lc = $c->get(LoginController::class);
+    $cc = $c->get(CalendarController::class);
 
     $router->get('/health', function () {
         header('Content-Type: text/plain');
@@ -30,7 +32,10 @@ return static function (Router $router, DIContainer $c): void {
     $router->get('/galerie', [$hc, 'galerie']);
     $router->get('/article/{id:\d+}', [$hc, 'article'], [], name: 'article.show');
     $router->post('/contact', [$hc, 'contactMail'], name: 'contact.mail');
-    
+    //$router->post('/home/generate_ics', [$hc, 'generateICS()'], name: 'home.generate_ics');
+    $router->get('/calendar', [$cc, 'index'], [], name: 'calendar');
+    $router->post('/home/generate_ics', [$cc, 'generateICS'], name: 'home.generate_ics');
+
     // Auth
     $router->get('/login',  [$lc, 'loginForm']);
     $router->post('/login', [$lc, 'loginSubmit']);

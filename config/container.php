@@ -56,8 +56,9 @@ return (function (): DIContainer {
         $container->get(ArticleService::class),
         $container->get(SidebarLinksProvider::class),
     ));
+    $container->set(\App\Controller\CalendarController::class, fn($container) => new \App\Controller\CalendarController());
 
-    // NOTE: 
+    // NOTE:
     // (Optionnel) Binders d’interfaces → impls projet
     // $container->set(AuthenticatorInterface::class, fn($container) => new SessionAuthenticator(...));
 

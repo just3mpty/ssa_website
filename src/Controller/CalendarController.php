@@ -21,6 +21,7 @@ final class CalendarController extends RenderController
             'isAdmin'     => isset($_SESSION['admin']),
             'user'        => $_SESSION['admin'] ?? [],
             'str'         => TranslationLoader::load(defaultLang: 'fr'),
+            'articleGenerateIcsAction' => '/home/generate_ics',
         ]);
     }
 
@@ -49,30 +50,35 @@ final class CalendarController extends RenderController
 
     public function generateICS(): void
     {
+        RequestUtils::ensurePostOrRedirect('/home');
+        //CsrfTokenManager::requireValidToken();
 
-        // Exemple de données d'événement
-        $date_debut = strtotime('2025-09-10 14:00:00');
-        $date_fin = strtotime('2025-09-10 15:30:00');
-        $objet = "Titre de l'événement";
-        $lieu = "Paris";
-        $details = "Description de l'événement";
+        // Récupération des données
+        $date_debut = strtotime($_POST['eventDate'] ?? '');
+        $date_fin   = $date_debut + 3600;
+        $objet      = $_POST['eventTitle'] ?? '';
+        $lieu       = $_POST['eventLocation'] ?? '';
+        $details    = $_POST['eventDescription'] ?? '';
 
         // Génération du contenu ICS
-        $ics = "BEGIN:VCALENDAR\n";
+        $ics  = "BEGIN:VCALENDAR\n";
         $ics .= "VERSION:2.0\n";
         $ics .= "PRODID:-//MonSite//FR\n";
-        $ics .= "BEGIN:ARTICLE\n";
-        $ics .= "DTSTART:" . date('Ymd\THis\Z', $date_debut) . "\n";
-        $ics .= "DTEND:" . date('Ymd\THis\Z', $date_fin) . "\n";
+        $ics .= "BEGIN:VEVENT\n";
+        $ics .= "UID:" . uniqid() . "@monsite.fr\n";
+        $ics .= "DTSTAMP:" . gmdate('Ymd\THis\Z') . "\n";
+        $ics .= "DTSTART:" . gmdate('Ymd\THis\Z', $date_debut) . "\n";
+        $ics .= "DTEND:"   . gmdate('Ymd\THis\Z', $date_fin) . "\n";
         $ics .= "SUMMARY:" . addcslashes($objet, ",;\\") . "\n";
         $ics .= "LOCATION:" . addcslashes($lieu, ",;\\") . "\n";
         $ics .= "DESCRIPTION:" . addcslashes($details, ",;\\") . "\n";
-        $ics .= "END:VARTICLE\n";
+        $ics .= "END:VEVENT\n";
         $ics .= "END:VCALENDAR";
 
-        // Envoi des en-têtes pour le téléchargement du fichier ICS
+        // Envoi des en-têtes
         header('Content-Type: text/calendar; charset=utf-8');
-        header('Content-Disposition: attachment; filename="article.ics"');
+        header('Content-Disposition: attachment; filename="event.ics"');
         echo $ics;
+
     }
 }

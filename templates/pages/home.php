@@ -1,13 +1,10 @@
 <?php
-
 /** @var array<string, string> $str */ ?>
-
 
 <?php
 $e = static fn($v) => htmlspecialchars((string)($v ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
-
-$action   = $e($articleGenerateIcsAction ?? '/home/generate_ics');
+$action = $e($articleGenerateIcsAction ?? '/home/generate_ics');
 ?>
 
 
@@ -46,8 +43,17 @@ $action   = $e($articleGenerateIcsAction ?? '/home/generate_ics');
                         <h3><?= secure_html($article->titre) ?></h3>
                         <p><?= nl2br(secure_html($article->resume)) ?></p>
                     </div>
+                    <!-- bouton ics -->
                     <form action="<?= $action ?>" method="post">
-                        <button type="submit" name="article_id" value="generer_ics">
+                    <?= \CapsuleLib\Security\CsrfTokenManager::insertInput(); ?>
+
+                        <!-- <button type="submit" name="article_id" value="generer_ics"> -->
+                        <button type="submit" name="submit">
+
+                            <input type="hidden" name="eventDate" value="<?= $article->date_article . ' ' . substr($article->hours, 0, 5) . ':00' ?>">
+                            <input type="hidden" name="eventTitle" value="<?= $article->titre ?>">
+                            <input type="hidden" name="eventDescription" value="<?= $article->resume ?>">
+                            <input type="hidden" name="eventLocation" value="<?= $article->lieu ?>">
                             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
                                 <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
