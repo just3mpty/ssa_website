@@ -180,7 +180,7 @@ function editLeUser(event) {
     // Récupérer les cellules spécifiques de cette ligne
     const usernameCell = row.querySelector('.usernameValue');
     const emailCell = row.querySelector('.emailValue');
-    const roleCell = row.querySelector('.admin, .employee');
+    let roleCell = row.querySelector('.admin, .employee');
     const actionCell = row.querySelector('td:last-child');
 
     // Stocker les valeurs initiales pour pouvoir les restaurer en cas d'annulation
@@ -237,8 +237,9 @@ function editLeUser(event) {
         btnCancel.addEventListener('click', () => {
             usernameCell.textContent = originalUsername;
             emailCell.textContent = originalEmail;
-            roleCell.textContent = originalRole;
-            roleCell.className = originalRole; // Restaurer la classe du rôle
+            roleCell.className = originalRole + ' role'; // Restaurer la classe du rôle
+            roleCell.innerHTML =  "<p> '<?php echo htmlspecialchars($user->email); ?>' </p>";
+            row.querySelector('.role p').textContent = originalRole;
             actionCell.innerHTML = '<button class="editBtn" type="button" onclick="editLeUser(event)">Gérer</button>';
         });
 
