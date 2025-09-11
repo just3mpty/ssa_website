@@ -93,7 +93,7 @@ class LoginController extends RenderController
         );
 
         if ($success) {
-            Redirect::to('/dashboard/home', 302);
+            Redirect::to('/dashboard/account', 302);
         }
 
         // PRG en cas d'échec d’authentification
