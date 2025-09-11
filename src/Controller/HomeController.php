@@ -82,19 +82,33 @@ final class HomeController extends RenderController
         ], /* withArticles */ false));
     }
 
-    public function contactMail(): void 
+    public function contactMail(): void
     {
-    RequestUtils::ensurePostOrRedirect('/contact');
+        RequestUtils::ensurePostOrRedirect('/contact');
 
-    if (isset($_POST['message']) && isset($_POST['email']) && isset($_POST['name'])) {
-            $to = 'noah.moaligou@gmail.com'; // Adresse qui recevra le mail
-            $subject = 'Message depuis le formulaire de contact ' . $_POST['name'];
-            $message = $_POST['message'];
-            $headers = 'From: ' . $_POST['email'] . "\r\n" .
-                    'Reply-To: ' . $_POST['email'] . "\r\n" .
-                    'X-Mailer: PHP/' . phpversion();
+        if (isset($_POST['message']) && isset($_POST['email']) && isset($_POST['name'])) {
+            $to = 'aurelien.corre@outlook.fr';
+            $subject = 'Message de ' . $_POST['name'];
+            $content = htmlspecialchars($_POST['message']);
 
-            $sent = mail($to, $subject, $message, $headers);
+            $message = '
+            <html>
+                <head>
+                    <title>Nouveau message de ' . $_POST['name'] . '</title>
+                </head>
+                <body>
+                    <p>' . $content . '</p>
+                </body>
+            </html>
+     ';
+
+            $headers[] = 'MIME-Version: 1.0';
+            $headers[] = 'Content-type: text/html; charset=iso-8859-1';
+            $headers[] = 'From: ' . $_POST['email'];
+            $headers[] = 'Reply-To: ' . $_POST['email'];
+            $headers[] = 'X-Mailer: PHP/' . phpversion();
+
+            $sent = mail($to, $subject, $message, implode("\r\n", $headers));
 
             if ($sent) {
                 echo "Votre message a bien été envoyé.";
