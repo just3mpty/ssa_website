@@ -69,7 +69,7 @@ final class DashboardController extends RenderController
             $vars += ['str' => $this->str()];
             $content = $this->renderComponent($component, $vars);
         }
-
+        
         echo $this->renderView('dashboard/home.php', $this->basePayload([
             'title'            => $title,
             'dashboardContent' => $content,
@@ -108,13 +108,18 @@ final class DashboardController extends RenderController
         $prefill = FormState::consumeData();
         $user = CurrentUserProvider::getUser() ?? [];
 
+
+        // header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+        // header('Pragma: no-cache');
+        // header('Expires: 0');
+
         $this->renderDash('Mon compte', 'dash_account.php', [
             'errors'                => $errors,
             'accountPasswordAction' => '/dashboard/account/password',
             'prefill'               => $prefill,
             'user'                  => $user,
             // ajout pour test UI modif user
-            //'editUserAction'        => '/dashboard/account/update', // à implémenter plus tard
+            'editUserAction'        => '/dashboard/account/update', // à implémenter plus tard
         ]);
     }
 
@@ -152,4 +157,85 @@ final class DashboardController extends RenderController
         }
         Redirect::withErrors('/dashboard/account', 'Le formulaire contient des erreurs.', $errors, []);
     }
+
+
+    // public function usersUpdate(): void
+    // {
+    //     RequestUtils::ensurePostOrRedirect('/dashboard/users');
+    //     //CsrfTokenManager::requireValidToken();
+    //     $id       = (int)($_POST['id'] ?? 0);
+    //     $username = trim((string)($_POST['username'] ?? ''));
+    //     $email    = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL) ?: null;
+    //     $role     = trim((string)($_POST['role'] ?? 'employee'));
+        
+
+    //     $errors = [];
+    //     if ($id <= 0)        $errors['_global'] = 'ID utilisateur invalide.';
+    //     if ($username === '') $errors['username'] = 'Requis.';
+    //     if (!$email)          $errors['email']    = 'Email invalide.';
+
+    //     if ($errors !== []) {
+    //         Redirect::withErrors(
+    //             "/dashboard/users/{$id}",                
+    //             'Le formulaire contient des erreurs.',
+    //             $errors,
+    //             ['username' => $username, 'email' => (string)$email, 'role' => $role]
+    //         );
+    //     }
+
+    //     try {
+    //         $input = ['username' => $username, 'email' => (string)$email, 'role' => $role];
+
+    //         $this->userService->updateUser($id, $input);
+    //         Redirect::withSuccess("/dashboard/account", 'Utilisateur modifié avec succès.');
+    //     } catch (\Throwable $e) {
+    //         Redirect::withErrors(
+    //             // '/dashboard/users',
+    //             '/dashboard/account',
+    //             'Erreur lors de la modification.',
+    //             ['_global' => 'Modification impossible.'],
+    //             ['username' => $username, 'email' => (string)$email, 'role' => $role]
+    //         );
+    //     }
+    // }
+
+
+    // public function usersUpdate(): void
+    // {
+    //     RequestUtils::ensurePostOrRedirect('/dashboard/users');
+    //     //CsrfTokenManager::requireValidToken();
+
+    //     $id       = (int)($_POST['id'] ?? 0);
+    //     $username = trim((string)($_POST['username'] ?? ''));
+    //     $email    = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL) ?: null;
+    //     $role     = trim((string)($_POST['role'] ?? 'employee'));
+
+    //     $errors = [];
+    //     if ($id <= 0)        $errors['_global'] = 'ID utilisateur invalide.';
+    //     if ($username === '') $errors['username'] = 'Requis.';
+    //     if (!$email)          $errors['email']    = 'Email invalide.';
+
+    //     if ($errors !== []) {
+    //         Redirect::withErrors(
+    //             '/dashboard/users',
+    //             'Le formulaire contient des erreurs.',
+    //             $errors,
+    //             ['username' => $username, 'email' => (string)$email, 'role' => $role]
+    //         );
+    //     }
+
+    //     try {
+    //         $this->userService->updateUser($id, ['email' => (string)$email, 'username' => $username, 'role' => $role]);
+    //         Redirect::withSuccess('/dashboard/users', 'Utilisateur modifié avec succès.');
+    //     } catch (\Throwable $e) {
+    //         Redirect::withErrors(
+    //             '/dashboard/users',
+    //             'Erreur lors de la modification.',
+    //             ['_global' => 'Modification impossible.'],
+    //             ['username' => $username, 'email' => (string)$email, 'role' => $role]
+    //         );
+    //     }
+    // }
+
+
 }

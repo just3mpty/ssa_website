@@ -61,7 +61,7 @@ final class UserController extends RenderController
     public function usersDelete(): void
     {
         RequestUtils::ensurePostOrRedirect('/dashboard/users');
-        CsrfTokenManager::requireValidToken();
+        //CsrfTokenManager::requireValidToken();
 
         $ids = array_map('intval', (array)($_POST['user_ids'] ?? []));
         $ids = array_values(array_filter($ids, fn(int $id) => $id > 0));
@@ -83,5 +83,46 @@ final class UserController extends RenderController
             Redirect::withSuccess('/dashboard/users', "Utilisateur(s) supprimé(s) : {$deleted}.");
         }
         Redirect::withErrors('/dashboard/users', 'Aucune suppression effectuée.', ['_global' => 'Aucune suppression effectuée.']);
+    }
+
+    public function usersUpdate(): void
+    {
+                    
+        RequestUtils::ensurePostOrRedirect('/dashboard/users');
+        //CsrfTokenManager::requireValidToken();
+        $id       = (int)($_POST['id'] ?? 0);
+        $username = trim((string)($_POST['username'] ?? ''));
+        $email    = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL) ?: null;
+        $role     = trim((string)($_POST['role'] ?? 'employee'));
+        
+
+        $errors = [];
+        if ($id <= 0)        $errors['_global'] = 'ID utilisateur invalide.';
+        if ($username === '') $errors['username'] = 'Requis.';
+        if (!$email)          $errors['email']    = 'Email invalide.';
+
+        if ($errors !== []) {
+            Redirect::withErrors(
+                "/dashboard/users/{$id}",                
+                'Le formulaire contient des erreurs.',
+                $errors,
+                ['username' => $username, 'email' => (string)$email, 'role' => $role]
+            );
+        }
+
+        try {
+            $input = ['username' => $username, 'email' => (string)$email, 'role' => $role];
+
+            $this->userService->updateUser($id, $input);
+            Redirect::withSuccess("/dashboard/users", 'Utilisateur modifié avec succès.');
+        } catch (\Throwable $e) {
+            Redirect::withErrors(
+                // '/dashboard/users',
+                '/dashboard/account',
+                'Erreur lors de la modification.',
+                ['_global' => 'Modification impossible.'],
+                ['username' => $username, 'email' => (string)$email, 'role' => $role]
+            );
+        }
     }
 }

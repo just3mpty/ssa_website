@@ -182,6 +182,8 @@ function editLeUser(event) {
     const emailCell = row.querySelector('.emailValue');
     let roleCell = row.querySelector('.admin, .employee');
     const actionCell = row.querySelector('td:last-child');
+    const id = row.querySelector('.idValue').textContent.trim(); // Récupérer l'ID depuis la cellule cachée
+    console.log("ID de l'utilisateur :", id);
 
     // Stocker les valeurs initiales pour pouvoir les restaurer en cas d'annulation
     const originalUsername = usernameCell.textContent.trim();
@@ -254,7 +256,9 @@ function editLeUser(event) {
             form.action = '/dashboard/users/update';
 
             form.innerHTML = `
+                
                 <input type="hidden" name="action" value="update">
+                <input type="hidden" name="id" value="${id}">
                 <input type="hidden" name="username" value="${newUsername}">
                 <input type="hidden" name="email" value="${newEmail}">
                 <input type="hidden" name="role" value="${newRole}">
@@ -265,6 +269,90 @@ function editLeUser(event) {
         });
     }
 }
+
+function suppUsers() {
+
+    const selectedIds = Array.from(checkboxes)
+        .filter(cb => cb.checked)
+        .map(cb => cb.value);
+
+    if (selectedIds.length === 0) return;
+
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = "/dashboard/users/delete";
+
+    form.innerHTML = "<?= \CapsuleLib\Security\CsrfTokenManager::insertInput(); ?>"
+
+
+    selectedIds.forEach(id => {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "user_ids[]";
+        input.value = id;
+        form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+
+}
+
+
+/**
+ * Attach delete event to the delete user button for bulk deletion.
+ */
+
+
+// if (deleteBtn) {
+//     deleteBtn.addEventListener("click", () => {
+        
+//         const selectedIds = Array.from(checkboxes)
+//             .filter(cb => cb.checked)
+//             .map(cb => cb.value);
+
+//         if (selectedIds.length === 0) return;
+
+//         //if (!confirm("Êtes-vous sûr de vouloir supprimer les utilisateurs sélectionnés ?")) return;
+
+//         const form = document.createElement("form");
+//         form.method = "POST";
+//         form.action = "/dashboard/users/delete";
+
+//         selectedIds.forEach(id => {
+//             // const tokenDiv = document.createElement("p");
+//             // tokenDiv.textContent("<?= \CapsuleLib\Security\CsrfTokenManager::insertInput(); ?>")
+//             // form.appendChild(tokenDiv);
+
+
+//             // const input = document.createElement("input");
+//             // input.type = "hidden";
+//             // input.name = "user_ids[]";
+//             // input.value = id;
+//             // form.appendChild(input);
+
+
+//             form.innerHTML = `
+                
+//                 <input type="hidden" name="action" value="update">
+//                 <input type="hidden" name="id" value="${id}">
+//             `;
+            
+//         });
+
+//         console.log('test');
+        
+//         document.body.appendChild(form);
+
+//         if (form.submit) {
+//             console.log('yes');
+//         } else {
+//             console.log('no');
+//         }
+
+//         form.submit();
+//     });
+//}
 
 
 

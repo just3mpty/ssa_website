@@ -31,10 +31,9 @@ return static function (Router $router, DIContainer $c): void {
     $router->get('/projet',  [$hc, 'projet']);
     $router->get('/galerie', [$hc, 'galerie']);
     $router->get('/article/{id:\d+}', [$hc, 'article'], [], name: 'article.show');
-    $router->post('/contact', [$hc, 'contactMail'], name: 'contact.mail');
-    //$router->post('/home/generate_ics', [$hc, 'generateICS()'], name: 'home.generate_ics');
     $router->get('/calendar', [$cc, 'index'], [], name: 'calendar');
     $router->post('/home/generate_ics', [$cc, 'generateICS'], name: 'home.generate_ics');
+    $router->post('/contact', [$hc, 'contactMail'], name: 'contact.mail');
 
     // Auth
     $router->get('/login',  [$lc, 'loginForm']);
@@ -53,7 +52,9 @@ return static function (Router $router, DIContainer $c): void {
             $r2->post('/users/create',    [$uc, 'usersCreate']);
             $r2->post('/users/delete',    [$uc, 'usersDelete']);
             // ligne suivante ajoutée pour éditer user (username, email, role) via UI (qui marche pô encore...)
-            //$r2->post('/users/update/{id:\d+}',    [$uc, 'usersUpdate']);
+            // $r2->post('/users/update/{id:\d+}',    [$uc, 'usersUpdate']);
+            $r2->post('/users/update',    [$uc, 'usersUpdate']);
+            
         });
 
         // Articles admin (admin)

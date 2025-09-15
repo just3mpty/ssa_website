@@ -1,5 +1,11 @@
 <?php
 $e = static fn($v) => htmlspecialchars((string)($v ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+header('Expires: 0');
+
+
 ?>
 
 <section class="users">
@@ -13,8 +19,8 @@ $e = static fn($v) => htmlspecialchars((string)($v ?? ''), ENT_QUOTES | ENT_SUBS
         <p class="notice notice--success" style="color: #43c466;"><?= $e($flash) ?></p>
     <?php endif; ?>
 
-    <div class="wrapper">
-        <form id="usersTableForm" method="POST" action="/dashboard/users/delete">
+    <div class="wrapper" id="wrapper">
+            <?= \CapsuleLib\Security\CsrfTokenManager::insertInput(); ?>
             <input type="hidden" name="action" value="delete">
             <table class="table table-striped">
                 <thead>
@@ -33,6 +39,8 @@ $e = static fn($v) => htmlspecialchars((string)($v ?? ''), ENT_QUOTES | ENT_SUBS
                             <td>
                                 <input class="user-checkbox" type="checkbox" name="user_ids[]" value="<?php echo htmlspecialchars($user->id); ?>">
                             </td>
+                            <td class="idValue" name='idValue' hidden><?= htmlspecialchars($user->id); ?></td>
+
                             <td class="usernameValue"><?php echo htmlspecialchars($user->username); ?></td>
                             <td class="emailValue"><?php echo htmlspecialchars($user->email); ?></td>
                             <td class="<?= htmlspecialchars($user->role) ?> role">
@@ -44,12 +52,13 @@ $e = static fn($v) => htmlspecialchars((string)($v ?? ''), ENT_QUOTES | ENT_SUBS
                     <?php endforeach; ?>
                 </tbody>
             </table>
-            <button class="deleteUser" type="submit" disabled>Supprimer la sélection</button>
-        </form>
+            <button class="deleteUser" name="deleteBtn" onclick='suppUsers()'>Supprimer la sélection</button>
+        <div id="placeHolderFormEnd"></div>
     </div>
 
     <div class="popup hidden">
         <form method="POST" action="/dashboard/users/create">
+            <?= \CapsuleLib\Security\CsrfTokenManager::insertInput(); ?>
             <h2>Créer un utilisateur</h2>
             <input type="hidden" name="action" value="create">
 
