@@ -58,7 +58,7 @@ class LoginController extends RenderController
     {
         $errors  = FormState::consumeErrors();
         $prefill = FormState::consumeData();
-        echo $this->renderView('admin/login.php', [
+        $payload = [
             'showHeader' => true,
             'showFooter' => true,
             'title' => 'Connexion',
@@ -66,7 +66,9 @@ class LoginController extends RenderController
             'errors' => $errors,
             'prefill' => $prefill,
             'str'   => $this->getStrings(),
-        ]);
+        ];
+
+        echo $this->renderView('admin/login.php', $payload);
     }
 
     /**

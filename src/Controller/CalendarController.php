@@ -15,14 +15,17 @@ final class CalendarController extends RenderController
 {
     public function index(): void
     {
-        echo $this->renderView('calendar/home.php', [
+        $payload = [
             'title'       => 'Calendrier',
             'isDashboard' => false,
             'isAdmin'     => isset($_SESSION['admin']),
             'user'        => $_SESSION['admin'] ?? [],
             'str'         => TranslationLoader::load(defaultLang: 'fr'),
             'articleGenerateIcsAction' => '/home/generate_ics',
-        ]);
+
+        ];
+
+        echo $this->renderView('calendar/home.php', $payload);
     }
 
     public function handlePost(): void
@@ -79,6 +82,5 @@ final class CalendarController extends RenderController
         header('Content-Type: text/calendar; charset=utf-8');
         header('Content-Disposition: attachment; filename="event.ics"');
         echo $ics;
-
     }
 }

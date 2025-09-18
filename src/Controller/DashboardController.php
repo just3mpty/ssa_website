@@ -69,11 +69,13 @@ final class DashboardController extends RenderController
             $vars += ['str' => $this->str()];
             $content = $this->renderComponent($component, $vars);
         }
-        
-        echo $this->renderView('dashboard/home.php', $this->basePayload([
+
+        $payload = [
             'title'            => $title,
             'dashboardContent' => $content,
-        ]));
+        ];
+
+        echo $this->renderView('dashboard/home.php', $this->basePayload($payload));
     }
 
     /* -------------------- Routes -------------------- */
@@ -91,14 +93,15 @@ final class DashboardController extends RenderController
 
         $errors  = FormState::consumeErrors();
         $prefill = FormState::consumeData();
-
-        $this->renderDash('Utilisateurs', 'dash_users.php', [
+        $payload = [
             'users'        => $users,
             'errors'       => $errors,
             'prefill'      => $prefill,
             'createAction' => '/dashboard/users/create',
             'deleteAction' => '/dashboard/users/delete',
-        ]);
+        ];
+
+        $this->renderDash('Utilisateurs', 'dash_users.php', $payload);
     }
 
     /* ===== Compte (GET/POST) ===== */
@@ -112,15 +115,16 @@ final class DashboardController extends RenderController
         // header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
         // header('Pragma: no-cache');
         // header('Expires: 0');
-
-        $this->renderDash('Mon compte', 'dash_account.php', [
+        $payload = [
             'errors'                => $errors,
             'accountPasswordAction' => '/dashboard/account/password',
             'prefill'               => $prefill,
             'user'                  => $user,
             // ajout pour test UI modif user
             'editUserAction'        => '/dashboard/account/update', // à implémenter plus tard
-        ]);
+        ];
+
+        $this->renderDash('Mon compte', 'dash_account.php', $payload);
     }
 
     /** POST /dashboard/account/password */
@@ -167,7 +171,7 @@ final class DashboardController extends RenderController
     //     $username = trim((string)($_POST['username'] ?? ''));
     //     $email    = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL) ?: null;
     //     $role     = trim((string)($_POST['role'] ?? 'employee'));
-        
+
 
     //     $errors = [];
     //     if ($id <= 0)        $errors['_global'] = 'ID utilisateur invalide.';

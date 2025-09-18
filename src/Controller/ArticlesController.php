@@ -36,9 +36,8 @@ final class ArticlesController extends RenderController
 
     private function renderDash(string $title, string $component, array $vars = []): void
     {
-        // On laisse FlashBag consommé par le layout si tu as déjà un global ;
-        // sinon tu peux réactiver un consume() ici.
-        echo $this->renderView('dashboard/home.php', [
+
+        $payload = [
             'title'            => $title,
             'isDashboard'      => true,
             'isAdmin'          => true,
@@ -47,7 +46,10 @@ final class ArticlesController extends RenderController
             'dashboardContent' => $this->renderComponent($component, $vars + ['str' => $this->str()]),
             'str'              => $this->str(),
             'articleGenerateIcsAction' => '/home/generate_ics',
-        ]);
+
+        ];
+
+        echo $this->renderView('dashboard/home.php', $payload);
     }
 
     private function idFrom(string|int|array $param): int
@@ -59,14 +61,16 @@ final class ArticlesController extends RenderController
 
     public function index(): void
     {
-        $list = $this->articles->getAll();
-        $this->renderDash('Articles', 'dash_articles.php', [
-            'articles'      => $list,
+
+        $payload = [
+            'articles'      => $this->articles->getAll(),
             'createUrl'     => '/dashboard/articles/create',
             'editBaseUrl'   => '/dashboard/articles/edit',
             'deleteBaseUrl' => '/dashboard/articles/delete',
             'showBaseUrl'   => '/dashboard/articles/show', // <-- pour le lien "Voir"
-        ]);
+        ];
+
+        $this->renderDash('Articles', 'dash_articles.php', $payload);
     }
 
     /* -------------------- Details -------------------- */
@@ -75,30 +79,33 @@ final class ArticlesController extends RenderController
     {
         $id  = $this->idFrom($params);
         $dto = $this->articles->getById($id);
+
         if (!$dto) {
             http_response_code(404);
             echo 'Not Found';
             return;
         }
-
-        $this->renderDash('Détail de l’article', 'dash_article_show.php', [
+        $payload = [
             'article' => $dto,
             'backUrl' => '/dashboard/articles',
-        ]);
+        ];
+
+        $this->renderDash('Détail de l’article', 'dash_article_show.php', $payload);
     }
 
     /* -------------------- Create -------------------- */
 
     public function createForm(): void
     {
-        $errors = FormState::consumeErrors();
         $data   = FormState::consumeData();
-
-        $this->renderDash('Créer un article', 'dash_article_form.php', [
+        $errors = FormState::consumeErrors();
+        $payload = [
             'action'  => '/dashboard/articles/create',
             'article' => $data ?? null,
             'errors'  => $errors,
-        ]);
+        ];
+
+        $this->renderDash('Créer un article', 'dash_article_form.php', $payload);
     }
 
     public function createSubmit(): void
@@ -133,12 +140,13 @@ final class ArticlesController extends RenderController
 
         $errors  = FormState::consumeErrors();
         $prefill = FormState::consumeData();
-
-        $this->renderDash('Modifier un article', 'dash_article_form.php', [
+        $payload = [
             'action'  => "/dashboard/articles/edit/{$id}",
             'article' => $prefill ?: $dto,
             'errors'  => $errors,
-        ]);
+        ];
+
+        $this->renderDash('Modifier un article', 'dash_article_form.php', $payload);
     }
 
     public function editSubmit(string|array $params): void
