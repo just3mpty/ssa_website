@@ -13,7 +13,7 @@ $e = static fn($v) => htmlspecialchars((string)($v ?? ''), ENT_QUOTES | ENT_SUBS
 <section class="account">
     <h1><?= $e($str['account.title'] ?? 'Mon mot de passe') ?></h1>
 
-    
+
 
     <?php if (!empty($flash)): ?>
         <p class="notice notice--success"><?= $e($flash) ?></p>
@@ -30,7 +30,7 @@ $e = static fn($v) => htmlspecialchars((string)($v ?? ''), ENT_QUOTES | ENT_SUBS
     <div id="update-password-form">
         <h4><?= $e($str['account.change_password'] ?? 'Changer de mot de passe') ?></h4>
         <form method="post" action="<?= $action ?>" autocomplete="off" novalidate>
-            <?= \CapsuleLib\Security\CsrfTokenManager::insertInput(); ?>
+            <?= \Capsule\Security\CsrfTokenManager::insertInput(); ?>
 
             <label for="old_password">
                 <span><?= $e($str['account.old_password'] ?? 'Ancien mot de passe') ?></span>

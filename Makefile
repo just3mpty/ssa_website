@@ -60,7 +60,7 @@ vendor-clean: ## Réinstalle vendor proprement (host)
 
 # ---------- Qualité / Tests ----------
 phpstan:   ## Analyse statique
-	vendor/bin/phpstan analyse lib src --level=6
+	vendor/bin/phpstan analyse app src --level=6
 
 test:      ## Tests unitaires
 	vendor/bin/phpunit --testdox

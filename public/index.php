@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 // --- Autoload (temporaire). Idéalement: require dirname(__DIR__).'/vendor/autoload.php';
-require dirname(__DIR__) . '/lib/Autoload.php';
+require dirname(__DIR__) . '/src/Autoload.php';
 
-use CapsuleLib\Http\SecureHeaders;
+use Capsule\Http\SecureHeaders;
 
 // Sécurité session
 ini_set('session.cookie_httponly', '1');
@@ -35,7 +35,7 @@ if (!is_file($bootstrapPath)) {
     exit;
 }
 
-/** @var \CapsuleLib\Routing\Router $router */
+/** @var \Capsule\Routing\Router $router */
 $router = require $bootstrapPath;
 
 // Dispatch

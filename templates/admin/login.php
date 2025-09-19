@@ -9,7 +9,7 @@
 
 <section class="login">
     <form method="POST">
-        <?= \CapsuleLib\Security\CsrfTokenManager::insertInput(); ?>
+        <?= \Capsule\Security\CsrfTokenManager::insertInput(); ?>
 
         <?php if (!empty($error)): ?>
             <p style="color:red"><?= secure_html($error) ?></p>

@@ -1,4 +1,5 @@
 <?php
+
 /** @var array<string, string> $str */ ?>
 
 <?php
@@ -45,7 +46,7 @@ $action = $e($articleGenerateIcsAction ?? '/home/generate_ics');
                     </div>
                     <!-- bouton ics -->
                     <form action="<?= $action ?>" method="post">
-                    <?= \CapsuleLib\Security\CsrfTokenManager::insertInput(); ?>
+                        <?= \Capsule\Security\CsrfTokenManager::insertInput(); ?>
 
                         <!-- <button type="submit" name="article_id" value="generer_ics"> -->
                         <button type="submit" name="submit">

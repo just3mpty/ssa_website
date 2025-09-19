@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use CapsuleLib\Core\DIContainer;
-use CapsuleLib\Routing\Router;
+use Capsule\Core\DIContainer;
+use Capsule\Routing\Router;
 
-require_once dirname(__DIR__) . '/lib/Helper/html_secure.php';
+require_once dirname(__DIR__) . '/src/Helper/html_secure.php';
 
 /** 1) Container */
 $container = require dirname(__DIR__) . '/config/container.php';

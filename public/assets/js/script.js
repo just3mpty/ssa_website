@@ -156,16 +156,17 @@ checkboxes.forEach((cb) => cb.addEventListener("change", toggleDeleteBtn));
 
 // CREER UN USER (MODALE)
 if (createUser) {
-createUser.addEventListener("click", () => {
-    const popup = document.querySelector(".popup");
-    popup.classList.remove("hidden");
+    createUser.addEventListener("click", () => {
+        const popup = document.querySelector(".popup");
+        popup.classList.remove("hidden");
 
-    popup.addEventListener("click", (e) => {
-        if (e.target === popup) {
-            popup.classList.add("hidden");
-        }
+        popup.addEventListener("click", (e) => {
+            if (e.target === popup) {
+                popup.classList.add("hidden");
+            }
+        });
     });
-});}
+}
 
 // EDIT USER INFO via UI sur DASH_ACCOUNT.PHP pour l'instant
 
@@ -240,7 +241,7 @@ function editLeUser(event) {
             usernameCell.textContent = originalUsername;
             emailCell.textContent = originalEmail;
             roleCell.className = originalRole + ' role'; // Restaurer la classe du rôle
-            roleCell.innerHTML =  "<p> '<?php echo htmlspecialchars($user->email); ?>' </p>";
+            roleCell.innerHTML = "<p> '<?php echo htmlspecialchars($user->email); ?>' </p>";
             row.querySelector('.role p').textContent = originalRole;
             actionCell.innerHTML = '<button class="editBtn" type="button" onclick="editLeUser(event)">Gérer</button>';
         });
@@ -282,7 +283,7 @@ function suppUsers() {
     form.method = "POST";
     form.action = "/dashboard/users/delete";
 
-    form.innerHTML = "<?= \CapsuleLib\Security\CsrfTokenManager::insertInput(); ?>"
+    form.innerHTML = "<?= \Capsule\Security\CsrfTokenManager::insertInput(); ?>"
 
 
     selectedIds.forEach(id => {
@@ -306,7 +307,7 @@ function suppUsers() {
 
 // if (deleteBtn) {
 //     deleteBtn.addEventListener("click", () => {
-        
+
 //         const selectedIds = Array.from(checkboxes)
 //             .filter(cb => cb.checked)
 //             .map(cb => cb.value);
@@ -321,7 +322,7 @@ function suppUsers() {
 
 //         selectedIds.forEach(id => {
 //             // const tokenDiv = document.createElement("p");
-//             // tokenDiv.textContent("<?= \CapsuleLib\Security\CsrfTokenManager::insertInput(); ?>")
+//             // tokenDiv.textContent("<?= \Capsule\Security\CsrfTokenManager::insertInput(); ?>")
 //             // form.appendChild(tokenDiv);
 
 
@@ -333,15 +334,15 @@ function suppUsers() {
 
 
 //             form.innerHTML = `
-                
+
 //                 <input type="hidden" name="action" value="update">
 //                 <input type="hidden" name="id" value="${id}">
 //             `;
-            
+
 //         });
 
 //         console.log('test');
-        
+
 //         document.body.appendChild(form);
 
 //         if (form.submit) {

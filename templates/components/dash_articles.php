@@ -56,7 +56,7 @@ $join = static fn(string $base, string|int $id) => rtrim($base, '/') . '/' . raw
                                 <a href="<?= $e($editUrl) ?>">Modifier</a>
                                 <form action="<?= $e($deleteUrl) ?>" method="post" style="display:inline;"
                                     onsubmit="return confirm('Supprimer cet article ?');">
-                                    <?= \CapsuleLib\Security\CsrfTokenManager::insertInput(); ?>
+                                    <?= \Capsule\Security\CsrfTokenManager::insertInput(); ?>
                                     <button type="submit" style="background-color:#ED7F7F;">Supprimer</button>
                                 </form>
                             </td>

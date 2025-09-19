@@ -7,7 +7,7 @@ services:
     volumes:
       - ./public:/var/www/html/public:Z
       - ./src:/var/www/html/src:Z
-      - ./lib:/var/www/html/lib:Z
+      - ./app:/var/www/html/app:Z
       - ./templates:/var/www/html/templates:Z
       - ./bootstrap:/var/www/html/bootstrap:Z
       - ./config:/var/www/html/config:Z
@@ -31,7 +31,7 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - db_data:/var/lib/mysql
+      - db_data:/var/src/mysql
       - ./docker:/docker-entrypoint-initdb.d:ro,z
 
   pma:

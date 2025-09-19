@@ -4,8 +4,8 @@
     },
     "autoload": {
         "psr-4": {
-            "CapsuleLib\\": "lib/",
-            "App\\": "src/"
+            "Capsule\\": "src/",
+            "App\\": "app/"
         }
     },
     "autoload-dev": {
