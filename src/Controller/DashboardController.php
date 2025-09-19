@@ -123,6 +123,12 @@ final class DashboardController extends RenderController
         ]);
     }
 
+    public function agenda(): void
+    {
+
+        $this->renderDash('Mon agenda', 'dash_agenda.php', []);
+    }
+
     /** POST /dashboard/account/password */
     public function accountPassword(): void
     {

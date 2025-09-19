@@ -11,9 +11,9 @@ header('Expires: 0');
 <section class="users">
     <h1>Gestion des utilisateurs</h1>
 
-    <div class="buttons">
+    <!-- <div class="buttons">
         <button id="createUserBtn">Créer</button>
-    </div>
+    </div> -->
 
     <?php if (!empty($flash)): ?>
         <p class="notice notice--success" style="color: #43c466;"><?= $e($flash) ?></p>
@@ -30,14 +30,18 @@ header('Expires: 0');
                         <th>Email</th>
                         <th>Rôle</th>
                         <th>Ajouté(e) le</th>
-                        <th>Gérer</th>
+                        <th>
+                            <div class="buttons">
+                                <button id="createUserBtn" class="iconPlus"><img class='imgPlus' src="/assets/icons/plus-square-svgrepo-com.png"></button>    
+                            </div>
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($users as $user): ?>
                         <tr>
                             <td>
-                                <input class="user-checkbox" type="checkbox" name="user_ids[]" value="<?php echo htmlspecialchars($user->id); ?>">
+                                <!-- <input class="user-checkbox" type="checkbox" name="user_ids[]" value="<?php echo htmlspecialchars($user->id); ?>"> -->
                             </td>
                             <td class="idValue" name='idValue' hidden><?= htmlspecialchars($user->id); ?></td>
 
@@ -52,7 +56,7 @@ header('Expires: 0');
                     <?php endforeach; ?>
                 </tbody>
             </table>
-            <button class="deleteUser" name="deleteBtn" onclick='suppUsers()'>Supprimer la sélection</button>
+            <!-- <button class="deleteUser" name="deleteBtn" onclick='suppUsers()'>Supprimer la sélection</button> -->
         <div id="placeHolderFormEnd"></div>
     </div>
 

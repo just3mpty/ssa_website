@@ -25,6 +25,7 @@ final class SidebarLinksProvider
             ['title' => 'Utilisateurs', 'url' => '/dashboard/users', 'icon' => 'users'],
             ['title' => 'Mes articles', 'url' => '/dashboard/articles', 'icon' => 'articles'],
             ['title' => 'Mot de passe', 'url' => '/dashboard/account', 'icon' => 'account'],
+            ['title' => 'Agenda', 'url' => '/dashboard/agenda', 'icon' => 'calendar'],
             ['title' => 'Déconnexion', 'url' => '/logout', 'icon' => 'logout'],
         ];
 

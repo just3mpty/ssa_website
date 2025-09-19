@@ -167,9 +167,18 @@ createUser.addEventListener("click", () => {
     });
 });}
 
+
+
+// CREER EVENT AGENDA
+document.getElementById("btn-open-modal").onclick = function() {
+    document.getElementById("modalCreateEvent").style.display = "flex";
+};
+
+document.getElementById("closeModal").onclick = function() {
+    document.getElementById("modalCreateEvent").style.display = "none";
+};
+
 // EDIT USER INFO via UI sur DASH_ACCOUNT.PHP pour l'instant
-
-
 
 function editLeUser(event) {
     console.log("Bouton 'Gérer' cliqué");
@@ -222,7 +231,7 @@ function editLeUser(event) {
         roleCell.innerHTML = '';
         roleCell.appendChild(select);
 
-        // Remplacer le bouton "Gérer" par "Enregistrer" et "Annuler"
+        // Remplacer le bouton "Gérer" par "Enregistrer", "Annuler" et "Supprimer"
         actionCell.innerHTML = '';
         const btnSave = document.createElement('button');
         btnSave.textContent = 'Enregistrer';
@@ -232,8 +241,36 @@ function editLeUser(event) {
         btnCancel.textContent = 'Annuler';
         btnCancel.classList.add('cancel-btn');
 
+        const btnSuppr = document.createElement('button');
+        btnSuppr.textContent = 'Supprimer';
+        btnSuppr.classList.add('suppr-btn');
+
+
         actionCell.appendChild(btnSave);
         actionCell.appendChild(btnCancel);
+        actionCell.appendChild(btnSuppr);
+        
+
+        // Gestion du bouton "Supprimer"
+        btnSuppr.addEventListener('click', () => {
+            if (confirm("Êtes-vous sûr de vouloir supprimer cet utilisateur ?")) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/dashboard/users/delete';
+
+                form.innerHTML = `
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="user_ids[]" value="${id}">
+                    <?= \CapsuleLib\Security\CsrfTokenManager::insertInput(); ?>
+                `;
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+
+
+        
 
         // Gestion du bouton "Annuler"
         btnCancel.addEventListener('click', () => {
@@ -247,186 +284,53 @@ function editLeUser(event) {
 
         // Gestion du bouton "Enregistrer"
         btnSave.addEventListener('click', () => {
-            const newUsername = usernameCell.querySelector('div').textContent.trim();
-            const newEmail = emailCell.querySelector('div').textContent.trim();
-            const newRole = select.value;
-
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '/dashboard/users/update';
-
-            form.innerHTML = `
-                
-                <input type="hidden" name="action" value="update">
-                <input type="hidden" name="id" value="${id}">
-                <input type="hidden" name="username" value="${newUsername}">
-                <input type="hidden" name="email" value="${newEmail}">
-                <input type="hidden" name="role" value="${newRole}">
-            `;
-
-            document.body.appendChild(form);
-            form.submit();
+            if (confirm('Enregistrer les modifications ?')){
+                const newUsername = usernameCell.querySelector('div').textContent.trim();
+                const newEmail = emailCell.querySelector('div').textContent.trim();
+                const newRole = select.value;
+    
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/dashboard/users/update';
+    
+                form.innerHTML = `
+                    
+                    <input type="hidden" name="action" value="update">
+                    <input type="hidden" name="id" value="${id}">
+                    <input type="hidden" name="username" value="${newUsername}">
+                    <input type="hidden" name="email" value="${newEmail}">
+                    <input type="hidden" name="role" value="${newRole}">
+                `;
+    
+                document.body.appendChild(form);
+                form.submit();
+            }
         });
     }
 }
 
-function suppUsers() {
+// function suppUsers() {
+//     const selectedIds = Array.from(checkboxes)
+//         .filter(cb => cb.checked)
+//         .map(cb => cb.value);
 
-    const selectedIds = Array.from(checkboxes)
-        .filter(cb => cb.checked)
-        .map(cb => cb.value);
+//     if (selectedIds.length === 0) return;
 
-    if (selectedIds.length === 0) return;
+//     const form = document.createElement("form");
+//     form.method = "POST";
+//     form.action = "/dashboard/users/delete";
 
-    const form = document.createElement("form");
-    form.method = "POST";
-    form.action = "/dashboard/users/delete";
-
-    form.innerHTML = "<?= \CapsuleLib\Security\CsrfTokenManager::insertInput(); ?>"
-
-
-    selectedIds.forEach(id => {
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = "user_ids[]";
-        input.value = id;
-        form.appendChild(input);
-    });
-
-    document.body.appendChild(form);
-    form.submit();
-
-}
+//     form.innerHTML = "<?= \CapsuleLib\Security\CsrfTokenManager::insertInput(); ?>"
 
 
-/**
- * Attach delete event to the delete user button for bulk deletion.
- */
-
-
-// if (deleteBtn) {
-//     deleteBtn.addEventListener("click", () => {
-        
-//         const selectedIds = Array.from(checkboxes)
-//             .filter(cb => cb.checked)
-//             .map(cb => cb.value);
-
-//         if (selectedIds.length === 0) return;
-
-//         //if (!confirm("Êtes-vous sûr de vouloir supprimer les utilisateurs sélectionnés ?")) return;
-
-//         const form = document.createElement("form");
-//         form.method = "POST";
-//         form.action = "/dashboard/users/delete";
-
-//         selectedIds.forEach(id => {
-//             // const tokenDiv = document.createElement("p");
-//             // tokenDiv.textContent("<?= \CapsuleLib\Security\CsrfTokenManager::insertInput(); ?>")
-//             // form.appendChild(tokenDiv);
-
-
-//             // const input = document.createElement("input");
-//             // input.type = "hidden";
-//             // input.name = "user_ids[]";
-//             // input.value = id;
-//             // form.appendChild(input);
-
-
-//             form.innerHTML = `
-                
-//                 <input type="hidden" name="action" value="update">
-//                 <input type="hidden" name="id" value="${id}">
-//             `;
-            
-//         });
-
-//         console.log('test');
-        
-//         document.body.appendChild(form);
-
-//         if (form.submit) {
-//             console.log('yes');
-//         } else {
-//             console.log('no');
-//         }
-
-//         form.submit();
+//     selectedIds.forEach(id => {
+//         const input = document.createElement("input");
+//         input.type = "hidden";
+//         input.name = "user_ids[]";
+//         input.value = id;
+//         form.appendChild(input);
 //     });
-//}
 
-
-
-
-// UPDATE USER INFO VIA UI (EN TEST)
-
-// document.querySelectorAll(".edit-btn").forEach((button) => {
-//     button.addEventListener("click", (e) => {
-//         const row = e.target.closest("tr");
-//         const userId = row.dataset.userId;
-//         const usernameCell = row.querySelector(".username");
-//         const emailCell = row.querySelector(".email");
-//         const roleCell = row.querySelector(".role");
-//         const btn = row.querySelector(".edit-btn");
-
-//         if (btn.textContent === "Gérer") {
-//             // Passer en mode édition
-//             const username = usernameCell.textContent.trim();
-//             const email = emailCell.textContent.trim();
-//             const role = roleCell.textContent.trim();
-
-//             usernameCell.innerHTML = `<input type="text" name="username" value="${username}">`;
-//             emailCell.innerHTML = `<input type="email" name="email" value="${email}">`;
-//             roleCell.innerHTML = `
-//                 <select name="role">
-//                     <option value="employee" ${
-//                         role === "employee" ? "selected" : ""
-//                     }>employee</option>
-//                     <option value="admin" ${
-//                         role === "admin" ? "selected" : ""
-//                     }>admin</option>
-//                 </select>
-//             `;
-
-//             btn.textContent = "Enregistrer";
-
-//             if (!row.querySelector(".cancel-btn")) {
-//                 const cancelBtn = document.createElement("button");
-//                 cancelBtn.textContent = "Annuler";
-//                 cancelBtn.type = "button";
-//                 cancelBtn.classList.add("cancel-btn");
-//                 btn.insertAdjacentElement("afterend", cancelBtn);
-
-//                 cancelBtn.addEventListener("click", () => {
-//                     usernameCell.textContent = username;
-//                     emailCell.textContent = email;
-//                     roleCell.textContent = role;
-//                     roleCell.className = `${role}`;
-
-//                     btn.textContent = "Gérer";
-//                     cancelBtn.remove();
-//                 });
-//             }
-//         } else {
-//             const newUsername = row.querySelector(
-//                 'input[name="username"]'
-//             ).value;
-//             const newEmail = row.querySelector('input[name="email"]').value;
-//             const newRole = row.querySelector('select[name="role"]').value;
-
-//             const form = document.createElement("form");
-//             form.method = "POST";
-//             form.action = "/dashboard/users/update";
-
-//             form.innerHTML = `
-//                 <input type="hidden" name="action" value="update">
-//                 <input type="hidden" name="id" value="${userId}">
-//                 <input type="hidden" name="username" value="${newUsername}">
-//                 <input type="hidden" name="email" value="${newEmail}">
-//                 <input type="hidden" name="role" value="${newRole}">
-//             `;
-
-//             document.body.appendChild(form);
-//             form.submit();
-//         }
-//     });
-// });
+//     document.body.appendChild(form);
+//     form.submit();
+// }

@@ -42,9 +42,10 @@ return static function (Router $router, DIContainer $c): void {
 
     // Dashboard (auth requis)
     $router->group('/dashboard', [MiddlewareAuth::auth()], function (Router $r) use ($dc, $aa, $uc) {
-        $r->get('/home',    [$dc, 'index'],  [], name: 'dash.home');
+        $r->get('/home',    [$dc, 'index'], name: 'dash.home');
         $r->get('/account', [$dc, 'account'], name: 'dash.account');
         $r->get('/users',   [$dc, 'users'],        name: 'dash.users');
+        $r->get('/agenda',   [$dc, 'agenda'], name: 'dash.agenda');
         $r->post('/account/password', [$dc, 'accountPassword']);
         
         // Users (admin)
