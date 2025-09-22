@@ -1,7 +1,7 @@
 <section class="form-section">
     <h2><?= secure_html($str['create_article_title']) ?></h2>
     <form method="post" action="/articles/create" enctype="multipart/form-data" autocomplete="off" class="article-form">
-        <?= \CapsuleLib\Security\CsrfTokenManager::insertInput(); ?>
+        <?= \Capsule\Security\CsrfTokenManager::insertInput(); ?>
 
         <label for="titre"><?= secure_html($str['create_article_label_title']) ?></label>
         <input type="text" name="titre" id="titre" required maxlength="100" autofocus>

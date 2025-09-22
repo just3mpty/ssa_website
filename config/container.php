@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-use CapsuleLib\Core\DIContainer;
-use CapsuleLib\Database\MariaDBConnection;
-use CapsuleLib\Repository\UserRepository;
-use CapsuleLib\Service\UserService;
+use Capsule\Core\DIContainer;
+use Capsule\Database\MariaDBConnection;
+use Capsule\Repository\UserRepository;
+use Capsule\Service\UserService;
+use Capsule\Service\PasswordService;
 
 use App\Repository\ArticleRepository;
 use App\Service\ArticleService;
@@ -14,6 +15,7 @@ use App\Controller\HomeController;
 use App\Controller\LoginController;
 use App\Controller\ArticlesController;
 use App\Controller\DashboardController;
+use App\Controller\CalendarController;
 use App\Controller\UserController;
 
 
@@ -31,7 +33,7 @@ return (function (): DIContainer {
     // --- Services ---
     $container->set(ArticleService::class, fn($container) => new ArticleService($container->get(ArticleRepository::class)));
     $container->set(UserService::class,    fn($container) => new UserService($container->get(UserRepository::class)));
-    $container->set('passwords',           fn($container) => new \CapsuleLib\Service\PasswordService(
+    $container->set('passwords',           fn($container) => new PasswordService(
         $container->get(UserRepository::class),
         $LENGTH_PASSWORD,
         []
@@ -56,11 +58,7 @@ return (function (): DIContainer {
         $container->get(ArticleService::class),
         $container->get(SidebarLinksProvider::class),
     ));
-    $container->set(\App\Controller\CalendarController::class, fn($container) => new \App\Controller\CalendarController());
-
-    // NOTE:
-    // (Optionnel) Binders d’interfaces → impls projet
-    // $container->set(AuthenticatorInterface::class, fn($container) => new SessionAuthenticator(...));
+    $container->set(CalendarController::class, fn($container) => new CalendarController());
 
     return $container;
 })();

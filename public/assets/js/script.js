@@ -156,16 +156,17 @@ checkboxes.forEach((cb) => cb.addEventListener("change", toggleDeleteBtn));
 
 // CREER UN USER (MODALE)
 if (createUser) {
-createUser.addEventListener("click", () => {
-    const popup = document.querySelector(".popup");
-    popup.classList.remove("hidden");
+    createUser.addEventListener("click", () => {
+        const popup = document.querySelector(".popup");
+        popup.classList.remove("hidden");
 
-    popup.addEventListener("click", (e) => {
-        if (e.target === popup) {
-            popup.classList.add("hidden");
-        }
+        popup.addEventListener("click", (e) => {
+            if (e.target === popup) {
+                popup.classList.add("hidden");
+            }
+        });
     });
-});}
+}
 
 
 
@@ -277,7 +278,7 @@ function editLeUser(event) {
             usernameCell.textContent = originalUsername;
             emailCell.textContent = originalEmail;
             roleCell.className = originalRole + ' role'; // Restaurer la classe du rôle
-            roleCell.innerHTML =  "<p> '<?php echo htmlspecialchars($user->email); ?>' </p>";
+            roleCell.innerHTML = "<p> '<?php echo htmlspecialchars($user->email); ?>' </p>";
             row.querySelector('.role p').textContent = originalRole;
             actionCell.innerHTML = '<button class="editBtn" type="button" onclick="editLeUser(event)">Gérer</button>';
         });

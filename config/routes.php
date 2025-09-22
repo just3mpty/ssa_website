@@ -8,9 +8,9 @@ use App\Controller\LoginController;
 use App\Controller\ArticlesController;
 use App\Controller\UserController;
 use App\Controller\CalendarController;
-use CapsuleLib\Core\DIContainer;
-use CapsuleLib\Routing\Router;
-use CapsuleLib\Middleware\MiddlewareAuth;
+use Capsule\Core\DIContainer;
+use Capsule\Routing\Router;
+use Capsule\Middleware\MiddlewareAuth;
 
 /** @return callable(Router, DIContainer): void */
 return static function (Router $router, DIContainer $c): void {
@@ -47,7 +47,7 @@ return static function (Router $router, DIContainer $c): void {
         $r->get('/users',   [$dc, 'users'],        name: 'dash.users');
         $r->get('/agenda',   [$dc, 'agenda'], name: 'dash.agenda');
         $r->post('/account/password', [$dc, 'accountPassword']);
-        
+
         // Users (admin)
         $r->group('/', [MiddlewareAuth::role('admin')], function (Router $r2) use ($uc) {
             $r2->post('/users/create',    [$uc, 'usersCreate']);
@@ -55,7 +55,6 @@ return static function (Router $router, DIContainer $c): void {
             // ligne suivante ajoutée pour éditer user (username, email, role) via UI (qui marche pô encore...)
             // $r2->post('/users/update/{id:\d+}',    [$uc, 'usersUpdate']);
             $r2->post('/users/update',    [$uc, 'usersUpdate']);
-            
         });
 
         // Articles admin (admin)

@@ -62,7 +62,7 @@ header('Expires: 0');
 
     <div class="popup hidden">
         <form method="POST" action="/dashboard/users/create">
-            <?= \CapsuleLib\Security\CsrfTokenManager::insertInput(); ?>
+            <?= \Capsule\Security\CsrfTokenManager::insertInput(); ?>
             <h2>Créer un utilisateur</h2>
             <input type="hidden" name="action" value="create">
 

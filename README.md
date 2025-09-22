@@ -21,14 +21,14 @@ Fournir une base claire, maintenable et extensible pour :
 ## 🗂 Structure
 
 ```
-lib/                        # Composants internes (framework)
+src/                        # Composants internes (framework)
 ├── Framework/              # BaseController, Router, Kernel…
 ├── Http/                   # Middleware, Headers…
 ├── Security/               # Authenticator, PasswordHasher
 ├── Database/               # Connexion PDO / gestion SQLite
 ├── Lang/                   # Traductions multilingues
 
-src/                        # Application métier
+app/                        # Application métier
 └── Controller/             # Contrôleurs liés aux pages
 
 templates/                  # Vues HTML (layout + pages)
