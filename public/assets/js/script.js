@@ -180,7 +180,14 @@ document.getElementById("closeModal").onclick = function() {
 };
 
 // VOIR EVENT AGENDA
-
+document.querySelectorAll('#event-container').forEach(container => {
+    container.onclick = function() {
+        const detailDiv = this.querySelector('.detail');
+        if (detailDiv) {
+            detailDiv.hidden = !detailDiv.hidden;
+        }
+    };
+}); 
 
 // EDIT USER INFO via UI sur DASH_ACCOUNT.PHP pour l'instant
 

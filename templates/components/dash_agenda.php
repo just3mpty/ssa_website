@@ -27,6 +27,7 @@
     </form>
   </div>
 
+
   <?php
 // Définir les variables par défaut si elles ne sont pas déjà définies
 $days = isset($days) ? $days : ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
@@ -69,19 +70,22 @@ $events = isset($events) ? $events : [
         'date' => '22-09-2025', // Lundi
         'heure' => '09:00',
         'titre' => 'Réunion d\'équipe',
-        'lieu' => 'Salle 101'
+        'lieu' => 'Salle 101',
+        'duree' => 1.5 // 1 heure et demie
     ],
     [
         'date' => '23-09-2025', // Mardi
         'heure' => '14:30', // Demi-heure
         'titre' => 'Point client',
-        'lieu' => 'Bureau 202'
+        'lieu' => 'Bureau 202',
+        'duree' => 1 // 1 heure
     ],
     [
         'date' => '29-09-2025', // Lundi suivant
         'heure' => '10:30', // Demi-heure
         'titre' => 'Formation',
-        'lieu' => 'Salle 303'
+        'lieu' => 'Salle 303',
+        'duree' => 3
     ]
 ];
 
@@ -98,7 +102,8 @@ foreach ($events as $event) {
             'lieu' => $event['lieu'],
             'date' => $event['date'],
             'heure' => $event['heure'],
-            'isHalfHour' => $isHalfHour
+            'isHalfHour' => $isHalfHour,
+            'duree' => $event['duree']
         ];
     }
 }
@@ -109,6 +114,11 @@ foreach ($events as $event) {
     <span>Semaine du <?php echo htmlspecialchars($monday); ?></span>
     <a href="?week=<?php echo urlencode($nextMonday); ?>">Semaine suivante &gt;</a>
 </div>
+<?php
+$pixelsPerHour = 64; // Hauteur d'une cellule pour 1 heure
+$pixelsPerHalfHour = $pixelsPerHour / 2; // 32px pour une demi-heure
+
+?>
 
 <table>
     <thead>
@@ -130,13 +140,30 @@ foreach ($events as $event) {
                 <tr>
                     <td class="time-slot"><?php echo sprintf("%02d", $hour); ?>:00</td>
                     <?php foreach ($days as $day): ?>
-                        <?php $date = $weekDays[$day];?>
-                        <td <?php echo isset($organizedEvents[$date][$hour]) ? 'class="event"' : ''; ?>>
+                        <?php $date = $weekDays[$day]; ?>
+                        <td <?php echo isset($organizedEvents[$date][$hour]) ? 'class="event-cell"' : ''; ?>>
                             <?php if (isset($organizedEvents[$date][$hour])): 
-                                foreach ($organizedEvents[$date][$hour] as $event): ?>
-                                    <div class="<?php echo $event['isHalfHour'] ? 'event-half-hour' : 'event-whole-hour'; ?>">
+                                foreach ($organizedEvents[$date][$hour] as $event): 
+                                    // Calculer la hauteur en pixels en fonction de la durée
+                                    $eventHeight = $event['duree'] * $pixelsPerHour; // Durée en heures * pixels par heure
+                                    // Ajuster la position pour les demi-heures
+                                    $topOffset = $event['isHalfHour'] ? $pixelsPerHalfHour : 0;
+                                ?>
+                                    <div id='event-container' class="<?php echo $event['isHalfHour'] ? 'event-half-hour' : 'event-whole-hour'; ?>"
+                                         style="height: <?php echo $eventHeight; ?>px; top: <?php echo $topOffset; ?>px;">
                                         <strong><?php echo htmlspecialchars($event['titre']); ?></strong><br>
-                                        (<?php echo htmlspecialchars($event['date'] . ' ' . $event['heure']); ?>)
+                                        (<?php echo htmlspecialchars($event['heure']); ?>, <?php echo $event['duree']; ?>h)<br>
+                                        <?php echo htmlspecialchars($event['lieu']); ?>
+                                        
+                                        
+                                        <div class='detail' hidden>
+                                          <h2>Détails de l'événement</h2>
+                                          <p>Intitulé : <?php echo htmlspecialchars($event['titre']); ?></p>
+                                          <p>Date : <?php echo htmlspecialchars($event['date']); ?></p>
+                                          <p>Horaire : <?php echo htmlspecialchars($event['heure']); ?></p>
+                                          <p>Lieu : <?php echo htmlspecialchars($event['lieu']); ?></p>
+                                          <button id='closeDetail'>Fermer</button>
+                                        </div>
                                     </div>
                                 <?php endforeach; ?>
                             <?php endif; ?>
