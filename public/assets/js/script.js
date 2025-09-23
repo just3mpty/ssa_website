@@ -179,6 +179,9 @@ document.getElementById("closeModal").onclick = function() {
     document.getElementById("modalCreateEvent").style.display = "none";
 };
 
+// VOIR EVENT AGENDA
+
+
 // EDIT USER INFO via UI sur DASH_ACCOUNT.PHP pour l'instant
 
 function editLeUser(event) {
