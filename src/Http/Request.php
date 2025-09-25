@@ -6,7 +6,10 @@ namespace Capsule\Http;
 
 final class Request
 {
-    /** @param array<string,string> $headers */
+    /**
+ * @param array<int,mixed> $query @param array<string,string> $headers * @param array<int,mixed> $cookies
+ * @param array<int,mixed> $server
+ */
     public function __construct(
         public readonly string $method,
         public readonly string $path,
@@ -17,8 +20,9 @@ final class Request
         public readonly string $scheme = 'http',
         public readonly ?string $host = null,
         public readonly ?int $port = null,
-        public readonly ?string $rawBody = null,
-    ) {}
+        public readonly ?string $rawBody = null
+    ) {
+    }
 
     public static function fromGlobals(): self
     {
