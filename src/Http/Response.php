@@ -6,48 +6,38 @@ namespace Capsule\Http;
 
 final class Response
 {
-    /** @var array<string,list<string>> */
-    private array $headers = [];
+    private HeaderBag $headers;
 
     public function __construct(
         private int $status = 200,
-        private string $body = ''
+        private string $body = '',
+        private string $protocol = '1.1'
     ) {
-        $this->assertValidStatus($this->status);
+        $this->assertValidStatus($status);
+        $this->headers = new HeaderBag();
     }
 
-    // --- Factories ---
-    public static function json(array|\JsonSerializable $data, int $status = 200): self
-    {
-        try {
-            $json = json_encode(
-                $data,
-                JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR
-            );
-        } catch (\JsonException $e) {
-            $json   = json_encode(['error' => 'Invalid JSON payload']);
-            $status = 500;
-        }
-
-        $r = new self($status, (string)$json);
-        return $r->withHeader('Content-Type', 'application/json; charset=utf-8');
-    }
-
-    // --- Withers immuables ---
     public function withHeader(string $name, string $value): self
     {
-        [$n, $v] = [$this->normalizeHeaderName($name), $this->sanitizeHeaderValue($value)];
         $c = clone $this;
-        $c->headers[$n] = [$v];
+        $c->headers = clone $this->headers;
+        $c->headers->set($name, $value);
         return $c;
     }
 
     public function withAddedHeader(string $name, string $value): self
     {
-        [$n, $v] = [$this->normalizeHeaderName($name), $this->sanitizeHeaderValue($value)];
         $c = clone $this;
-        $c->headers[$n] = ($c->headers[$n] ?? []);
-        $c->headers[$n][] = $v;
+        $c->headers = clone $this->headers;
+        $c->headers->add($name, $value);
+        return $c;
+    }
+
+    public function withoutHeader(string $name): self
+    {
+        $c = clone $this;
+        $c->headers = clone $this->headers;
+        $c->headers->remove($name);
         return $c;
     }
 
@@ -66,24 +56,46 @@ final class Response
         return $c;
     }
 
-    // --- Output ---
+    public function withProtocol(string $version): self
+    {
+        if (!in_array($version, ['1.0','1.1','2','3'], true)) {
+            throw new \InvalidArgumentException('Invalid HTTP version');
+        }
+        $c = clone $this;
+        $c->protocol = $version;
+        return $c;
+    }
+
     public function send(): void
     {
+        if (!$this->headers->has('Content-Type')) {
+            $this->headers->set('Content-Type', 'text/plain; charset=utf-8');
+            $this->headers->set('X-Content-Type-Options', 'nosniff');
+        }
+
         if (!headers_sent()) {
+            // Status line — PHP gère via http_response_code
             http_response_code($this->status);
-            if (!$this->hasHeader('Content-Length') && !$this->hasHeader('Transfer-Encoding')) {
-                $this->headers['Content-Length'] = [(string) strlen($this->body)];
+
+            $compressionOn = (bool) ini_get('zlib.output_compression');
+            $hasOB = ob_get_level() > 0;
+            $canSetLength = !$compressionOn && !$hasOB && !$this->headers->has('Transfer-Encoding');
+
+            if ($canSetLength && !$this->headers->has('Content-Length')) {
+                $this->headers->set('Content-Length', (string) strlen($this->body));
             }
-            foreach ($this->headers as $name => $values) {
+
+            foreach ($this->headers->all() as $name => $values) {
                 foreach ($values as $v) {
                     header("$name: $v", false);
                 }
             }
         }
+
         echo $this->body;
     }
 
-    // --- Getters utiles ---
+    // Getters
     public function getStatus(): int
     {
         return $this->status;
@@ -92,35 +104,21 @@ final class Response
     {
         return $this->body;
     }
+    public function getProtocol(): string
+    {
+        return $this->protocol;
+    }
     /** @return array<string,list<string>> */
     public function getHeaders(): array
     {
-        return $this->headers;
-    }
-    public function hasHeader(string $name): bool
-    {
-        return isset($this->headers[$this->normalizeHeaderName($name)]);
+        return $this->headers->all();
     }
 
-    // --- Helpers internes ---
+    // Internals
     private function assertValidStatus(int $s): void
     {
         if ($s < 100 || $s > 599) {
             throw new \InvalidArgumentException("Invalid HTTP status: $s");
         }
-    }
-
-    private function normalizeHeaderName(string $name): string
-    {
-        $name = trim($name);
-        if ($name === '' || preg_match('/[^\x21-\x7E]/', $name)) {
-            throw new \InvalidArgumentException("Invalid header name");
-        }
-        return str_replace(' ', '-', ucwords(strtolower(str_replace('-', ' ', $name))));
-    }
-
-    private function sanitizeHeaderValue(string $v): string
-    {
-        return str_replace(["\r", "\n", "\0"], '', trim($v));
     }
 }
