@@ -4,145 +4,77 @@ declare(strict_types=1);
 
 namespace Capsule\Routing;
 
-use Capsule\Middleware\MiddlewareRunner;
+use Capsule\Contracts\RouterInterface;
+use Capsule\Http\HttpException;
+use Capsule\Http\Request;
 
-final class Router
+/**
+ * Router exact-match (méthode + chemin).
+ *
+ * Contrats :
+ * - Méthode comparée en uppercase.jj
+ * - Fallback : HEAD utilise le handler GET s’il existe.
+ * - 404 si aucun handler pour le path.
+ * - 405 si path existe mais pas pour la méthode ; renvoie header Allow.
+ *
+ * @psalm-type Handler = callable(Request)
+ */
+
+final class Router implements RouterInterface
 {
-    /** @var Route[] */
+    /** @var array<string, array<string, callable>> method => [path => handler] */
     private array $routes = [];
 
-    /** @var array<int, array{prefix:string, mws:array<int, callable>}> */
-    private array $groupStack = [];
-
-    /** @var array<string, Route> */
-    private array $named = [];
-
-    /** @var callable():void */
-    private $notFound = null;
-
-    /* ---------- Enregistrement ---------- */
-
-    public function get(string $path, callable $handler, array $middlewares = [], ?string $name = null): void
+    /**
+     * @param callable(Request):Response $handler
+     */
+    public function add(string $method, string $path, callable $handler): void
     {
-        $this->map('GET', $path, $handler, $middlewares, $name);
-    }
-    public function post(string $path, callable $handler, array $middlewares = [], ?string $name = null): void
-    {
-        $this->map('POST', $path, $handler, $middlewares, $name);
-    }
-    public function put(string $path, callable $handler, array $middlewares = [], ?string $name = null): void
-    {
-        $this->map('PUT', $path, $handler, $middlewares, $name);
-    }
-    public function delete(string $path, callable $handler, array $middlewares = [], ?string $name = null): void
-    {
-        $this->map('DELETE', $path, $handler, $middlewares, $name);
-    }
-    public function patch(string $path, callable $handler, array $middlewares = [], ?string $name = null): void
-    {
-        $this->map('PATCH', $path, $handler, $middlewares, $name);
-    }
-
-    public function map(string $method, string $path, callable $handler, array $middlewares = [], ?string $name = null): void
-    {
-        [$prefixed, $mergedMws] = $this->applyGroupContext($path, $middlewares);
-        $route = new Route($method, $prefixed, $handler, $mergedMws, $name);
-
-        $this->routes[] = $route;
-        if ($name) {
-            $this->named[$name] = $route;
-        }
+        $m = strtoupper($method);
+        $this->routes[$m][$path] = $handler;
     }
 
     /**
-     * Groupes de routes avec préfixe et middlewares.
-     * Usage:
-     *   $router->group('/dashboard', [mw1, mw2], function (Router $r) { ... });
+     * @return callable(Request):Response
+     * @throws HttpException 404|405
      */
-    public function group(string $prefix, array $middlewares, callable $callback): void
+    public function match(Request $request): callable
     {
-        $this->groupStack[] = ['prefix' => rtrim($prefix, '/'), 'mws' => $middlewares];
-        $callback($this);
-        array_pop($this->groupStack);
-    }
+        $method = $request->method;
+        $path   = $request->path;
 
-    private function applyGroupContext(string $path, array $middlewares): array
-    {
-        $prefix = '';
-        $merged = [];
-
-        foreach ($this->groupStack as $g) {
-            $prefix .= $g['prefix'];
-            $merged = array_merge($merged, $g['mws']);
+        // Route exacte pour la méthode ?
+        if (isset($this->routes[$method][$path])) {
+            return $this->routes[$method][$path];
         }
 
-        $prefixed = rtrim($prefix, '/') . '/' . ltrim($path, '/');
-        if ($prefixed === '') $prefixed = '/';
-        $prefixed = '/' . ltrim($prefixed, '/');
+        // Fallback HEAD -> GET
+        if ($method === 'HEAD' && isset($this->routes['GET'][$path])) {
+            return $this->routes['GET'][$path];
+        }
 
-        return [$prefixed, array_merge($merged, $middlewares)];
+        // Path existe-t-il pour au moins une méthode ?
+        $allowed = $this->allowedMethodsForPath($path);
+        if ($allowed !== []) {
+            // RFC : la liste Allow est séparée par ", "
+            throw new HttpException(405, 'Method Not Allowed', ['Allow' => [implode(', ', $allowed)]]);
+        }
+
+        throw new HttpException(404, 'Not Found');
     }
 
-    /* ---------- Dispatch ---------- */
-
-    public function dispatch(?string $method = null, ?string $path = null): void
+    /**
+     * @return list<string> Liste de méthodes autorisées pour ce path (triées)
+     */
+    private function allowedMethodsForPath(string $path): array
     {
-        $method ??= $_SERVER['REQUEST_METHOD'] ?? 'GET';
-        $uri = $path ?? parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
-        $uri = $uri ?: '/';
-
-        foreach ($this->routes as $route) {
-            if ($route->method !== $method) continue;
-
-            if (preg_match($route->toRegex(), $uri, $m)) {
-                // params nommés
-                $params = [];
-                foreach ($m as $k => $v) {
-                    if (!is_int($k)) $params[$k] = $v;
-                }
-                // run middlewares + handler
-                $callable = MiddlewareRunner::with($route->handler, $route->middlewares);
-                $callable($params);
-                return;
+        $methods = [];
+        foreach ($this->routes as $m => $table) {
+            if (isset($table[$path])) {
+                $methods[] = $m;
             }
         }
-
-        if ($this->notFound) {
-            ($this->notFound)();
-            return;
-        }
-        http_response_code(404);
-        echo '404 Not Found';
-    }
-
-    /* ---------- Divers ---------- */
-
-    public function setNotFoundHandler(callable $handler): void
-    {
-        $this->notFound = $handler;
-    }
-
-    /** Génération d’URL par nom: route('article.edit', ['id'=>12]) → /dashboard/articles/edit/12 */
-    public function route(string $name, array $params = []): string
-    {
-        if (!isset($this->named[$name])) {
-            throw new \RuntimeException("Route name not found: $name");
-        }
-        $pattern = $this->named[$name]->pathPattern;
-
-        // Remplace {name:regex} et {name}
-        $url = preg_replace_callback(
-            '/\{([a-zA-Z_][a-zA-Z0-9_]*)\:([^}]+)\}|\{([a-zA-Z_][a-zA-Z0-9_]*)\}/',
-            function ($m) use ($params) {
-                $key = $m[1] ?: $m[3];
-                if (!array_key_exists($key, $params)) {
-                    throw new \RuntimeException("Missing param '$key' for route generation");
-                }
-                return rawurlencode((string)$params[$key]);
-            },
-            $pattern
-        );
-
-        return $url ?? $pattern;
+        sort($methods);
+        return $methods;
     }
 }
