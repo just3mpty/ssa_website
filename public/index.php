@@ -2,41 +2,45 @@
 
 declare(strict_types=1);
 
-// --- Autoload (temporaire). Idéalement: require dirname(__DIR__).'/vendor/autoload.php';
-require dirname(__DIR__) . '/src/Autoload.php';
+// Autoload
+require dirname(__DIR__) . '/vendor/autoload.php';
 
-use Capsule\Http\SecureHeaders;
+use Capsule\Http\Message\Request;
+use Capsule\Http\SapiEmitter;
+use Capsule\Kernel\Kernel;
+// si nécessaire
+use Capsule\Http\Middleware\ErrorBoundary;
+use Capsule\Http\Middleware\SecurityHeaders;
+use Capsule\Http\Middleware\AuthMiddleware;
 
-// Sécurité session
+// Sécurité session/env (si besoin, mais évite l’I/O ici aussi)
 ini_set('session.cookie_httponly', '1');
-//ini_set('session.cookie_secure', '1'); // active en HTTPS
 ini_set('session.cookie_samesite', 'Strict');
-
-// Affichage erreurs (dev)
-ini_set('display_errors', '1');
-ini_set('display_startup_errors', '1');
-error_reporting(E_ALL);
-
-// Session
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-// En-têtes sécurisés (si ta classe existe)
-if (class_exists(SecureHeaders::class)) {
-    SecureHeaders::send();
-}
-
-// Bootstrap (ATTENTION au chemin !)
+// Récupère le Router préparé par le bootstrap (AUCUNE I/O)
 $bootstrapPath = dirname(__DIR__) . '/bootstrap/app.php';
-if (!is_file($bootstrapPath)) {
-    http_response_code(500);
-    echo "Bootstrap introuvable: {$bootstrapPath}";
-    exit;
-}
-
 /** @var \Capsule\Routing\Router $router */
 $router = require $bootstrapPath;
 
-// Dispatch
-$router->dispatch();
+// Construire la Request depuis les globals
+$request = Request::fromGlobals();
+
+// Middlewares (ordre conseillé)
+$middlewares = [
+    new ErrorBoundary(debug: (bool)($_ENV['APP_DEBUG'] ?? false)),
+    new SecurityHeaders(),           // ajoute X-Content-Type-Options, CSP, etc.
+    new AuthMiddleware(),            // si tu en as un (sinon enlève-le)
+];
+
+// Kernel = orchestration pure (pas d’I/O)
+$kernel = new Kernel($middlewares, $router);
+
+// Exécuter la pipeline
+$response = $kernel->handle($request);
+
+// Émettre la réponse (I/O unique)
+$emitter = new SapiEmitter();
+$emitter->emit($response);
