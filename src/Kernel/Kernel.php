@@ -10,38 +10,72 @@ use Capsule\Http\Message\Request;
 use Capsule\Http\Message\Response;
 
 /**
- * Kernel V2 : compose une pile de middlewares autour d'un HandlerInterface final.
+ * Kernel — minimal.
+ *
+ * Rôle : composer une pile de middlewares autour d'un handler final ($last).
+ *
  * Invariants :
- * - L'ordre logique des middlewares est celui fourni (M1, M2, ..., Mn).
+ * - Ordre d’exécution = ordre fourni : M1 → M2 → ... → Mn → $last.
  * - Un middleware peut court-circuiter en retournant sa propre Response.
- * - Aucune I/O ici (pas d’emit, pas de header()).
+ * - Aucune I/O ici (pas de header(), pas d’emit) — orchestration pure.
+ * - $last est appelé si aucun middleware ne court-circuite.
  */
 final class Kernel implements HandlerInterface
 {
+    /** @var list<MiddlewareInterface> */
+    private array $middlewares;
+
     private HandlerInterface $pipeline;
 
-    /** @param list<Middleware> $middlewares */
-    public function __construct(array $middlewares, private HandlerInterface $last)
+    /**
+     * @param list<MiddlewareInterface> $middlewares
+     */
+    public function __construct(array $middlewares, private readonly HandlerInterface $last)
     {
-        // On enrobe le handler final en remontant la pile (LIFO d'assemblage)
-        $h = $last;
-        for ($i = count($middlewares) - 1; $i >= 0; $i--) {
-            $m = $middlewares[$i];
-            $h = new class ($m, $h) implements HandlerInterface {
-                public function __construct(private MiddlewareInterface $m, private HandlerInterface $next)
-                {
-                }
-                public function handle(Request $r): Response
-                {
-                    return $this->m->process($r, $this->next);
-                }
-            };
+        // Fail-fast : on vérifie le contrat
+        foreach ($middlewares as $i => $mw) {
+            if (!$mw instanceof MiddlewareInterface) {
+                throw new \InvalidArgumentException("Middleware #$i must implement MiddlewareInterface");
+            }
         }
-        $this->pipeline = $h;
+
+        // Normalisation + construction de la chaîne
+        $this->middlewares = array_values($middlewares);
+        $this->pipeline = self::buildPipeline($this->middlewares, $this->last);
     }
 
     public function handle(Request $req): Response
     {
+        // O(k) appels imbriqués (k = nb de middlewares)
         return $this->pipeline->handle($req);
+    }
+
+    /**
+     * @param list<MiddlewareInterface> $middlewares
+     */
+    private static function buildPipeline(array $middlewares, HandlerInterface $last): HandlerInterface
+    {
+        // Assemble LIFO : le dernier middleware enveloppe $last
+        $handler = $last;
+
+        for ($i = \count($middlewares) - 1; $i >= 0; $i--) {
+            $mw = $middlewares[$i];
+
+            // Nœud d’adaptation : délègue mw->process($req, $next)
+            $handler = new class ($mw, $handler) implements HandlerInterface {
+                public function __construct(
+                    private readonly MiddlewareInterface $mw,
+                    private readonly HandlerInterface $next
+                ) {
+                }
+
+                public function handle(Request $r): Response
+                {
+                    return $this->mw->process($r, $this->next);
+                }
+            };
+        }
+
+        return $handler;
     }
 }

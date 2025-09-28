@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use Capsule\Core\DIContainer;
-use Capsule\Routing\Router;
+use Capsule\Infrastructure\Container\DIContainer;
+use Capsule\Http\Routing\Router;
 
-require_once dirname(__DIR__) . '/src/Helper/html_secure.php';
+require_once dirname(__DIR__) . '/src/Support/html_secure.php';
 
 /** 1) Container */
 $container = require dirname(__DIR__) . '/config/container.php';
@@ -17,23 +17,21 @@ if (!$container instanceof DIContainer) {
 $router = new Router();
 
 /**
- * 3) Charger l’enregistreur de routes (callable)
- *    La fonction retournée doit avoir la signature:
- *      function (Router $router, DIContainer $c): void
+ * 3) Charger l’enregistreur de routes
+ *    Signature attendue : function (Router $router, DIContainer $c): void
  */
 $registerRoutes = require dirname(__DIR__) . '/config/routes.php';
 if (!is_callable($registerRoutes)) {
     throw new RuntimeException('config/routes.php must return a callable (Router, DIContainer) => void.');
 }
 
-/** 4) Enregistrer toutes les routes (avec groupes/middlewares/noms si besoin) */
+/** 4) Enregistrer les routes */
 $registerRoutes($router, $container);
 
-/** 5) NotFound handler */
-$router->setNotFoundHandler(function (): void {
-    http_response_code(404);
-    echo '404 Not Found';
-});
+/** 5) (Facultatif) NotFound géré côté ErrorBoundary.
+ *   Si tu veux un fallback local au router, tu peux garder un handler :
+ */
+// $router->setNotFoundHandler(fn() => Response::text('404 Not Found', 404));
 
-/** 6) Retourner le router prêt à être dispatché par public/index.php */
+/** 6) Retourne le router configuré */
 return $router;
