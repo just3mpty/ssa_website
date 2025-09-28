@@ -21,5 +21,5 @@ interface MiddlewareInterface
     /**
      * @param callable(): mixed $next
      */
-    public function process(Request $request, callable $next): Response;
+    public function process(Request $req, HandlerInterface $next): Response;
 }
