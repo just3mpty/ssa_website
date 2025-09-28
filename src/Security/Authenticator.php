@@ -26,18 +26,19 @@ class Authenticator
      */
     public static function login(PDO $pdo, string $username, string $password): bool
     {
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = :username");
+        $stmt = $pdo->prepare('SELECT * FROM users WHERE username = :username');
         $stmt->execute(['username' => $username]);
         $user = $stmt->fetch();
 
         if ($user && password_verify($password, $user['password_hash'])) {
             session_regenerate_id(true);
             $_SESSION['admin'] = [
-                'id'       => $user['id'],
+                'id' => $user['id'],
                 'username' => $user['username'],
-                'role'     => $user['role'],
-                'email'    => $user['email'],
+                'role' => $user['role'],
+                'email' => $user['email'],
             ];
+
             return true;
         }
 

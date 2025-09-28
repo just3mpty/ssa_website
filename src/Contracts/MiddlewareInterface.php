@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Capsule\Contracts;
 
-use Capsule\Http\Request;
-use Capsule\Http\Response;
+use Capsule\Http\Message\Request;
+use Capsule\Http\Message\Response;
 
 /**
  * Middleware single-pass.

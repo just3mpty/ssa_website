@@ -6,8 +6,8 @@ namespace Capsule\Kernel;
 
 use Capsule\Contracts\HandlerInterface;
 use Capsule\Contracts\MiddlewareInterface;
-use Capsule\Http\Request;
-use Capsule\Http\Response;
+use Capsule\Http\Message\Request;
+use Capsule\Http\Message\Response;
 
 /**
  * Kernel V2 : compose une pile de middlewares autour d'un HandlerInterface final.

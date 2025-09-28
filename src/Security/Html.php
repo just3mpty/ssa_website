@@ -56,6 +56,7 @@ final class Html
         if (!preg_match('#^(https?|ftp|mailto):#i', $url)) {
             return '';
         }
+
         return self::escape($url);
     }
 
@@ -71,8 +72,8 @@ final class Html
     public static function escapeJs(?string $str): string
     {
         return str_replace(
-            ["\\",  "'",   "\"",  "\r", "\n", "</"],
-            ["\\\\", "\\'", "\\\"", "\\r", "\\n", "<\\/"],
+            ['\\',  "'",   '"',  "\r", "\n", '</'],
+            ['\\\\', "\\'", '\\"', '\\r', '\\n', '<\\/'],
             $str ?? ''
         );
     }
@@ -88,7 +89,7 @@ final class Html
      */
     public static function escapeArray(array|object $data): array
     {
-        $escape = fn($v) => is_string($v) ? self::escape($v) : $v;
+        $escape = fn ($v) => is_string($v) ? self::escape($v) : $v;
 
         if (is_array($data)) {
             foreach ($data as $k => $v) {
@@ -96,6 +97,7 @@ final class Html
                     ? self::escapeArray($v)
                     : $escape($v);
             }
+
             return $data;
         }
 
@@ -106,6 +108,7 @@ final class Html
                     ? self::escapeArray($v)
                     : $escape($v);
             }
+
             return $result;
         }
 
