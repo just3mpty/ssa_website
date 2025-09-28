@@ -6,7 +6,7 @@ declare(strict_types=1);
 require dirname(__DIR__) . '/vendor/autoload.php';
 
 use Capsule\Http\Message\Request;
-use Capsule\Http\SapiEmitter;
+use Capsule\Http\Emitter\SapiEmitter;
 use Capsule\Kernel\Kernel;
 // si nécessaire
 use Capsule\Http\Middleware\ErrorBoundary;
