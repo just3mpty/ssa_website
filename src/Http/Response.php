@@ -95,6 +95,28 @@ final class Response
         echo $this->body;
     }
 
+    /** @param array<string,string|list<string>> $headers */
+    public function withHeaders(array $headers): self
+    {
+        $c = clone $this;
+        $c->headers = clone $this->headers;
+        foreach ($headers as $name => $value) {
+            if (is_array($value)) {
+                foreach ($value as $v) {
+                    $c->headers->add((string)$name, (string)$v);
+                }
+            } else {
+                $c->headers->set((string)$name, (string)$value);
+            }
+        }
+        return $c;
+    }
+
+    public function hasHeader(string $name): bool
+    {
+        return $this->headers->has($name);
+    }
+
     // Getters
     public function getStatus(): int
     {
