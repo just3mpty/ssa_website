@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Capsule\Controller;
+namespace Capsule\View;
 
 /**
  * Classe de base pour tous les contrôleurs.
