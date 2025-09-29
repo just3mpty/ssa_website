@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-// Autoload
-require dirname(__DIR__) . '/vendor/autoload.php';
+// --- Autoload (temporaire). Idéalement: require dirname(__DIR__).'/vendor/autoload.php';
+require dirname(__DIR__) . '/src/Autoload.php';
 
 use Capsule\Http\Message\Request;
 use Capsule\Http\Emitter\SapiEmitter;
@@ -15,8 +15,12 @@ use Capsule\Http\Middleware\{
     AuthRequiredMiddleware,
     RequiredRoleMiddleware
 };
+use Capsule\Http\Routing\RouterHandler; // <- IMPORTANT
 
-// Sécurité session/env (si besoin, mais évite l’I/O ici aussi)
+// use Capsule\Http\Routing\MethodNotAllowed; // pour ErrorBoundary si besoin
+// use Capsule\Http\Routing\NotFound;        // idem
+
+// Sécurité session/env (évite l’I/O applicatif ici)
 ini_set('session.cookie_httponly', '1');
 ini_set('session.cookie_samesite', 'Strict');
 if (session_status() !== PHP_SESSION_ACTIVE) {
@@ -25,7 +29,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 
 // Récupère le Router préparé par le bootstrap (AUCUNE I/O)
 $bootstrapPath = dirname(__DIR__) . '/bootstrap/app.php';
-/** @var \Capsule\Routing\Router $router */
+/** @var RouterHandler $router */
 $router = require $bootstrapPath;
 
 // Construire la Request depuis les globals
@@ -33,18 +37,19 @@ $request = Request::fromGlobals();
 $session = new PhpSessionReader();
 
 $middlewares = [
-    new ErrorBoundary(debug: (bool)($_ENV['APP_DEBUG'] ?? false)),
+    // ErrorBoundary doit mapper nos exceptions :
+    //  - NotFound         -> 404
+    //  - MethodNotAllowed -> 405 + header Allow
+    new ErrorBoundary(debug: (bool)($_ENV['APP_DEBUG'] ?? true)),
+
     new SecurityHeaders(),
 
-    // Protège tout /dashboard sauf /login et /logout
     new AuthRequiredMiddleware(
         session: $session,
         protectedPrefix: '/dashboard',
         whitelist: ['/login','/logout'],
         redirectTo: '/login'
     ),
-
-    // Vérifie que l'utilisateur a le rôle "admin" sur /dashboard
     new RequiredRoleMiddleware(
         session: $session,
         requiredRole: 'admin',

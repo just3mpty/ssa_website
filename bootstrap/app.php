@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use Capsule\Infrastructure\Container\DIContainer;
-use Capsule\Http\Routing\Router;
+use Capsule\Http\Routing\RouterHandler;
+use Capsule\Http\Routing\ControllerInvoker;
+use Capsule\Http\Routing\RouteScanner;
 
 require_once dirname(__DIR__) . '/src/Support/html_secure.php';
 
@@ -13,25 +15,41 @@ if (!$container instanceof DIContainer) {
     throw new RuntimeException('config/container.php must return a DIContainer instance.');
 }
 
-/** 2) Router */
-$router = new Router();
+/** 2) Router (notre implémentation) */
+$router = new RouterHandler();
 
-/**
- * 3) Charger l’enregistreur de routes
- *    Signature attendue : function (Router $router, DIContainer $c): void
- */
-$registerRoutes = require dirname(__DIR__) . '/config/routes.php';
-if (!is_callable($registerRoutes)) {
-    throw new RuntimeException('config/routes.php must return a callable (Router, DIContainer) => void.');
+/** 3) Brancher le container dans l'invoker */
+ControllerInvoker::setContainer($container);
+
+/** 4) Découverte auto des contrôleurs dans app/Controller/*Controller.php */
+$controllers = [];
+$baseDir = dirname(__DIR__) . '/app/Controller';
+$files = glob($baseDir . '/*Controller.php') ?: [];
+
+foreach ($files as $file) {
+    $basename = basename($file, '.php');             // ex: UserController
+    $fqcn = 'App\\Controller\\' . $basename;         // ex: App\Controller\UserController
+
+    // Vérifie que la classe est autoloadable avant d’enregistrer
+    if (!class_exists($fqcn)) {
+        // Si ça ne charge pas, tente un require_once en secours
+        require_once $file;
+    }
+    if (!class_exists($fqcn)) {
+        // On ignore poliment si la classe n’existe toujours pas
+        continue;
+    }
+
+    $controllers[] = $fqcn;
 }
 
-/** 4) Enregistrer les routes */
-$registerRoutes($router, $container);
+/** 5) Enregistrer les routes via attributs (liste auto) */
+if ($controllers) {
+    RouteScanner::register($controllers, $router);
+} else {
+    // Optionnel: tu peux lever ou logger — je laisse un guard explicite
+    // throw new RuntimeException('Aucun contrôleur trouvé dans app/Controller/*.');
+}
 
-/** 5) (Facultatif) NotFound géré côté ErrorBoundary.
- *   Si tu veux un fallback local au router, tu peux garder un handler :
- */
-// $router->setNotFoundHandler(fn() => Response::text('404 Not Found', 404));
-
-/** 6) Retourne le router configuré */
+/** 6) Retourner le router configuré */
 return $router;
