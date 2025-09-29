@@ -13,12 +13,8 @@ use Capsule\Http\Middleware\{
     ErrorBoundary,
     SecurityHeaders,
     AuthRequiredMiddleware,
-    RequiredRoleMiddleware
 };
-use Capsule\Http\Routing\RouterHandler; // <- IMPORTANT
-
-// use Capsule\Http\Routing\MethodNotAllowed; // pour ErrorBoundary si besoin
-// use Capsule\Http\Routing\NotFound;        // idem
+use Capsule\Routing\RouterHandler;
 
 // Sécurité session/env (évite l’I/O applicatif ici)
 ini_set('session.cookie_httponly', '1');
@@ -45,12 +41,6 @@ $middlewares = [
     new SecurityHeaders(),
 
     new AuthRequiredMiddleware(
-        session: $session,
-        protectedPrefix: '/dashboard',
-        whitelist: ['/login','/logout'],
-        redirectTo: '/login'
-    ),
-    new RequiredRoleMiddleware(
         session: $session,
         requiredRole: 'admin',
         protectedPrefix: '/dashboard',

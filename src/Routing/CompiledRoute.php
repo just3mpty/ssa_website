@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Capsule\Http\Routing;
+namespace Capsule\Routing;
 
 /**
  * CompiledRoute

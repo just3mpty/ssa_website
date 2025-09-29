@@ -7,8 +7,8 @@ namespace App\Controller;
 use Capsule\Http\Message\Request;
 use Capsule\Http\Message\Response;
 use Capsule\Http\Factory\ResponseFactory as Res;
-use Capsule\Http\Routing\Attribute\Route;
-use Capsule\Http\Routing\Attribute\RoutePrefix;
+use Capsule\Routing\Attribute\Route;
+use Capsule\Routing\Attribute\RoutePrefix;
 
 #[RoutePrefix('/hello')]
 final class HelloController

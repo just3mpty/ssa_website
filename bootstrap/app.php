@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use Capsule\Infrastructure\Container\DIContainer;
-use Capsule\Http\Routing\RouterHandler;
-use Capsule\Http\Routing\ControllerInvoker;
-use Capsule\Http\Routing\RouteScanner;
+use Capsule\Routing\RouterHandler;
+use Capsule\Routing\ControllerInvoker;
+use Capsule\Routing\RouteScanner;
 
 require_once dirname(__DIR__) . '/src/Support/html_secure.php';
 

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Capsule\Http\Routing;
+namespace Capsule\Routing;
 
-use Capsule\Http\Routing\Attribute\Route;
-use Capsule\Http\Routing\Attribute\RoutePrefix;
+use Capsule\Routing\Attribute\Route;
+use Capsule\Routing\Attribute\RoutePrefix;
 use ReflectionClass;
 use ReflectionMethod;
 

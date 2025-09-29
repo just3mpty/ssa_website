@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Capsule\Http\Routing\Attribute;
+namespace Capsule\Routing\Attribute;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
 final class RoutePrefix

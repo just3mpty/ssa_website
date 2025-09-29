@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Capsule\Http\Routing;
+namespace Capsule\Routing;
 
 use Capsule\Contracts\HandlerInterface;
 use Capsule\Http\Message\Request;

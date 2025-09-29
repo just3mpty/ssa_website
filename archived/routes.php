@@ -9,7 +9,7 @@ use App\Controller\ArticlesController;
 use App\Controller\UserController;
 use App\Controller\CalendarController;
 use Capsule\Infrastructure\Domain\DIContainer;
-use Capsule\Http\Routing\Router;
+use Capsule\Routing\Router;
 use Capsule\Http\Middleware\MiddlewareAuth;
 
 return static function (Router $router, DIContainer $c): void {

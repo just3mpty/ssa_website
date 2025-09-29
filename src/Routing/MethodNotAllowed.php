@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Capsule\Http\Routing;
+namespace Capsule\Routing;
 
 /**
  * Exceptions dédiées au routing (mappées par l’ErrorBoundary).
