@@ -20,7 +20,7 @@ use Capsule\Http\Message\Response;
  * - Aucune I/O ici (pas de header(), pas d’emit) — orchestration pure.
  * - $last est appelé si aucun middleware ne court-circuite.
  */
-final class Kernel implements HandlerInterface
+final class KernelHttp implements HandlerInterface
 {
     /** @var list<MiddlewareInterface> */
     private array $middlewares;
