@@ -1,21 +1,33 @@
-# AGENTS.md - SSA Website Project
+# Agent Guidelines for SSA Website
 
-## Build/Test Commands
-- **Install dependencies**: `composer install` or `make setup`
-- **Run all tests**: `vendor/bin/phpunit --testdox` or `make test`
-- **Run single test**: `vendor/bin/phpunit --filter "testMethodName" tests/TestFile.php`
-- **Static analysis**: `vendor/bin/phpstan analyse lib src --level=6` or `make phpstan`
-- **Code formatting**: `vendor/bin/php-cs-fixer fix`
-- **Full QA**: `composer run-script qa` (dump, cs, stan, test)
+## Build/Lint/Test Commands
+- `make test` - Run all tests with PHPUnit
+- `vendor/bin/phpunit --testdox` - Run tests with detailed output
+- `make phpstan` - Run static analysis (PHPStan)
+- `vendor/bin/phpstan analyse app src --level=6` - Run PHPStan with level 6
+- `composer dump` - Regenerate autoloader
+- `make setup-dev` - Install dependencies in container
 
 ## Code Style Guidelines
-- **PHP Version**: >=8.2, use strict types (`declare(strict_types=1);`)
-- **Namespaces**: PSR-4 autoloading - `CapsuleLib\` (lib/), `App\` (src/), `Tests\` (tests/)
-- **Classes**: Use `final` for concrete classes, PascalCase naming
-- **Properties**: Private with constructor promotion where applicable
-- **Methods**: camelCase, explicit return types, PHPDoc for complex params
-- **Imports**: Group by type (PHP core, vendor, project), alphabetical order
-- **Error Handling**: Throw typed exceptions with descriptive messages
-- **Dependencies**: Inject via constructor, use DIContainer for service registration
-- **Testing**: PHPUnit with attributes (`#[CoversNothing]`), descriptive test names
-- **Comments**: French allowed for business logic, English for technical aspects
+- **PHP 8.2+** with strict types (`declare(strict_types=1)`)
+- **PSR-12** coding standard with PHP-CS-Fixer
+- **Namespaces**: `Capsule\` for framework, `App\` for application code
+- **Imports**: Group by framework, then application imports
+- **Types**: Use type hints and return types everywhere
+- **Naming**: `camelCase` for methods/vars, `PascalCase` for classes
+- **Error handling**: Use HTTP status codes and proper error responses
+- **Security**: Input validation, CSRF protection, secure headers
+- **Documentation**: Use PHPDoc for complex methods
+
+## Testing
+- Tests in `tests/` directory
+- Use `TestCase` base class with PHPUnit attributes
+- Follow Arrange-Act-Assert pattern
+- Test both success and error cases
+
+## Project Structure
+- `src/` - Framework code (Capsule namespace)
+- `app/` - Application code (App namespace) 
+- `templates/` - PHP view templates
+- `public/` - Web root with assets
+- `config/` - Configuration files
