@@ -7,10 +7,14 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 
 use Capsule\Http\Message\Request;
 use Capsule\Http\Emitter\SapiEmitter;
-use Capsule\Kernel\Kernel;
-use Capsule\Http\Middleware\ErrorBoundary;
-use Capsule\Http\Middleware\SecurityHeaders;
-use Capsule\Http\Middleware\AuthMiddleware;
+use Capsule\Kernel\KernelHttp;
+use Capsule\Auth\PhpSessionReader;
+use Capsule\Http\Middleware\{
+    ErrorBoundary,
+    SecurityHeaders,
+    AuthRequiredMiddleware,
+    RequiredRoleMiddleware
+};
 
 // Sécurité session/env (si besoin, mais évite l’I/O ici aussi)
 ini_set('session.cookie_httponly', '1');
@@ -26,16 +30,32 @@ $router = require $bootstrapPath;
 
 // Construire la Request depuis les globals
 $request = Request::fromGlobals();
+$session = new PhpSessionReader();
 
-// Middlewares (ordre conseillé)
 $middlewares = [
     new ErrorBoundary(debug: (bool)($_ENV['APP_DEBUG'] ?? false)),
-    new SecurityHeaders(),           // ajoute X-Content-Type-Options, CSP, etc.
-    new AuthMiddleware(),            // si tu en as un (sinon enlève-le)
+    new SecurityHeaders(),
+
+    // Protège tout /dashboard sauf /login et /logout
+    new AuthRequiredMiddleware(
+        session: $session,
+        protectedPrefix: '/dashboard',
+        whitelist: ['/login','/logout'],
+        redirectTo: '/login'
+    ),
+
+    // Vérifie que l'utilisateur a le rôle "admin" sur /dashboard
+    new RequiredRoleMiddleware(
+        session: $session,
+        requiredRole: 'admin',
+        protectedPrefix: '/dashboard',
+        whitelist: ['/login','/logout'],
+        redirectTo: '/login'
+    ),
 ];
 
 // Kernel = orchestration pure (pas d’I/O)
-$kernel = new Kernel($middlewares, $router);
+$kernel = new KernelHttp($middlewares, $router);
 
 // Exécuter la pipeline
 $response = $kernel->handle($request);
