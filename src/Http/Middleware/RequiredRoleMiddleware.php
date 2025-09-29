@@ -9,11 +9,11 @@ use Capsule\Contracts\HandlerInterface;
 use Capsule\Contracts\MiddlewareInterface;
 use Capsule\Http\Message\Request;
 use Capsule\Http\Message\Response;
+use Capsule\Http\Factory\ResponseFactory as Res;
 
 /**
- * RequireRoleMiddleware
- * - Sur le même périmètre que AuthRequired (préfixe + whitelist)
- * - Vérifie qu'un user est présent ET possède le rôle requis
+ * RequiredRoleMiddleware
+ * - Vérifie le rôle requis sur le même périmètre.
  */
 final class RequiredRoleMiddleware implements MiddlewareInterface
 {
@@ -41,9 +41,8 @@ final class RequiredRoleMiddleware implements MiddlewareInterface
         }
 
         $user = $this->session->get($this->sessionKey);
-        if (!$user || !is_array($user) || ($user[$this->roleKey] ?? null) !== $this->requiredRole) {
-            return Response::redirect($this->redirectTo, 302);
-            // Variante API: return Response::json(['error'=>'Forbidden'], 403);
+        if (!$user || !\is_array($user) || ($user[$this->roleKey] ?? null) !== $this->requiredRole) {
+            return Res::redirect($this->redirectTo, 302);
         }
 
         return $next->handle($request);

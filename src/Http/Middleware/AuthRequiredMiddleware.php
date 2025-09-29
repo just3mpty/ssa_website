@@ -9,16 +9,12 @@ use Capsule\Contracts\HandlerInterface;
 use Capsule\Contracts\MiddlewareInterface;
 use Capsule\Http\Message\Request;
 use Capsule\Http\Message\Response;
+use Capsule\Http\Factory\ResponseFactory as Res;
 
 /**
  * AuthRequiredMiddleware
- * - Protège un préfixe d’URL (ex: /dashboard)
- * - Laisse passer une whitelist (ex: /login, /logout)
- * - Si non authentifié → 302 vers /login (ou 401 JSON si tu préfères)
- *
- * Invariants:
- * - Zéro I/O (pas de header()/exit)
- * - Ne suppose pas de structure particulière de $_SESSION ; lit via SessionReader
+ * - Protège un préfixe (ex: /dashboard), whitelist configurée.
+ * - Non authentifié -> 302 /login (zéro I/O ici).
  */
 final class AuthRequiredMiddleware implements MiddlewareInterface
 {
@@ -28,30 +24,24 @@ final class AuthRequiredMiddleware implements MiddlewareInterface
         /** @var list<string> */
         private readonly array $whitelist = ['/login','/logout'],
         private readonly string $redirectTo = '/login',
-        private readonly string $sessionKey = 'admin' // ex: contient l’utilisateur
+        private readonly string $sessionKey = 'admin'
     ) {
     }
 
     public function process(Request $request, HandlerInterface $next): Response
     {
-        $path = $request->path; // ta Request a déjà un path normalisé
+        $path = $request->path;
 
-        // Hors zone protégée → passe
         if (!str_starts_with($path, $this->protectedPrefix)) {
             return $next->handle($request);
         }
-
-        // Whitelist → passe
         if (in_array($path, $this->whitelist, true)) {
             return $next->handle($request);
         }
-
-        // Non authentifié → redirige
         if (!$this->session->has($this->sessionKey)) {
-            return Response::redirect($this->redirectTo, 302);
+            return Res::redirect($this->redirectTo, 302);
         }
 
-        // Auth OK
         return $next->handle($request);
     }
 }
