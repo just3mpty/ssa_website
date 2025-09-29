@@ -2,6 +2,8 @@
 
 namespace Capsule\Infrastructure\Container;
 
+use Capsule\Contracts\ContainerLike;
+
 /**
  * Conteneur d'injection de dépendances simple.
  *
@@ -9,7 +11,7 @@ namespace Capsule\Infrastructure\Container;
  * - Fournit des instances singleton créées à la demande via les factories.
  * - Lance une exception si un service demandé n'est pas défini.
  */
-class DIContainer
+class DIContainer implements ContainerLike
 {
     /**
      * Tableau associatif des factories enregistrées.
@@ -45,13 +47,18 @@ class DIContainer
      * @throws \RuntimeException Si la factory n'est pas définie pour ce service
      * @return mixed Instance du service demandé
      */
-    public function get(string $id)
+
+    /**
+     * @param string $id
+     * @return mixed
+     */
+    public function get(string $id): mixed   // <-- AJOUTER ": mixed"
     {
         if (!isset($this->instances[$id])) {
             if (!isset($this->factories[$id])) {
                 throw new \RuntimeException("Service '$id' non défini dans le container.");
             }
-            $this->instances[$id] = $this->factories[$id]($this);
+            $this->instances[$id] = ($this->factories[$id])($this);
         }
 
         return $this->instances[$id];
