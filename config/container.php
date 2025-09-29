@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Controller\HelloController;
 use Capsule\Infrastructure\Container\DIContainer;
 use Capsule\Infrastructure\Database\MariaDBConnection;
 use Capsule\Domain\Repository\UserRepository;
@@ -44,6 +45,7 @@ return (function (): DIContainer {
     $container->set(SidebarLinksProvider::class, fn () => new SidebarLinksProvider());
 
     // --- Controllers ---
+    $container->set(HelloController::class, fn ($c) => new HelloController());
     $container->set(
         HomeController::class,
         fn ($container) => new HomeController($container->get(ArticleService::class))
