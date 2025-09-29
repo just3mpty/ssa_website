@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use Capsule\Core\RenderController;
 use App\Navigation\SidebarLinksProvider;
 use App\Lang\TranslationLoader;
-use Capsule\Service\PasswordService;
+use Capsule\Domain\Service\PasswordService;
+use Capsule\Domain\Service\UserService;
 use Capsule\Security\CurrentUserProvider;
-use Capsule\Http\RequestUtils;
-use Capsule\Http\FlashBag;
-use Capsule\Http\Redirect;
-use Capsule\Http\FormState;
+use Capsule\Http\Support\RequestUtils;
+use Capsule\Http\Support\Redirect;
+use Capsule\Http\Support\FormState;
+use Capsule\Http\Support\FlashBag;
 use Capsule\Security\CsrfTokenManager;
-use Capsule\Service\UserService;
+use Capsule\View\RenderController;
 
 final class DashboardController extends RenderController
 {
@@ -22,7 +22,8 @@ final class DashboardController extends RenderController
         private readonly UserService $userService,
         private readonly PasswordService $passwords,
         private readonly SidebarLinksProvider $linksProvider,
-    ) {}
+    ) {
+    }
 
     /** Cache par requête */
     private ?array $strings = null;
@@ -33,27 +34,30 @@ final class DashboardController extends RenderController
     {
         return $this->strings ??= TranslationLoader::load(defaultLang: 'fr');
     }
-
+    /**
+     * @return array<int,array{title:string,url:string,icon:string}>
+     */
     private function links(bool $isAdmin): array
     {
         return $this->linksProvider->get($isAdmin);
     }
 
-    /** Payload commun au layout Dashboard */
+    /**
+ * @param array<int,mixed> $extra Payload commun au layout Dashboard */
     private function basePayload(array $extra = []): array
     {
-        $user    = CurrentUserProvider::getUser() ?? [];
+        $user = CurrentUserProvider::getUser() ?? [];
         $isAdmin = ($user['role'] ?? null) === 'admin';
 
         $base = [
             'isDashboard' => true,
-            'title'       => '',
-            'user'        => $user,
-            'username'    => $user['username'] ?? '',
-            'isAdmin'     => $isAdmin,
-            'links'       => $this->links($isAdmin),
-            'str'         => $this->str(),
-            'flash'       => FlashBag::consume(),
+            'title' => '',
+            'user' => $user,
+            'username' => $user['username'] ?? '',
+            'isAdmin' => $isAdmin,
+            'links' => $this->links($isAdmin),
+            'str' => $this->str(),
+            'flash' => FlashBag::consume(),
         ];
 
         return array_replace($base, $extra);
@@ -61,6 +65,7 @@ final class DashboardController extends RenderController
 
     /**
      * Point unique de rendu du dashboard (DRY).
+     * @param array<int,mixed> $vars
      */
     private function renderDash(string $title, ?string $component = null, array $vars = []): void
     {
@@ -71,7 +76,7 @@ final class DashboardController extends RenderController
         }
 
         $payload = [
-            'title'            => $title,
+            'title' => $title,
             'dashboardContent' => $content,
         ];
 
@@ -91,12 +96,12 @@ final class DashboardController extends RenderController
         // Accès admin géré par middleware
         $users = $this->userService->getAllUsers();
 
-        $errors  = FormState::consumeErrors();
+        $errors = FormState::consumeErrors();
         $prefill = FormState::consumeData();
         $payload = [
-            'users'        => $users,
-            'errors'       => $errors,
-            'prefill'      => $prefill,
+            'users' => $users,
+            'errors' => $errors,
+            'prefill' => $prefill,
             'createAction' => '/dashboard/users/create',
             'deleteAction' => '/dashboard/users/delete',
         ];
@@ -107,7 +112,7 @@ final class DashboardController extends RenderController
     /* ===== Compte (GET/POST) ===== */
     public function account(): void
     {
-        $errors  = FormState::consumeErrors();
+        $errors = FormState::consumeErrors();
         $prefill = FormState::consumeData();
         $user = CurrentUserProvider::getUser() ?? [];
 
@@ -116,12 +121,12 @@ final class DashboardController extends RenderController
         // header('Pragma: no-cache');
         // header('Expires: 0');
         $payload = [
-            'errors'                => $errors,
+            'errors' => $errors,
             'accountPasswordAction' => '/dashboard/account/password',
-            'prefill'               => $prefill,
-            'user'                  => $user,
+            'prefill' => $prefill,
+            'user' => $user,
             // ajout pour test UI modif user
-            'editUserAction'        => '/dashboard/account/update', // à implémenter plus tard
+            'editUserAction' => '/dashboard/account/update', // à implémenter plus tard
         ];
 
         $this->renderDash('Mon compte', 'dash_account.php', $payload);
@@ -139,16 +144,17 @@ final class DashboardController extends RenderController
         RequestUtils::ensurePostOrRedirect('/dashboard/account');
         CsrfTokenManager::requireValidToken();
 
-        $user    = CurrentUserProvider::getUser();
-        $userId  = (int)($user['id'] ?? 0);
+        $user = CurrentUserProvider::getUser();
+        $userId = (int)($user['id'] ?? 0);
         if ($userId <= 0) {
             http_response_code(403);
             echo 'Forbidden';
+
             return;
         }
 
-        $old     = trim((string)($_POST['old_password'] ?? ''));
-        $new     = trim((string)($_POST['new_password'] ?? ''));
+        $old = trim((string)($_POST['old_password'] ?? ''));
+        $new = trim((string)($_POST['new_password'] ?? ''));
         $confirm = trim((string)($_POST['confirm_new_password'] ?? ''));
 
         $errors = [];
@@ -186,7 +192,7 @@ final class DashboardController extends RenderController
 
     //     if ($errors !== []) {
     //         Redirect::withErrors(
-    //             "/dashboard/users/{$id}",                
+    //             "/dashboard/users/{$id}",
     //             'Le formulaire contient des erreurs.',
     //             $errors,
     //             ['username' => $username, 'email' => (string)$email, 'role' => $role]
@@ -235,7 +241,8 @@ final class DashboardController extends RenderController
     //     }
 
     //     try {
-    //         $this->userService->updateUser($id, ['email' => (string)$email, 'username' => $username, 'role' => $role]);
+    //         $this->userService->updateUser(
+    //         $id, ['email' => (string)$email, 'username' => $username, 'role' => $role]);
     //         Redirect::withSuccess('/dashboard/users', 'Utilisateur modifié avec succès.');
     //     } catch (\Throwable $e) {
     //         Redirect::withErrors(
@@ -246,6 +253,4 @@ final class DashboardController extends RenderController
     //         );
     //     }
     // }
-
-
 }

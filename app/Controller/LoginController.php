@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use Capsule\Core\RenderController;
+use App\Lang\TranslationLoader;
 use Capsule\Security\Authenticator;
 use Capsule\Security\CsrfTokenManager;
-use App\Lang\TranslationLoader;
-use Capsule\Http\RequestUtils;
-use Capsule\Http\Redirect;
-use Capsule\Http\FlashBag;
-use Capsule\Http\FormState;
+use Capsule\View\RenderController;
+use Capsule\Http\Support\RequestUtils;
+use Capsule\Http\Support\Redirect;
+use Capsule\Http\Support\FlashBag;
+use Capsule\Http\Support\FormState;
 use PDO;
 
 /**
@@ -56,7 +56,7 @@ class LoginController extends RenderController
      */
     public function loginForm(): void
     {
-        $errors  = FormState::consumeErrors();
+        $errors = FormState::consumeErrors();
         $prefill = FormState::consumeData();
         $payload = [
             'showHeader' => true,
@@ -65,7 +65,7 @@ class LoginController extends RenderController
             'error' => $errors['_global'] ?? null,
             'errors' => $errors,
             'prefill' => $prefill,
-            'str'   => $this->getStrings(),
+            'str' => $this->getStrings(),
         ];
 
         echo $this->renderView('admin/login.php', $payload);

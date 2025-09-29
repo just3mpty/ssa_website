@@ -16,7 +16,7 @@ class Translate
      *
      * @param string $default Code langue par défaut (ex: 'fr')
      */
-    public static function detect_and_load(string $default = 'fr'): void
+    public static function detectAndLoad(string $default = 'fr'): void
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
@@ -25,11 +25,11 @@ class Translate
         $langCode = $_GET['lang'] ?? $_SESSION['lang'] ?? $default;
         $_SESSION['lang'] = $langCode;
 
-        $basePath   = __DIR__ . "/locales/{$langCode}";
+        $basePath = __DIR__ . "/locales/{$langCode}";
         $commonFile = "{$basePath}/index.php";
 
         if (!file_exists($commonFile)) {
-            $basePath   = __DIR__ . "/locales/{$default}";
+            $basePath = __DIR__ . "/locales/{$default}";
             $commonFile = "{$basePath}/index.php";
         }
 

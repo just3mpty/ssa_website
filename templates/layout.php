@@ -3,6 +3,7 @@
 /** @var array<string, string> $str */
 ?>
 
+
 <!DOCTYPE html>
 <html lang="<?= secure_attr($str['lang']) ?>">
 

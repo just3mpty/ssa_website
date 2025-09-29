@@ -29,6 +29,6 @@ final class SidebarLinksProvider
             ['title' => 'Déconnexion', 'url' => '/logout', 'icon' => 'logout'],
         ];
 
-        return $isAdmin ? $links : array_values(array_filter($links, fn($l) => $l['url'] !== '/dashboard/users'));
+        return $isAdmin ? $links : array_values(array_filter($links, fn ($l) => $l['url'] !== '/dashboard/users'));
     }
 }

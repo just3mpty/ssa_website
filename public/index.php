@@ -8,7 +8,6 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 use Capsule\Http\Message\Request;
 use Capsule\Http\Emitter\SapiEmitter;
 use Capsule\Kernel\Kernel;
-// si nécessaire
 use Capsule\Http\Middleware\ErrorBoundary;
 use Capsule\Http\Middleware\SecurityHeaders;
 use Capsule\Http\Middleware\AuthMiddleware;

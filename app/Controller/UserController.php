@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use Capsule\Core\RenderController;
-use Capsule\Service\UserService;
-use Capsule\Service\PasswordService;
-use Capsule\Http\RequestUtils;
-use Capsule\Http\Redirect;
+use Capsule\View\RenderController;
+use Capsule\Domain\Service\UserService;
+use Capsule\Domain\Service\PasswordService;
+use Capsule\Http\Support\RequestUtils;
+use Capsule\Http\Support\Redirect;
 use Capsule\Security\CsrfTokenManager;
 
 final class UserController extends RenderController
@@ -16,7 +16,9 @@ final class UserController extends RenderController
     public function __construct(
         private readonly UserService $userService,
         private readonly PasswordService $passwords,
-    ) {}
+    ) {
+    }
+
 
     /* ===== Utilisateurs (admin) ===== */
     /** POST /dashboard/users/create */
@@ -27,13 +29,19 @@ final class UserController extends RenderController
 
         $username = trim((string)($_POST['username'] ?? ''));
         $password = (string)($_POST['password'] ?? '');
-        $email    = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL) ?: null;
-        $role     = trim((string)($_POST['role'] ?? 'employee'));
+        $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL) ?: null;
+        $role = trim((string)($_POST['role'] ?? 'employee'));
 
         $errors = [];
-        if ($username === '') $errors['username'] = 'Requis.';
-        if ($password === '') $errors['password'] = 'Requis.';
-        if (!$email)          $errors['email']    = 'Email invalide.';
+        if ($username === '') {
+            $errors['username'] = 'Requis.';
+        }
+        if ($password === '') {
+            $errors['password'] = 'Requis.';
+        }
+        if (!$email) {
+            $errors['email'] = 'Email invalide.';
+        }
 
         if ($errors !== []) {
             Redirect::withErrors(
@@ -64,10 +72,14 @@ final class UserController extends RenderController
         //CsrfTokenManager::requireValidToken();
 
         $ids = array_map('intval', (array)($_POST['user_ids'] ?? []));
-        $ids = array_values(array_filter($ids, fn(int $id) => $id > 0));
+        $ids = array_values(array_filter($ids, fn (int $id) => $id > 0));
 
         if ($ids === []) {
-            Redirect::withErrors('/dashboard/users', 'Aucun utilisateur sélectionné.', ['_global' => 'Aucun utilisateur sélectionné.']);
+            Redirect::withErrors(
+                '/dashboard/users',
+                'Aucun utilisateur sélectionné.',
+                ['_global' => 'Aucun utilisateur sélectionné.']
+            );
         }
 
         $deleted = 0;
@@ -82,7 +94,11 @@ final class UserController extends RenderController
         if ($deleted > 0) {
             Redirect::withSuccess('/dashboard/users', "Utilisateur(s) supprimé(s) : {$deleted}.");
         }
-        Redirect::withErrors('/dashboard/users', 'Aucune suppression effectuée.', ['_global' => 'Aucune suppression effectuée.']);
+        Redirect::withErrors(
+            '/dashboard/users',
+            'Aucune suppression effectuée.',
+            ['_global' => 'Aucune suppression effectuée.']
+        );
     }
 
     public function usersUpdate(): void
@@ -90,16 +106,22 @@ final class UserController extends RenderController
 
         RequestUtils::ensurePostOrRedirect('/dashboard/users');
         //CsrfTokenManager::requireValidToken();
-        $id       = (int)($_POST['id'] ?? 0);
+        $id = (int)($_POST['id'] ?? 0);
         $username = trim((string)($_POST['username'] ?? ''));
-        $email    = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL) ?: null;
-        $role     = trim((string)($_POST['role'] ?? 'employee'));
+        $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL) ?: null;
+        $role = trim((string)($_POST['role'] ?? 'employee'));
 
 
         $errors = [];
-        if ($id <= 0)        $errors['_global'] = 'ID utilisateur invalide.';
-        if ($username === '') $errors['username'] = 'Requis.';
-        if (!$email)          $errors['email']    = 'Email invalide.';
+        if ($id <= 0) {
+            $errors['_global'] = 'ID utilisateur invalide.';
+        }
+        if ($username === '') {
+            $errors['username'] = 'Requis.';
+        }
+        if (!$email) {
+            $errors['email'] = 'Email invalide.';
+        }
 
         if ($errors !== []) {
             Redirect::withErrors(
@@ -114,7 +136,7 @@ final class UserController extends RenderController
             $input = ['username' => $username, 'email' => (string)$email, 'role' => $role];
 
             $this->userService->updateUser($id, $input);
-            Redirect::withSuccess("/dashboard/users", 'Utilisateur modifié avec succès.');
+            Redirect::withSuccess('/dashboard/users', 'Utilisateur modifié avec succès.');
         } catch (\Throwable $e) {
             Redirect::withErrors(
                 // '/dashboard/users',

@@ -7,12 +7,11 @@ namespace App\Controller;
 use App\Lang\TranslationLoader;
 use App\Navigation\SidebarLinksProvider;
 use App\Service\ArticleService;
-use Capsule\Core\RenderController;
-use Capsule\Http\RequestUtils;
-use Capsule\Http\Redirect;
-use Capsule\Http\FormState;
+use Capsule\Http\Support\RequestUtils;
+use Capsule\Http\Support\Redirect;
+use Capsule\Http\Support\FormState;
 use Capsule\Security\CsrfTokenManager;
-
+use Capsule\View\RenderController;
 
 // TODO: Ajouter auteur nom utilisateur quand création de service
 final class ArticlesController extends RenderController
@@ -20,38 +19,46 @@ final class ArticlesController extends RenderController
     public function __construct(
         private readonly ArticleService $articles,
         private readonly SidebarLinksProvider $linksProvider
-    ) {}
+    ) {
+    }
 
-    /* -------------------- Helpers -------------------- */
+    /*
+ * @return array<string,string> -------------------- Helpers -------------------- */
 
     private function str(): array
     {
         return TranslationLoader::load(defaultLang: 'fr');
     }
-
+    /**
+     * @return array<int,array{title:string,url:string,icon:string}>
+     */
     private function links(bool $isAdmin): array
     {
         return $this->linksProvider->get($isAdmin);
     }
-
+    /**
+     * @param array<int,mixed> $vars
+     */
     private function renderDash(string $title, string $component, array $vars = []): void
     {
 
         $payload = [
-            'title'            => $title,
-            'isDashboard'      => true,
-            'isAdmin'          => true,
-            'user'             => $_SESSION['admin'] ?? [],
-            'links'            => $this->links(true),
+            'title' => $title,
+            'isDashboard' => true,
+            'isAdmin' => true,
+            'user' => $_SESSION['admin'] ?? [],
+            'links' => $this->links(true),
             'dashboardContent' => $this->renderComponent($component, $vars + ['str' => $this->str()]),
-            'str'              => $this->str(),
+            'str' => $this->str(),
             'articleGenerateIcsAction' => '/home/generate_ics',
 
         ];
 
         echo $this->renderView('dashboard/home.php', $payload);
     }
-
+    /**
+     * @param string|int|mixed[] $param
+     */
     private function idFrom(string|int|array $param): int
     {
         return RequestUtils::intFromParam($param);
@@ -63,26 +70,28 @@ final class ArticlesController extends RenderController
     {
 
         $payload = [
-            'articles'      => $this->articles->getAll(),
-            'createUrl'     => '/dashboard/articles/create',
-            'editBaseUrl'   => '/dashboard/articles/edit',
+            'articles' => $this->articles->getAll(),
+            'createUrl' => '/dashboard/articles/create',
+            'editBaseUrl' => '/dashboard/articles/edit',
             'deleteBaseUrl' => '/dashboard/articles/delete',
-            'showBaseUrl'   => '/dashboard/articles/show', // <-- pour le lien "Voir"
+            'showBaseUrl' => '/dashboard/articles/show', // <-- pour le lien "Voir"
         ];
 
         $this->renderDash('Articles', 'dash_articles.php', $payload);
     }
 
-    /* -------------------- Details -------------------- */
+    /*
+ * @param string|mixed[] $params -------------------- Details -------------------- */
 
     public function show(string|array $params): void
     {
-        $id  = $this->idFrom($params);
+        $id = $this->idFrom($params);
         $dto = $this->articles->getById($id);
 
         if (!$dto) {
             http_response_code(404);
             echo 'Not Found';
+
             return;
         }
         $payload = [
@@ -97,12 +106,12 @@ final class ArticlesController extends RenderController
 
     public function createForm(): void
     {
-        $data   = FormState::consumeData();
+        $data = FormState::consumeData();
         $errors = FormState::consumeErrors();
         $payload = [
-            'action'  => '/dashboard/articles/create',
+            'action' => '/dashboard/articles/create',
             'article' => $data ?? null,
-            'errors'  => $errors,
+            'errors' => $errors,
         ];
 
         $this->renderDash('Créer un article', 'dash_article_form.php', $payload);
@@ -126,29 +135,33 @@ final class ArticlesController extends RenderController
         Redirect::withSuccess('/dashboard/articles', 'Article créé.');
     }
 
-    /* -------------------- Edit -------------------- */
+    /*
+ * @param string|mixed[] $params -------------------- Edit -------------------- */
 
     public function editForm(string|array $params): void
     {
-        $id  = $this->idFrom($params);
+        $id = $this->idFrom($params);
         $dto = $this->articles->getById($id);
         if (!$dto) {
             http_response_code(404);
             echo 'Not Found';
+
             return;
         }
 
-        $errors  = FormState::consumeErrors();
+        $errors = FormState::consumeErrors();
         $prefill = FormState::consumeData();
         $payload = [
-            'action'  => "/dashboard/articles/edit/{$id}",
+            'action' => "/dashboard/articles/edit/{$id}",
             'article' => $prefill ?: $dto,
-            'errors'  => $errors,
+            'errors' => $errors,
         ];
 
         $this->renderDash('Modifier un article', 'dash_article_form.php', $payload);
     }
-
+    /**
+     * @param string|mixed[] $params
+     */
     public function editSubmit(string|array $params): void
     {
         RequestUtils::ensurePostOrRedirect('/dashboard/articles');
@@ -158,6 +171,7 @@ final class ArticlesController extends RenderController
         if (!$this->articles->getById($id)) {
             http_response_code(404);
             echo 'Not Found';
+
             return;
         }
 
@@ -173,7 +187,8 @@ final class ArticlesController extends RenderController
         Redirect::withSuccess('/dashboard/articles', 'Article mis à jour.');
     }
 
-    /* -------------------- Delete -------------------- */
+    /*
+ * @param string|mixed[] $params -------------------- Delete -------------------- */
 
     public function deleteSubmit(string|array $params): void
     {
