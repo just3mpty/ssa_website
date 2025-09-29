@@ -19,6 +19,39 @@ final class Response
         $this->headers = new HeaderBag();
     }
 
+    // --- NEW: presence checks / accessors ---
+    public function hasHeader(string $name): bool
+    {
+        // Case-insensitive per RFC
+        foreach ($this->headers->all() as $n => $_) {
+            if (strcasecmp($n, $name) === 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** @return list<string> */
+    public function getHeader(string $name): array
+    {
+        foreach ($this->headers->all() as $n => $values) {
+            if (strcasecmp($n, $name) === 0) {
+                return $values;
+            }
+        }
+
+        return [];
+    }
+
+    public function getHeaderLine(string $name): string
+    {
+        $values = $this->getHeader($name);
+
+        return $values ? implode(', ', $values) : '';
+    }
+    // --- end NEW ---
+
     public function withHeader(string $name, string $value): self
     {
         $c = clone $this;
@@ -48,6 +81,9 @@ final class Response
 
     public function withStatus(int $status): self
     {
+        if ($status < 100 || $status > 599) {
+            throw new \InvalidArgumentException("Invalid HTTP status: $status");
+        }
         $c = clone $this;
         $c->status = $status;
 
@@ -63,7 +99,6 @@ final class Response
         return $c;
     }
 
-    // Getters
     public function getStatus(): int
     {
         return $this->status;
@@ -77,7 +112,6 @@ final class Response
         return $this->headers->all();
     }
 
-    // Helpers
     public static function text(string $s, int $status = 200): self
     {
         return (new self($status, $s))->withHeader('Content-Type', 'text/plain; charset=utf-8');

@@ -6,6 +6,7 @@ namespace Capsule\Http\Factory;
 
 use Capsule\Http\Message\Response;
 use Capsule\Http\Support\Cookie;
+use JsonSerializable;
 
 final class ResponseFactory
 {
@@ -25,8 +26,7 @@ final class ResponseFactory
         }
 
         return (new Response($status, (string)$json))
-            ->withHeader('Content-Type', 'application/json; charset=utf-8')
-            ->withHeader('X-Content-Type-Options', 'nosniff');
+            ->withHeader('Content-Type', 'application/json; charset=utf-8');
     }
 
     public static function text(string $body, int $status = 200): Response
@@ -75,6 +75,73 @@ final class ResponseFactory
             ->withHeader('Content-Disposition', "attachment; {$dispValue}; {$dispUtf8}")
             ->withHeader('X-Content-Type-Options', 'nosniff')
             ->withHeader('Cache-Control', 'no-store');
+    }
+
+    /**
+     * @param mixed[]|JsonSerializable|null $body
+     */
+    public static function created(string $location, array|\JsonSerializable|null $body = null): Response
+    {
+        self::assertHeaderValueSafe($location, 'Location');
+        $res = new Response(201, $body === null ? '' : (string)json_encode(
+            $body,
+            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+        ));
+        $res = $res->withHeader('Location', $location);
+        if ($body !== null) {
+            $res = $res->withHeader('Content-Type', 'application/json; charset=utf-8');
+        }
+
+        return $res;
+    }
+
+    public static function empty(int $status = 204): Response
+    {
+        if ($status < 100 || $status > 599) {
+            throw new \InvalidArgumentException('Invalid status');
+        }
+
+        return new Response($status, '');
+    }
+
+
+    /** @param iterable<mixed> $items */
+    public static function jsonStream(iterable $items, ?callable $toRow = null): Response
+    {
+        $toRow ??= static fn ($x) => $x;
+        $iter = (function () use ($items, $toRow) {
+            foreach ($items as $it) {
+                yield json_encode($toRow($it), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n";
+            }
+        })();
+
+        return (new Response(200, $iter))
+            ->withHeader('Content-Type', 'application/x-ndjson; charset=utf-8');
+    }
+
+
+    /** @param iterable<string> $content */
+    public static function downloadStream(
+        string $filename,
+        iterable $content,
+        string $contentType = 'application/octet-stream'
+    ): Response {
+        [$dispValue, $dispUtf8] = self::buildContentDispositionValues($filename);
+
+        return (new Response(200, $content))
+            ->withHeader('Content-Type', $contentType)
+            ->withHeader('Content-Disposition', "attachment; {$dispValue}; {$dispUtf8}")
+            ->withHeader('Cache-Control', 'no-store');
+    }
+
+
+    /** @param array<string,mixed> $problem */
+    public static function problem(array $problem, int $status = 400): Response
+    {
+        $json = json_encode($problem, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+        return (new Response($status, (string)$json))
+            ->withHeader('Content-Type', 'application/problem+json; charset=utf-8');
     }
 
     public static function withCookie(Response $r, Cookie $cookie): Response
