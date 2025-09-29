@@ -12,19 +12,20 @@ use Capsule\Http\Message\Response;
 use Capsule\Http\Factory\ResponseFactory as Res;
 
 /**
- * AuthRequiredMiddleware
- * - Protège un préfixe (ex: /dashboard), whitelist configurée.
- * - Non authentifié -> 302 /login (zéro I/O ici).
+ * RequiredRoleMiddleware
+ * - Vérifie le rôle requis sur le même périmètre.
  */
 final class AuthRequiredMiddleware implements MiddlewareInterface
 {
     public function __construct(
         private readonly SessionReader $session,
+        private readonly string $requiredRole,
         private readonly string $protectedPrefix = '/dashboard',
         /** @var list<string> */
         private readonly array $whitelist = ['/login','/logout'],
         private readonly string $redirectTo = '/login',
-        private readonly string $sessionKey = 'admin'
+        private readonly string $sessionKey = 'admin',
+        private readonly string $roleKey = 'role'
     ) {
     }
 
@@ -38,7 +39,9 @@ final class AuthRequiredMiddleware implements MiddlewareInterface
         if (in_array($path, $this->whitelist, true)) {
             return $next->handle($request);
         }
-        if (!$this->session->has($this->sessionKey)) {
+
+        $user = $this->session->get($this->sessionKey);
+        if (!$user || !\is_array($user) || ($user[$this->roleKey] ?? null) !== $this->requiredRole) {
             return Res::redirect($this->redirectTo, 302);
         }
 
