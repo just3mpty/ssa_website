@@ -2,10 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Capsule\Routing;
+namespace Capsule\Routing\Discovery;
 
 use Capsule\Routing\Attribute\Route;
 use Capsule\Routing\Attribute\RoutePrefix;
+use Capsule\Routing\Compiler\RouteCompiler;
+use Capsule\Routing\Compiler\CompiledRoute;
+use Capsule\Routing\RouterHandler;
 use ReflectionClass;
 use ReflectionMethod;
 

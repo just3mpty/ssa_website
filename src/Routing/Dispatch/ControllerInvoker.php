@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Capsule\Routing;
+namespace Capsule\Routing\Dispatch;
 
 use Capsule\Contracts\ContainerLike;
 use Capsule\Contracts\HandlerInterface;
@@ -10,6 +10,7 @@ use Capsule\Contracts\MiddlewareInterface;
 use Capsule\Http\Message\Request;
 use Capsule\Http\Message\Response;
 use Capsule\Http\Factory\ResponseFactory;
+use Capsule\Routing\Compiler\CompiledRoute;
 
 /**
  * ControllerInvoker

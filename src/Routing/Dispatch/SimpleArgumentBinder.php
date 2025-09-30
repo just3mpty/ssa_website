@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Capsule\Routing;
+namespace Capsule\Routing\Dispatch;
 
 use Capsule\Contracts\ContainerLike;
 use Capsule\Http\Message\Request;

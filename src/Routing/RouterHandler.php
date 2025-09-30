@@ -7,6 +7,10 @@ namespace Capsule\Routing;
 use Capsule\Contracts\HandlerInterface;
 use Capsule\Http\Message\Request;
 use Capsule\Http\Message\Response;
+use Capsule\Routing\Compiler\CompiledRoute;
+use Capsule\Routing\Dispatch\ControllerInvoker;
+use Capsule\Routing\Exception\MethodNotAllowed;
+use Capsule\Routing\Exception\NotFound;
 
 /**
  * RouterHandler
