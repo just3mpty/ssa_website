@@ -6,16 +6,17 @@ namespace Capsule\Http\Middleware;
 
 use Capsule\Contracts\HandlerInterface;
 use Capsule\Contracts\MiddlewareInterface;
+use Capsule\Contracts\ResponseFactoryInterface;
 use Capsule\Http\Exception\HttpException;
-use Capsule\Http\Factory\ResponseFactory as Res;
 use Capsule\Http\Message\Request;
-use Capsule\Http\Message\Response;
+use Capsule\Http\Message\Response; // ton implémentation concrète
 use Capsule\Routing\Exception\MethodNotAllowed;
 use Capsule\Routing\Exception\NotFound;
 
 final class ErrorBoundary implements MiddlewareInterface
 {
     public function __construct(
+        private readonly ResponseFactoryInterface $res,
         private readonly bool $debug = false,
         private readonly ?string $appName = null,
     ) {
@@ -34,7 +35,7 @@ final class ErrorBoundary implements MiddlewareInterface
             if ($this->debug) {
                 $payload['details'] = ['allowed' => $e->allowed];
             }
-            $resp = Res::json($payload, 405)
+            $resp = $this->res->json($payload, 405)
                 ->withHeader('X-Request-Id', $reqId)
                 ->withHeader('Allow', implode(', ', $e->allowed));
 
@@ -42,7 +43,7 @@ final class ErrorBoundary implements MiddlewareInterface
         } catch (NotFound $e) {
             $payload = $this->basePayload($request, $reqId, 404, 'Not Found');
 
-            return Res::json($payload, 404)
+            return $this->res->json($payload, 404)
                 ->withHeader('X-Request-Id', $reqId);
         } catch (HttpException $e) {
             $status = $e->status;
@@ -53,9 +54,8 @@ final class ErrorBoundary implements MiddlewareInterface
                 $payload['debug'] = $this->debugBlock($e);
             }
 
-            $resp = Res::json($payload, $status)->withHeader('X-Request-Id', $reqId);
+            $resp = $this->res->json($payload, $status)->withHeader('X-Request-Id', $reqId);
 
-            // Appliquer les headers multiples: array<string, list<string>>
             return $this->applyHeaders($resp, $e->headers);
         } catch (\Throwable $e) {
             $payload = $this->basePayload($request, $reqId, 500, 'Server Error');
@@ -63,7 +63,7 @@ final class ErrorBoundary implements MiddlewareInterface
                 $payload['debug'] = $this->debugBlock($e);
             }
 
-            return Res::json($payload, 500)
+            return $this->res->json($payload, 500)
                 ->withHeader('X-Request-Id', $reqId);
         }
     }
@@ -98,9 +98,7 @@ final class ErrorBoundary implements MiddlewareInterface
         return $base;
     }
 
-    /**
-     * @return array<string,mixed>
-     */
+    /** @return array<string,mixed> */
     private function debugBlock(\Throwable $e): array
     {
         return [
@@ -112,9 +110,7 @@ final class ErrorBoundary implements MiddlewareInterface
         ];
     }
 
-    /**
-     * @return list<array{class:string,message:string,file:string}>
-     */
+    /** @return list<array{class:string,message:string,file:string}> */
     private function flattenCauses(?\Throwable $e): array
     {
         $out = [];
