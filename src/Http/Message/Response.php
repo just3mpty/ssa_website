@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Capsule\Http\Message;
 
-final class Response
+use Capsule\Contracts\ResponseInterface;
+
+final class Response implements ResponseInterface
 {
     private HeaderBag $headers;
 
@@ -110,17 +112,5 @@ final class Response
     /** @return array<string,list<string>> */ public function getHeaders(): array
     {
         return $this->headers->all();
-    }
-
-    public static function text(string $s, int $status = 200): self
-    {
-        return (new self($status, $s))->withHeader('Content-Type', 'text/plain; charset=utf-8');
-    }
-
-    public static function json(mixed $data, int $status = 200): self
-    {
-        $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-
-        return (new self($status, $json))->withHeader('Content-Type', 'application/json; charset=utf-8');
     }
 }
