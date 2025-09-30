@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-// --- Autoload (temporaire). Idéalement: require dirname(__DIR__).'/vendor/autoload.php';
+// Autoload
 require dirname(__DIR__) . '/src/Autoload.php';
 
 use Capsule\Http\Message\Request;
@@ -12,34 +12,29 @@ use Capsule\Auth\PhpSessionReader;
 use Capsule\Http\Middleware\{
     ErrorBoundary,
     SecurityHeaders,
-    AuthRequiredMiddleware,
+    AuthRequiredMiddleware
 };
-use Capsule\Routing\RouterHandler;
 
-// Sécurité session/env (évite l’I/O applicatif ici)
+// Sécurité session/env (pas d’I/O applicatif)
 ini_set('session.cookie_httponly', '1');
 ini_set('session.cookie_samesite', 'Strict');
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-// Récupère le Router préparé par le bootstrap (AUCUNE I/O)
-$bootstrapPath = dirname(__DIR__) . '/bootstrap/app.php';
-/** @var RouterHandler $router */
-$router = require $bootstrapPath;
+// Récupérer container + router
+[$container, $router] = require dirname(__DIR__) . '/bootstrap/app.php';
 
-// Construire la Request depuis les globals
+// Construire la Request
 $request = Request::fromGlobals();
 $session = new PhpSessionReader();
 
+// Middlewares (via DI quand dispo)
 $middlewares = [
-    // ErrorBoundary doit mapper nos exceptions :
-    //  - NotFound         -> 404
-    //  - MethodNotAllowed -> 405 + header Allow
-    new ErrorBoundary(debug: (bool)($_ENV['APP_DEBUG'] ?? true)),
 
-    new SecurityHeaders(),
-
+    $container->get(ErrorBoundary::class),
+    $container->get(\Capsule\Http\Middleware\DebugHeaders::class),
+    $container->get(SecurityHeaders::class),
     new AuthRequiredMiddleware(
         session: $session,
         requiredRole: 'admin',
@@ -49,12 +44,12 @@ $middlewares = [
     ),
 ];
 
-// Kernel = orchestration pure (pas d’I/O)
+// Kernel = orchestration pure
 $kernel = new KernelHttp($middlewares, $router);
 
-// Exécuter la pipeline
+// Exécution
 $response = $kernel->handle($request);
 
-// Émettre la réponse (I/O unique)
+// Émission
 $emitter = new SapiEmitter();
 $emitter->emit($response);
