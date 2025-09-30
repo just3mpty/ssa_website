@@ -6,12 +6,12 @@ namespace Capsule\Http\Middleware;
 
 use Capsule\Contracts\HandlerInterface;
 use Capsule\Contracts\MiddlewareInterface;
+use Capsule\Http\Exception\HttpException;
+use Capsule\Http\Factory\ResponseFactory as Res;
 use Capsule\Http\Message\Request;
 use Capsule\Http\Message\Response;
-use Capsule\Http\Factory\ResponseFactory as Res;
-use Capsule\Routing\NotFound;
-use Capsule\Routing\MethodNotAllowed;
-use Capsule\Http\Exception\HttpException;
+use Capsule\Routing\Exception\MethodNotAllowed;
+use Capsule\Routing\Exception\NotFound;
 
 final class ErrorBoundary implements MiddlewareInterface
 {
@@ -44,9 +44,7 @@ final class ErrorBoundary implements MiddlewareInterface
 
             return Res::json($payload, 404)
                 ->withHeader('X-Request-Id', $reqId);
-        }
-        // == ICI : ta HttpException (status 4xx/5xx, message, headers[list<string>]) ==
-        catch (HttpException $e) {
+        } catch (HttpException $e) {
             $status = $e->status;
             $message = $e->getMessage() !== '' ? $e->getMessage() : ($status >= 500 ? 'Server Error' : 'HTTP Error');
 
@@ -56,10 +54,9 @@ final class ErrorBoundary implements MiddlewareInterface
             }
 
             $resp = Res::json($payload, $status)->withHeader('X-Request-Id', $reqId);
-            // Appliquer les headers multiples: array<string, list<string>>
-            $resp = $this->applyHeaders($resp, $e->headers);
 
-            return $resp;
+            // Appliquer les headers multiples: array<string, list<string>>
+            return $this->applyHeaders($resp, $e->headers);
         } catch (\Throwable $e) {
             $payload = $this->basePayload($request, $reqId, 500, 'Server Error');
             if ($this->debug) {
@@ -100,6 +97,7 @@ final class ErrorBoundary implements MiddlewareInterface
 
         return $base;
     }
+
     /**
      * @return array<string,mixed>
      */
@@ -114,7 +112,9 @@ final class ErrorBoundary implements MiddlewareInterface
         ];
     }
 
-    /** @return list<array{class:string,message:string,file:string}> */
+    /**
+     * @return list<array{class:string,message:string,file:string}>
+     */
     private function flattenCauses(?\Throwable $e): array
     {
         $out = [];
@@ -138,13 +138,16 @@ final class ErrorBoundary implements MiddlewareInterface
             $s === 403 => 'forbidden',
             $s === 404 => 'not_found',
             $s === 405 => 'method_not_allowed',
+            $s === 429 => 'too_many_requests',
             $s >= 500 => 'server_error',
             default => 'http_error',
         };
     }
 
     /**
- * @param array<int,mixed> $headers Applique array<string, list<string>> sur Response (withHeader + withAddedHeader) */
+     * Applique array<string, list<string>> sur Response (withHeader + withAddedHeader)
+     * @param array<string, list<string>> $headers
+     */
     private function applyHeaders(Response $resp, array $headers): Response
     {
         foreach ($headers as $name => $values) {
