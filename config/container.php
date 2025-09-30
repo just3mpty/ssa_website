@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Controller\HelloController;
+use Capsule\Contracts\ResponseFactoryInterface;
+use Capsule\Http\Factory\ResponseFactory;
 use Capsule\Infrastructure\Container\DIContainer;
 use Capsule\Infrastructure\Database\MariaDBConnection;
 use Capsule\Domain\Repository\UserRepository;
@@ -24,6 +26,7 @@ return (function (): DIContainer {
 
     // --- Core deps ---
     $container->set('pdo', fn () => MariaDBConnection::getInstance());
+    $container->set(ResponseFactoryInterface::class, fn () => new ResponseFactory());
 
     // --- Repositories ---
     $container->set(ArticleRepository::class, fn ($container) => new ArticleRepository($container->get('pdo')));
@@ -45,7 +48,10 @@ return (function (): DIContainer {
     $container->set(SidebarLinksProvider::class, fn () => new SidebarLinksProvider());
 
     // --- Controllers ---
-    $container->set(HelloController::class, fn ($c) => new HelloController());
+    $container->set(HelloController::class, fn ($c) => new HelloController(
+        $c->get(ResponseFactoryInterface::class)
+    ));
+
     $container->set(
         HomeController::class,
         fn ($container) => new HomeController($container->get(ArticleService::class))
