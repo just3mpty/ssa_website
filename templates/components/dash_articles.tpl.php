@@ -8,8 +8,8 @@
 
 declare(strict_types=1);
 
-$e    = static fn($v) => htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-$join = static fn(string $base, string|int $id) => rtrim($base, '/') . '/' . rawurlencode((string)$id);
+$e = static fn ($v) => htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+$join = static fn (string $base, string|int $id) => rtrim($base, '/') . '/' . rawurlencode((string)$id);
 
 ?>
 <section class="articles">
@@ -43,7 +43,7 @@ $join = static fn(string $base, string|int $id) => rtrim($base, '/') . '/' . raw
                                 $dateStr = (string)$article->date_article;
                             }
                         }
-                        $editUrl   = $join($editBaseUrl, $article->id);
+                        $editUrl = $join($editBaseUrl, $article->id);
                         $deleteUrl = $join($deleteBaseUrl, $article->id);
                         ?>
                         <tr>
