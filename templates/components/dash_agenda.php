@@ -4,25 +4,21 @@
   <button id='btn-open-modal'>Nouv. Event</button>
   <div id="modalCreateEvent">
     <form method="POST" action="/dashboard/agenda/create">
-      <table>
-        <tr>
-          <th><h2>Créer un Event</h2></th>
-          <th><button id='closeModal'>X</button></th>
-        <tr>
-      </table>
-      <table>
-        <label>Intitulé</label>
-        <input type="text" name="titre" placeholder="..." required>
-        
-        <label>Date</label>
-        <input type="date" name="date" required>
-        
-        <label>Horaire</label>
-        <input type="time" name="heure" required>
+    
+    <h2>Créer un Event</h2>  
+    <button id='closeModal'>X</button>
 
-        <label>Lieu</label>
-        <input type="text" name="lieu" placeholder="..." required>
-      </table>
+    <label>Intitulé</label>    
+    <input type="text" name="titre" placeholder="..." required>
+        
+    <label>Date</label>
+    <input type="date" name="date" required>
+        
+    <label>Horaire</label>
+    <input type="time" name="heure" required>
+
+    <label>Lieu</label>
+    <input type="text" name="lieu" placeholder="..." required>
       <button type="submit">Créer l'évenement</button>
     </form>
   </div>
@@ -86,6 +82,13 @@ $events = isset($events) ? $events : [
         'titre' => 'Formation',
         'lieu' => 'Salle 303',
         'duree' => 3
+    ],
+    [
+        'date' => '26-09-2025',
+        'heure' => '10:30', 
+        'titre' => 'test',
+        'lieu' => 'Salle 205',
+        'duree' => 1.5
     ]
 ];
 
@@ -163,6 +166,7 @@ $pixelsPerHalfHour = $pixelsPerHour / 2; // 32px pour une demi-heure
                                           <p>Horaire : <?php echo htmlspecialchars($event['heure']); ?></p>
                                           <p>Lieu : <?php echo htmlspecialchars($event['lieu']); ?></p>
                                           <button id='closeDetail'>Fermer</button>
+                                          <button id='suppr-btn'>Supprimer</button>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
