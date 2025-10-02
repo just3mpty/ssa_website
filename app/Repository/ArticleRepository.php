@@ -43,7 +43,7 @@ class ArticleRepository extends BaseRepository
     }
 
     /**
-     * Récupère tous les événements à venir (date >= aujourd’hui).
+     * Récupère tous les événements à venir (date >= aujourd'hui).
      *
      * Les événements sont triés par date croissante.
      *
@@ -52,9 +52,11 @@ class ArticleRepository extends BaseRepository
     public function upcoming(): array
     {
         $stmt = $this->pdo->prepare(
-            "SELECT * FROM {$this->table}
-             WHERE date_article >= :today
-             ORDER BY date_article ASC"
+            "SELECT a.*, u.username as author_name 
+             FROM {$this->table} a
+             LEFT JOIN users u ON a.author_id = u.id
+             WHERE a.date_article >= :today
+             ORDER BY a.date_article ASC"
         );
         $stmt->execute(['today' => date('Y-m-d')]);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -67,13 +69,17 @@ class ArticleRepository extends BaseRepository
      *
      * Triés par date décroissante (les plus récents en premier).
      *
-     * @param int $authorId ID de l’auteur.
-     * @return ArticleDTO[] Liste des événements de l’auteur.
+     * @param int $authorId ID de l'auteur.
+     * @return ArticleDTO[] Liste des événements de l'auteur.
      */
     public function findByAuthor(int $authorId): array
     {
         $rows = $this->query(
-            "SELECT * FROM {$this->table} WHERE author_id = :author_id ORDER BY date_article DESC",
+            "SELECT a.*, u.username as author_name 
+             FROM {$this->table} a
+             LEFT JOIN users u ON a.author_id = u.id
+             WHERE a.author_id = :author_id 
+             ORDER BY a.date_article DESC",
             ['author_id' => $authorId]
         );
 
@@ -83,14 +89,21 @@ class ArticleRepository extends BaseRepository
     /**
      * Récupère un événement via son ID.
      *
-     * @param int $id ID de l’événement.
-     * @return ArticleDTO|null DTO de l’événement ou null si non trouvé.
+     * @param int $id ID de l'événement.
+     * @return ArticleDTO|null DTO de l'événement ou null si non trouvé.
      */
     public function findById(int $id): ?ArticleDTO
     {
-        $row = $this->find($id);
+        $stmt = $this->pdo->prepare(
+            "SELECT a.*, u.username as author_name 
+             FROM {$this->table} a
+             LEFT JOIN users u ON a.author_id = u.id
+             WHERE a.id = :id"
+        );
+        $stmt->execute(['id' => $id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        return is_array($row) ? $this->hydrate($row) : null;
+        return $row ? $this->hydrate($row) : null;
     }
 
     /**
@@ -100,7 +113,12 @@ class ArticleRepository extends BaseRepository
      */
     public function all(): array
     {
-        $stmt = $this->pdo->query("SELECT * FROM {$this->table} ORDER BY date_article DESC");
+        $stmt = $this->pdo->query(
+            "SELECT a.*, u.username as author_name 
+             FROM {$this->table} a
+             LEFT JOIN users u ON a.author_id = u.id
+             ORDER BY a.date_article DESC"
+        );
         $rows = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
 
         return array_map([$this, 'hydrate'], $rows ?: []);
@@ -154,7 +172,7 @@ class ArticleRepository extends BaseRepository
             lieu: isset($data['lieu']) ? (string)$data['lieu'] : null,
             created_at: (string)($data['created_at'] ?? ''),
             author_id: (int)($data['author_id'] ?? 0),
-            author: isset($data['author']) ? (string)$data['author'] : null
+            author: isset($data['author_name']) ? (string)$data['author_name'] : (string)($data['author'] ?? '')
         );
     }
 }
