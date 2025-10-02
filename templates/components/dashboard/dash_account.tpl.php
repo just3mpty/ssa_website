@@ -1,5 +1,3 @@
-<!-- templates/dashboard/account.tpl.php -->
-
 <section class="account">
   <h1>Mon mot de passe</h1>
 
