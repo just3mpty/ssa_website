@@ -49,7 +49,8 @@ final class ResponseFactory implements ResponseFactoryInterface
         }
         self::assertHeaderValueSafe($location, 'Location');
 
-        return $this->text("Redirecting to: {$location}\n", $status)
+        // Body vide (pas de "Redirecting to: ...")
+        return $this->createResponse($status, '')
             ->withHeader('Location', $location)
             ->withHeader('Cache-Control', 'no-store');
     }

@@ -9,23 +9,25 @@ use Capsule\Contracts\HandlerInterface;
 use Capsule\Contracts\MiddlewareInterface;
 use Capsule\Http\Message\Request;
 use Capsule\Http\Message\Response;
-use Capsule\Http\Factory\ResponseFactory as Res;
+use Capsule\Contracts\ResponseFactoryInterface;
 
 /**
  * RequiredRoleMiddleware
  * - Vérifie le rôle requis sur le même périmètre.
  */
+
 final class AuthRequiredMiddleware implements MiddlewareInterface
 {
     public function __construct(
         private readonly SessionReader $session,
+        private readonly ResponseFactoryInterface $res,
         private readonly string $requiredRole,
         private readonly string $protectedPrefix = '/dashboard',
         /** @var list<string> */
         private readonly array $whitelist = ['/login','/logout'],
         private readonly string $redirectTo = '/login',
         private readonly string $sessionKey = 'admin',
-        private readonly string $roleKey = 'role'
+        private readonly string $roleKey = 'role',
     ) {
     }
 
@@ -42,7 +44,8 @@ final class AuthRequiredMiddleware implements MiddlewareInterface
 
         $user = $this->session->get($this->sessionKey);
         if (!$user || !\is_array($user) || ($user[$this->roleKey] ?? null) !== $this->requiredRole) {
-            return Res::redirect($this->redirectTo, 302);
+            // Redirection header-only
+            return $this->res->redirect($this->redirectTo, 302);
         }
 
         return $next->handle($request);
