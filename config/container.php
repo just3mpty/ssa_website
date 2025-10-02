@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Controller\AgendaController;
 use App\Controller\HelloController;
 use Capsule\Contracts\ResponseFactoryInterface;
 use Capsule\Contracts\ViewRendererInterface;
@@ -25,23 +26,23 @@ use App\Controller\CalendarController;
 use App\Controller\UserController;
 
 return (function (): DIContainer {
-    $container = new DIContainer();
+    $c = new DIContainer();
     $LENGTH_PASSWORD = 8;
 
     // --- Core deps ---
-    $container->set('pdo', fn () => MariaDBConnection::getInstance());
+    $c->set('pdo', fn () => MariaDBConnection::getInstance());
 
-    $container->set(DebugHeaders::class, fn ($c) => new DebugHeaders(
+    $c->set(DebugHeaders::class, fn ($c) => new DebugHeaders(
         res: $c->get(\Capsule\Contracts\ResponseFactoryInterface::class),
         enabled: true // passe à false en prod
     ));
 
-    $container->set(ErrorBoundary::class, fn ($c) => new ErrorBoundary(
+    $c->set(ErrorBoundary::class, fn ($c) => new ErrorBoundary(
         $c->get(ResponseFactoryInterface::class),
         debug: true,
         appName: 'SSA Website'
     ));
-    $container->set(
+    $c->set(
         SecurityHeaders::class,
         fn () => new SecurityHeaders(
             dev: true,   // <-- mets false en prod
@@ -50,8 +51,8 @@ return (function (): DIContainer {
     );
 
 
-    $container->set(ResponseFactoryInterface::class, fn () => new ResponseFactory());
-    $container->set(ViewRendererInterface::class, function () {
+    $c->set(ResponseFactoryInterface::class, fn () => new ResponseFactory());
+    $c->set(ViewRendererInterface::class, function () {
         $templatesDir = realpath(dirname(__DIR__) . '/templates');
         if ($templatesDir === false) {
             throw new \RuntimeException('Templates directory not found');
@@ -79,49 +80,64 @@ return (function (): DIContainer {
     });
 
     // --- Repositories ---
-    $container->set(ArticleRepository::class, fn ($container) => new ArticleRepository($container->get('pdo')));
-    $container->set(UserRepository::class, fn ($container) => new UserRepository($container->get('pdo')));
+    $c->set(ArticleRepository::class, fn ($c) => new ArticleRepository($c->get('pdo')));
+    $c->set(UserRepository::class, fn ($c) => new UserRepository($c->get('pdo')));
 
     // --- Services ---
-    $container->set(
+    $c->set(
         ArticleService::class,
-        fn ($container) => new ArticleService($container->get(ArticleRepository::class))
+        fn ($c) => new ArticleService($c->get(ArticleRepository::class))
     );
-    $container->set(UserService::class, fn ($container) => new UserService($container->get(UserRepository::class)));
-    $container->set('passwords', fn ($container) => new PasswordService(
-        $container->get(UserRepository::class),
+    $c->set(UserService::class, fn ($c) => new UserService($c->get(UserRepository::class)));
+    $c->set('passwords', fn ($c) => new PasswordService(
+        $c->get(UserRepository::class),
         $LENGTH_PASSWORD,
         []
     ));
 
     // --- Navigation ---
-    $container->set(SidebarLinksProvider::class, fn () => new SidebarLinksProvider());
+    $c->set(SidebarLinksProvider::class, fn () => new SidebarLinksProvider());
 
     // --- Controllers ---
-    $container->set(HelloController::class, fn ($c) => new HelloController(
+    $c->set(HelloController::class, fn ($c) => new HelloController(
         $c->get(ResponseFactoryInterface::class)
     ));
 
-    $container->set(HomeController::class, fn ($c) => new HomeController(
+    $c->set(HomeController::class, fn ($c) => new HomeController(
         $c->get(\App\Service\ArticleService::class),
         $c->get(ResponseFactoryInterface::class),
         $c->get(ViewRendererInterface::class),
     ));
-    $container->set(LoginController::class, fn ($container) => new LoginController($container->get('pdo')));
-    $container->set(DashboardController::class, fn ($container) => new DashboardController(
-        $container->get(UserService::class),
-        $container->get('passwords'),
-        $container->get(SidebarLinksProvider::class),
+    $c->set(LoginController::class, fn ($c) => new LoginController(
+        $c->get('pdo'),
+        $c->get(ResponseFactoryInterface::class),
+        $c->get(ViewRendererInterface::class),
     ));
-    $container->set(UserController::class, fn ($container) => new UserController(
-        $container->get(UserService::class),
-        $container->get('passwords'),
-    ));
-    $container->set(ArticlesController::class, fn ($container) => new ArticlesController(
-        $container->get(ArticleService::class),
-        $container->get(SidebarLinksProvider::class),
-    ));
-    $container->set(CalendarController::class, fn ($container) => new CalendarController());
 
-    return $container;
+    $c->set(AgendaController::class, fn ($c) => new AgendaController(
+        $c->get(ResponseFactoryInterface::class),
+        $c->get(ViewRendererInterface::class),
+    ));
+
+    $c->set(DashboardController::class, fn ($c) => new DashboardController(
+        $c->get(UserService::class),
+        $c->get('passwords'),
+        $c->get(SidebarLinksProvider::class),
+        $c->get(ResponseFactoryInterface::class),
+        $c->get(ViewRendererInterface::class),
+    ));
+    $c->set(UserController::class, fn ($c) => new UserController(
+        $c->get(UserService::class),
+        $c->get('passwords'),
+    ));
+    $c->set(ArticlesController::class, fn ($c) => new ArticlesController(
+        $c->get(ArticleService::class),
+        $c->get(SidebarLinksProvider::class),
+        $c->get(ResponseFactoryInterface::class),
+        $c->get(ViewRendererInterface::class),
+    ));
+
+    $c->set(CalendarController::class, fn ($c) => new CalendarController());
+
+    return $c;
 })();
