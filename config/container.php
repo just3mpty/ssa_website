@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 use App\Controller\AgendaController;
 use App\Controller\HelloController;
+use Capsule\Auth\PhpSessionReader;
 use Capsule\Contracts\ResponseFactoryInterface;
+use Capsule\Contracts\SessionReader;
 use Capsule\Contracts\ViewRendererInterface;
 use Capsule\Http\Factory\ResponseFactory;
+use Capsule\Http\Middleware\AuthRequiredMiddleware;
 use Capsule\Http\Middleware\DebugHeaders;
 use Capsule\Http\Middleware\ErrorBoundary;
 use Capsule\Http\Middleware\SecurityHeaders;
@@ -24,6 +27,8 @@ use App\Controller\ArticlesController;
 use App\Controller\DashboardController;
 use App\Controller\CalendarController;
 use App\Controller\UserController;
+use Capsule\View\FilesystemTemplateLocator;
+use Capsule\View\MiniMustache;
 
 return (function (): DIContainer {
     $c = new DIContainer();
@@ -42,6 +47,7 @@ return (function (): DIContainer {
         debug: true,
         appName: 'SSA Website'
     ));
+
     $c->set(
         SecurityHeaders::class,
         fn () => new SecurityHeaders(
@@ -50,31 +56,68 @@ return (function (): DIContainer {
         )
     );
 
+    $c->set(SessionReader::class, fn () => new PhpSessionReader());
+
+    // Middleware: démarrer la session tôt (optionnel mais recommandé)
+    // $c->set(StartSessionEarly::class, fn () => new StartSessionEarly(
+    //     secure: false,     // true en prod HTTPS
+    //     sameSite: 'Strict' // 'Lax' si tu veux autoriser retour de redirection post-login cross-site
+    // ));
+
+    // AuthRequiredMiddleware correctement câblé
+    $c->set(AuthRequiredMiddleware::class, fn ($c) => new AuthRequiredMiddleware(
+        session:   $c->get(SessionReader::class),
+        res:       $c->get(ResponseFactoryInterface::class),
+        requiredRole: 'admin',                 // role exigé
+        protectedPrefix: '/dashboard',         // périmètre protégé
+        whitelist: ['/login', '/logout'],      // routes publiques dans ce périmètre
+        redirectTo: '/login',                  // destination si non autorisé
+        sessionKey: 'admin',                   // clé session user
+        roleKey: 'role',                       // clé rôle dans la session
+    ));
+
 
     $c->set(ResponseFactoryInterface::class, fn () => new ResponseFactory());
     $c->set(ViewRendererInterface::class, function () {
-        $templatesDir = realpath(dirname(__DIR__) . '/templates');
-        if ($templatesDir === false) {
+        $tplRoot = realpath(dirname(__DIR__) . '/templates');
+        if ($tplRoot === false) {
             throw new \RuntimeException('Templates directory not found');
         }
 
-        $engine = new \Capsule\View\MiniMustache($templatesDir);
+        $locator = new FilesystemTemplateLocator([
+            'page' => $tplRoot . '/pages',
+            'component' => $tplRoot . '/components',
+            'partial' => $tplRoot . '/partials',
+            'admin' => $tplRoot . '/admin',
+            'dashboard' => $tplRoot . '/dashboard',
+            'layout' => $tplRoot, // layout:layout → templates/layout.tpl.php
+        ]);
+
+        $engine = new MiniMustache($locator);
 
         return new class ($engine) implements ViewRendererInterface {
-            public function __construct(private \Capsule\View\MiniMustache $m)
+            public function __construct(private MiniMustache $m)
             {
             }
 
-            public function render(string $templatePath, array $data = []): string
+            /** Page = avec layout */
+            public function render(string $template, array $data = []): string
             {
-                $content = $this->m->render($templatePath, $data);
+                // $template attendu: "page:..." ou "dashboard:..."
+                $content = $this->m->render($template, $data);
 
-                return $this->m->render('layout.tpl.php', $data + ['content' => $content]);
+                return $this->m->render('layout:layout', $data + ['content' => $content]);
             }
 
+            /** Component = fragment sans layout */
             public function renderComponent(string $componentPath, array $data = []): string
             {
-                return $this->m->render('components/' . $componentPath . '.tpl.php', $data);
+                // Accepter "component:..." ou suffixe "dashboard/..." (on homogénéise ici)
+                $logical = str_contains($componentPath, ':')
+                    ? $componentPath
+                    : 'component:' . ltrim($componentPath, '/');
+
+                return $this->m->render($logical, $data);
             }
         };
     });
@@ -129,6 +172,8 @@ return (function (): DIContainer {
     $c->set(UserController::class, fn ($c) => new UserController(
         $c->get(UserService::class),
         $c->get('passwords'),
+        $c->get(ResponseFactoryInterface::class),
+        $c->get(ViewRendererInterface::class),
     ));
     $c->set(ArticlesController::class, fn ($c) => new ArticlesController(
         $c->get(ArticleService::class),

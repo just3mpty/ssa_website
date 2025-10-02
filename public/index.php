@@ -11,8 +11,7 @@ use Capsule\Kernel\KernelHttp;
 use Capsule\Auth\PhpSessionReader;
 use Capsule\Http\Middleware\{
     ErrorBoundary,
-    SecurityHeaders,
-    AuthRequiredMiddleware
+    SecurityHeaders
 };
 
 // Sécurité session/env (pas d’I/O applicatif)
@@ -31,17 +30,10 @@ $session = new PhpSessionReader();
 
 // Middlewares (via DI quand dispo)
 $middlewares = [
-
     $container->get(ErrorBoundary::class),
     $container->get(\Capsule\Http\Middleware\DebugHeaders::class),
     $container->get(SecurityHeaders::class),
-    new AuthRequiredMiddleware(
-        session: $session,
-        requiredRole: 'admin',
-        protectedPrefix: '/dashboard',
-        whitelist: ['/login','/logout'],
-        redirectTo: '/login'
-    ),
+    $container->get(\Capsule\Http\Middleware\AuthRequiredMiddleware::class),
 ];
 
 // Kernel = orchestration pure
