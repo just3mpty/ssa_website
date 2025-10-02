@@ -4,25 +4,58 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use Capsule\View\RenderController;
+use App\Lang\TranslationLoader;
+use Capsule\Contracts\ResponseFactoryInterface;
+use Capsule\Contracts\ViewRendererInterface;
 use Capsule\Domain\Service\UserService;
 use Capsule\Domain\Service\PasswordService;
-use Capsule\Http\Support\RequestUtils;
 use Capsule\Http\Support\Redirect;
+use Capsule\Http\Support\RequestUtils;
+use Capsule\Routing\Attribute\Route;
+use Capsule\Routing\Attribute\RoutePrefix;
 use Capsule\Security\CsrfTokenManager;
+use Capsule\Security\CurrentUserProvider;
+use Capsule\View\BaseController;
+use Capsule\Http\Message\Response;
 
-final class UserController extends RenderController
+#[RoutePrefix('/dashboard/users')]
+final class UserController extends BaseController
 {
     public function __construct(
         private readonly UserService $userService,
         private readonly PasswordService $passwords,
+        ResponseFactoryInterface $res,
+        ViewRendererInterface $view,
     ) {
+        parent::__construct($res, $view);
     }
 
+    /** i18n one-shot cache */
+    private ?array $strings = null;
 
-    /* ===== Utilisateurs (admin) ===== */
-    /** POST /dashboard/users/create */
-    public function usersCreate(): void
+    /** @return array<string,string> */
+    private function str(): array
+    {
+        return $this->strings ??= TranslationLoader::load(defaultLang: 'fr');
+    }
+
+    /** Redirection PRG avec erreurs + préremplissage */
+    private function backWithErrors(string $to, string $flash, array $errors, array $data = []): Response
+    {
+        return Redirect::withErrors($to, $flash, $errors, $data);
+    }
+
+    /** Redirection PRG succès */
+    private function backWithSuccess(string $to, string $flash): Response
+    {
+        return Redirect::withSuccess($to, $flash);
+    }
+
+    /* =========================================================
+     * POST /dashboard/users/create
+     * =======================================================*/
+    #[Route(path: '/create', methods: ['POST'])]
+    public function create(): Response
     {
         RequestUtils::ensurePostOrRedirect('/dashboard/users');
         CsrfTokenManager::requireValidToken();
@@ -31,6 +64,12 @@ final class UserController extends RenderController
         $password = (string)($_POST['password'] ?? '');
         $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL) ?: null;
         $role = trim((string)($_POST['role'] ?? 'employee'));
+
+        // Rôles autorisés
+        $allowedRoles = ['employee', 'admin'];
+        if (!in_array($role, $allowedRoles, true)) {
+            $role = 'employee';
+        }
 
         $errors = [];
         if ($username === '') {
@@ -44,7 +83,7 @@ final class UserController extends RenderController
         }
 
         if ($errors !== []) {
-            Redirect::withErrors(
+            return $this->backWithErrors(
                 '/dashboard/users',
                 'Le formulaire contient des erreurs.',
                 $errors,
@@ -54,9 +93,10 @@ final class UserController extends RenderController
 
         try {
             $this->userService->createUser($username, $password, (string)$email, $role);
-            Redirect::withSuccess('/dashboard/users', 'Utilisateur créé avec succès.');
+
+            return $this->backWithSuccess('/dashboard/users', 'Utilisateur créé avec succès.');
         } catch (\Throwable $e) {
-            Redirect::withErrors(
+            return $this->backWithErrors(
                 '/dashboard/users',
                 'Erreur lors de la création.',
                 ['_global' => 'Création impossible.'],
@@ -65,52 +105,77 @@ final class UserController extends RenderController
         }
     }
 
-    /** POST /dashboard/users/delete */
-    public function usersDelete(): void
+    /* =========================================================
+     * POST /dashboard/users/delete
+     * =======================================================*/
+    #[Route(path: '/delete', methods: ['POST'])]
+    public function delete(): Response
     {
         RequestUtils::ensurePostOrRedirect('/dashboard/users');
-        //CsrfTokenManager::requireValidToken();
+        CsrfTokenManager::requireValidToken();
 
         $ids = array_map('intval', (array)($_POST['user_ids'] ?? []));
-        $ids = array_values(array_filter($ids, fn (int $id) => $id > 0));
+        $ids = array_values(array_filter($ids, static fn (int $id) => $id > 0));
 
         if ($ids === []) {
-            Redirect::withErrors(
+            return $this->backWithErrors(
                 '/dashboard/users',
                 'Aucun utilisateur sélectionné.',
                 ['_global' => 'Aucun utilisateur sélectionné.']
             );
         }
 
+        // Option: éviter de supprimer son propre compte
+        $meId = (int) ((CurrentUserProvider::getUser()['id'] ?? 0));
+        $filtered = array_values(array_filter($ids, static fn (int $id) => $id !== $meId));
+
+        if ($filtered === []) {
+            return $this->backWithErrors(
+                '/dashboard/users',
+                'Aucune suppression effectuée.',
+                ['_global' => 'Vous ne pouvez pas supprimer votre propre compte.']
+            );
+        }
+
         $deleted = 0;
-        foreach ($ids as $id) {
+        foreach ($filtered as $id) {
             try {
                 $this->userService->deleteUser($id);
                 $deleted++;
-            } catch (\Throwable $e) {
-                // on continue pour les autres
+            } catch (\Throwable) {
+                // on continue, on pourra compter partiellement
             }
         }
+
         if ($deleted > 0) {
-            Redirect::withSuccess('/dashboard/users', "Utilisateur(s) supprimé(s) : {$deleted}.");
+            return $this->backWithSuccess('/dashboard/users', "Utilisateur(s) supprimé(s) : {$deleted}.");
         }
-        Redirect::withErrors(
+
+        return $this->backWithErrors(
             '/dashboard/users',
             'Aucune suppression effectuée.',
             ['_global' => 'Aucune suppression effectuée.']
         );
     }
 
-    public function usersUpdate(): void
+    /* =========================================================
+     * POST /dashboard/users/update
+     * =======================================================*/
+    #[Route(path: '/update', methods: ['POST'])]
+    public function update(): Response
     {
-
         RequestUtils::ensurePostOrRedirect('/dashboard/users');
-        //CsrfTokenManager::requireValidToken();
+        CsrfTokenManager::requireValidToken();
+
         $id = (int)($_POST['id'] ?? 0);
         $username = trim((string)($_POST['username'] ?? ''));
         $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL) ?: null;
         $role = trim((string)($_POST['role'] ?? 'employee'));
 
+        $allowedRoles = ['employee', 'admin'];
+        if (!in_array($role, $allowedRoles, true)) {
+            $role = 'employee';
+        }
 
         $errors = [];
         if ($id <= 0) {
@@ -124,8 +189,8 @@ final class UserController extends RenderController
         }
 
         if ($errors !== []) {
-            Redirect::withErrors(
-                "/dashboard/users/{$id}",
+            return $this->backWithErrors(
+                '/dashboard/users',
                 'Le formulaire contient des erreurs.',
                 $errors,
                 ['username' => $username, 'email' => (string)$email, 'role' => $role]
@@ -133,14 +198,16 @@ final class UserController extends RenderController
         }
 
         try {
-            $input = ['username' => $username, 'email' => (string)$email, 'role' => $role];
+            $this->userService->updateUser($id, [
+                'username' => $username,
+                'email' => (string)$email,
+                'role' => $role,
+            ]);
 
-            $this->userService->updateUser($id, $input);
-            Redirect::withSuccess('/dashboard/users', 'Utilisateur modifié avec succès.');
+            return $this->backWithSuccess('/dashboard/users', 'Utilisateur modifié avec succès.');
         } catch (\Throwable $e) {
-            Redirect::withErrors(
-                // '/dashboard/users',
-                '/dashboard/account',
+            return $this->backWithErrors(
+                '/dashboard/users',
                 'Erreur lors de la modification.',
                 ['_global' => 'Modification impossible.'],
                 ['username' => $username, 'email' => (string)$email, 'role' => $role]
