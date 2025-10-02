@@ -27,7 +27,7 @@
       <article class="article">
         <div class="date-time">
           <p>{{date}}</p>
-          <p>{{time}}</p>
+                <p>{{time}}</p>
         </div>
         <div class="description">
           <h3>{{title}}</h3>
