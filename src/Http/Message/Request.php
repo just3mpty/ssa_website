@@ -4,12 +4,30 @@ declare(strict_types=1);
 
 namespace Capsule\Http\Message;
 
+/**
+ * Représentation immuable d'une requête HTTP.
+ *
+ * Cette classe encapsule toutes les informations d'une requête HTTP
+ * de manière sécurisée et normalisée.
+ *
+ * @final
+ */
 final class Request
 {
     /**
- * @param array<int,mixed> $query @param array<string,string> $headers * @param array<int,mixed> $cookies
- * @param array<int,mixed> $server
- */
+     * Constructeur de la requête HTTP.
+     *
+     * @param string $method Méthode HTTP (GET, POST, etc.)
+     * @param string $path Chemin de la requête (normalisé)
+     * @param array<int,mixed> $query Paramètres de requête ($_GET)
+     * @param array<string,string> $headers En-têtes HTTP
+     * @param array<int,mixed> $cookies Cookies de la requête
+     * @param array<int,mixed> $server Variables serveur ($_SERVER)
+     * @param string $scheme Protocole (http ou https)
+     * @param string|null $host Hôte de la requête
+     * @param int|null $port Port de la requête
+     * @param string|null $rawBody Corps brut de la requête
+     */
     public function __construct(
         public readonly string $method,
         public readonly string $path,
@@ -24,6 +42,14 @@ final class Request
     ) {
     }
 
+    /**
+     * Crée une instance de Request à partir des superglobales PHP.
+     *
+     * Cette méthode normalise et sécurise les données des superglobales
+     * pour créer une représentation cohérente de la requête.
+     *
+     * @return self Instance de Request
+     */
     public static function fromGlobals(): self
     {
         $srv = $_SERVER;
@@ -82,6 +108,12 @@ final class Request
         );
     }
 
+    /**
+     * Nettoie une valeur d'en-tête pour empêcher l'injection.
+     *
+     * @param string $v Valeur d'en-tête à nettoyer
+     * @return string Valeur nettoyée
+     */
     private static function sanitizeHeaderValue(string $v): string
     {
         // Empêche l'injection d'en-têtes

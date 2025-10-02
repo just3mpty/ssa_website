@@ -9,12 +9,28 @@ use Capsule\Contracts\MiddlewareInterface;
 use Capsule\Contracts\ResponseFactoryInterface;
 use Capsule\Http\Exception\HttpException;
 use Capsule\Http\Message\Request;
-use Capsule\Http\Message\Response; // ton implémentation concrète
+use Capsule\Http\Message\Response;
 use Capsule\Routing\Exception\MethodNotAllowed;
 use Capsule\Routing\Exception\NotFound;
 
+/**
+ * Middleware de gestion centralisée des erreurs.
+ *
+ * Capture toutes les exceptions non attrapées et les transforme
+ * en réponses JSON standardisées avec des informations de débogage.
+ * Ajoute également un identifiant unique à chaque requête.
+ *
+ * @final
+ */
 final class ErrorBoundary implements MiddlewareInterface
 {
+    /**
+     * Constructeur du middleware de gestion d'erreurs.
+     *
+     * @param ResponseFactoryInterface $res Factory pour créer les réponses d'erreur
+     * @param bool $debug Active le mode débogage avec informations détaillées
+     * @param string|null $appName Nom de l'application pour les logs
+     */
     public function __construct(
         private readonly ResponseFactoryInterface $res,
         private readonly bool $debug = false,
@@ -22,6 +38,13 @@ final class ErrorBoundary implements MiddlewareInterface
     ) {
     }
 
+    /**
+     * Traite la requête et capture toutes les exceptions.
+     *
+     * @param Request $request Requête HTTP entrante
+     * @param HandlerInterface $next Gestionnaire suivant dans le pipeline
+     * @return Response Réponse HTTP avec gestion d'erreur
+     */
     public function process(Request $request, HandlerInterface $next): Response
     {
         $reqId = self::requestId();
@@ -69,6 +92,12 @@ final class ErrorBoundary implements MiddlewareInterface
     }
 
     /**
+     * Crée la structure de base pour les réponses d'erreur.
+     *
+     * @param Request $r Requête originale
+     * @param string $reqId Identifiant unique de la requête
+     * @param int $status Code de statut HTTP
+     * @param string $message Message d'erreur
      * @return array{
      *   app?:string,
      *   requestId:string,
@@ -98,7 +127,12 @@ final class ErrorBoundary implements MiddlewareInterface
         return $base;
     }
 
-    /** @return array<string,mixed> */
+    /**
+     * Crée un bloc de débogage détaillé pour une exception.
+     *
+     * @param \Throwable $e Exception à déboguer
+     * @return array<string,mixed> Informations de débogage
+     */
     private function debugBlock(\Throwable $e): array
     {
         return [
@@ -110,7 +144,12 @@ final class ErrorBoundary implements MiddlewareInterface
         ];
     }
 
-    /** @return list<array{class:string,message:string,file:string}> */
+    /**
+     * Aplatit la chaîne des causes d'une exception.
+     *
+     * @param \Throwable|null $e Exception précédente
+     * @return list<array{class:string,message:string,file:string}> Liste des causes
+     */
     private function flattenCauses(?\Throwable $e): array
     {
         $out = [];
@@ -126,6 +165,12 @@ final class ErrorBoundary implements MiddlewareInterface
         return $out;
     }
 
+    /**
+     * Convertit un code de statut HTTP en type d'erreur lisible.
+     *
+     * @param int $s Code de statut HTTP
+     * @return string Type d'erreur
+     */
     private static function statusToType(int $s): string
     {
         return match (true) {
@@ -141,8 +186,11 @@ final class ErrorBoundary implements MiddlewareInterface
     }
 
     /**
-     * Applique array<string, list<string>> sur Response (withHeader + withAddedHeader)
-     * @param array<string, list<string>> $headers
+     * Applique des en-têtes à une réponse.
+     *
+     * @param Response $resp Réponse à modifier
+     * @param array<string, list<string>> $headers En-têtes à appliquer
+     * @return Response Nouvelle réponse avec les en-têtes
      */
     private function applyHeaders(Response $resp, array $headers): Response
     {
@@ -159,6 +207,11 @@ final class ErrorBoundary implements MiddlewareInterface
         return $resp;
     }
 
+    /**
+     * Génère un identifiant unique pour la requête.
+     *
+     * @return string UUID v4
+     */
     private static function requestId(): string
     {
         $data = random_bytes(16);

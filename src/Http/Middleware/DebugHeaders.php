@@ -10,14 +10,35 @@ use Capsule\Contracts\ResponseFactoryInterface;
 use Capsule\Http\Message\Request;
 use Capsule\Http\Message\Response;
 
+/**
+ * Middleware de débogage des en-têtes HTTP.
+ *
+ * Fournit un endpoint de débogage pour inspecter les en-têtes de requête
+ * vus par PHP. Utile pour le développement et le diagnostic.
+ *
+ * @final
+ */
 final class DebugHeaders implements MiddlewareInterface
 {
+    /**
+     * Constructeur du middleware de débogage.
+     *
+     * @param ResponseFactoryInterface $res Factory pour créer les réponses JSON
+     * @param bool $enabled Active ou désactive le middleware (défaut: false)
+     */
     public function __construct(
         private readonly ResponseFactoryInterface $res,
         private readonly bool $enabled = false
     ) {
     }
 
+    /**
+     * Traite la requête et fournit les informations de débogage si activé.
+     *
+     * @param Request $request Requête HTTP entrante
+     * @param HandlerInterface $next Gestionnaire suivant dans le pipeline
+     * @return Response Réponse HTTP avec informations de débogage ou continuation
+     */
     public function process(Request $request, HandlerInterface $next): Response
     {
         if ($this->enabled && $request->path === '/__debug/headers') {
@@ -34,9 +55,8 @@ final class DebugHeaders implements MiddlewareInterface
             // Renvoie aussi ce que ta stack mettrait normalement (utile quand tu ajoutes SecurityHeaders plus loin).
             return $this->res->json([
                 'server_vars' => $headers,
-                'note' => 'Ce sont les headers de 
-                la requête vue côté PHP. Les headers de réponse sont définis 
-                par tes middlewares "SecurityHeaders"/autres.',
+                'note' => 'Ce sont les headers de la requête vue côté PHP. 
+                Les headers de réponse sont définis par tes middlewares "SecurityHeaders"/autres.',
             ], 200);
         }
 

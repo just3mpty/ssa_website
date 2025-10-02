@@ -1,37 +1,42 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Capsule\Infrastructure\Container;
 
 use Capsule\Contracts\ContainerLike;
 
 /**
- * Conteneur d'injection de dépendances simple.
+ * Conteneur d'Injection de Dépendances (DI Container)
  *
- * - Permet d'enregistrer des "factories" (callables) associées à un identifiant.
- * - Fournit des instances singleton créées à la demande via les factories.
- * - Lance une exception si un service demandé n'est pas défini.
+ * Implémentation simple d'un conteneur DI avec pattern singleton.
+ * Permet d'enregistrer des factories et de récupérer des instances uniques.
+ *
+ * @package Capsule\Infrastructure\Container
  */
 class DIContainer implements ContainerLike
 {
     /**
-     * Tableau associatif des factories enregistrées.
+     * Tableau associatif des factories enregistrées
      *
-     * @var array<string, callable>
+     * @var array<string, callable> Clé = identifiant service, Valeur = factory callable
      */
     private array $factories = [];
 
     /**
-     * Instances créées et mises en cache.
+     * Cache des instances créées (pattern singleton)
      *
-     * @var array<string, mixed>
+     * @var array<string, mixed> Clé = identifiant service, Valeur = instance
      */
     private array $instances = [];
 
     /**
-     * Enregistre une factory de service.
+     * Enregistre une factory pour un service
      *
-     * @param string   $id      Identifiant du service
-     * @param callable $factory Fonction factory qui reçoit ce container et retourne une instance
+     * La factory reçoit le conteneur en paramètre et retourne une instance du service.
+     *
+     * @param string $id Identifiant unique du service
+     * @param callable $factory Fonction factory qui crée l'instance
      * @return void
      */
     public function set(string $id, callable $factory): void
@@ -40,19 +45,15 @@ class DIContainer implements ContainerLike
     }
 
     /**
-     * Récupère l'instance du service identifié par $id.
-     * Crée l'instance via la factory si elle n'existe pas encore (singleton).
+     * Récupère une instance de service
      *
-     * @param string $id Identifiant du service
-     * @throws \RuntimeException Si la factory n'est pas définie pour ce service
+     * Crée l'instance via la factory si elle n'existe pas encore (pattern singleton).
+     *
+     * @param string $id Identifiant du service demandé
+     * @throws \RuntimeException Si le service n'est pas enregistré
      * @return mixed Instance du service demandé
      */
-
-    /**
-     * @param string $id
-     * @return mixed
-     */
-    public function get(string $id): mixed   // <-- AJOUTER ": mixed"
+    public function get(string $id): mixed
     {
         if (!isset($this->instances[$id])) {
             if (!isset($this->factories[$id])) {
