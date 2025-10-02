@@ -64,12 +64,13 @@ final class ArticlesController extends BaseController
      * Rendu du shell dashboard + composant central.
      * @param array<string,mixed> $vars
      */
-    private function renderDash(string $title, string $componentPath, array $vars = []): Response
+    private function renderDash(string $title, ?string $component = null, array $vars = []): Response
     {
-        // 1) rendre le composant (ex: components/dash_articles.tpl.php)
-        $componentHtml = $this->view->render('components/' . $componentPath, $vars + [
-            'str' => $this->strings(),
-        ]);
+        if ($component) {
+            $componentHtml = $this->view->render('components/dashboard/' . $component, $vars + [
+                'str' => $this->strings(),
+            ]);
+        }
 
         // 2) rendre le shell dashboard
         return $this->html('dashboard/home.tpl.php', [
