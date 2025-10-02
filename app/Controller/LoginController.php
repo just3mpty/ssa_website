@@ -5,108 +5,115 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Lang\TranslationLoader;
+use Capsule\Contracts\ResponseFactoryInterface;
+use Capsule\Contracts\ViewRendererInterface;
+use Capsule\Http\Message\Request;
+use Capsule\Http\Message\Response;
+use Capsule\Routing\Attribute\Route;
 use Capsule\Security\Authenticator;
 use Capsule\Security\CsrfTokenManager;
-use Capsule\View\RenderController;
-use Capsule\Http\Support\RequestUtils;
-use Capsule\Http\Support\Redirect;
-use Capsule\Http\Support\FlashBag;
-use Capsule\Http\Support\FormState;
+use Capsule\View\BaseController;
 use PDO;
 
-/**
- * Contrôleur pour la gestion de l'administration (authentification, tableau de bord).
- *
- * Gère le formulaire de connexion, la soumission du login,
- * l'affichage du dashboard et la déconnexion.
- *
- * Applique la vérification CSRF et la gestion des sessions.
- */
-class LoginController extends RenderController
+#[\Capsule\Routing\Attribute\RoutePrefix('')]
+final class LoginController extends BaseController
 {
-    /**
-     * Instance PDO pour les opérations liées à la base de données.
-     */
-    private PDO $pdo;
+    private ?array $strings = null;
 
-    /**
-     * Constructeur.
-     *
-     * @param PDO $pdo Instance PDO pour accès base de données.
-     */
-    public function __construct(PDO $pdo)
-    {
-        $this->pdo = $pdo;
+    public function __construct(
+        private PDO $pdo,
+        ResponseFactoryInterface $res,
+        ViewRendererInterface $view
+    ) {
+        parent::__construct($res, $view);
     }
 
-    /**
-     * Charge les chaînes de traduction pour la page courante.
-     *
-     * @return array<string, string> Tableau associatif des traductions.
-     */
-    private function getStrings(): array
+    /** @return array<string,string> */
+    private function strings(): array
     {
-        return TranslationLoader::load(defaultLang: 'fr');
+        return $this->strings ??= TranslationLoader::load(defaultLang: 'fr');
     }
 
-    /**
-     * Affiche le formulaire de connexion.
-     *
-     * @return void
-     */
-    public function loginForm(): void
+    private function csrfInput(): string
     {
-        $errors = FormState::consumeErrors();
-        $prefill = FormState::consumeData();
-        $payload = [
+        ob_start();
+        CsrfTokenManager::insertInput();    // génère l’input (HTML “trusted”)
+
+        return (string) ob_get_clean();
+    }
+
+    /** GET /login — affiche le formulaire */
+    #[Route(path: '/login', methods: ['GET'])]
+    public function loginForm(Request $req): Response
+    {
+        // Récupération PRG (si tu utilises un store session pour erreurs/prefill)
+        $errors = \Capsule\Http\Support\FormState::consumeErrors();
+        $prefill = \Capsule\Http\Support\FormState::consumeData();
+
+        return $this->html('admin/login.tpl.php', [
             'showHeader' => true,
             'showFooter' => true,
             'title' => 'Connexion',
+            'str' => $this->strings(),
+
+            // Form state
             'error' => $errors['_global'] ?? null,
             'errors' => $errors,
             'prefill' => $prefill,
-            'str' => $this->getStrings(),
-        ];
-
-        echo $this->renderView('admin/login.php', $payload);
+            'csrf_input' => \Capsule\Security\CsrfTokenManager::insertInput(), // {{{csrf_input}}}
+            'action' => '/login',             // {{action}}
+        ]);
     }
 
-    /**
-     * Traite la soumission du formulaire de connexion.
-     */
-    public function loginSubmit(): void
+    /** POST /login — traite la soumission */
+    #[Route(path: '/login', methods: ['POST'])]
+    public function loginSubmit(Request $req): Response
     {
-        RequestUtils::ensurePostOrRedirect('/login');
+        // Défense en profondeur (même si la route est limitée à POST)
+        if (strtoupper($req->method) !== 'POST') {
+            return $this->res->redirect('/login', 303);
+        }
+
+        // CSRF
         CsrfTokenManager::requireValidToken();
 
+        // Inputs (si tu n’as pas un parser de body, on reste sur $_POST)
         $username = trim((string)($_POST['username'] ?? ''));
         $password = (string)($_POST['password'] ?? '');
 
         if ($username === '' || $password === '') {
-            FormState::set(['_global' => 'Champs requis manquants.'], ['username' => $username]);
-            FlashBag::add('error', 'Le formulaire contient des erreurs.');
-            Redirect::to('/login');
+            \Capsule\Http\Support\FormState::set(
+                ['_global' => 'Champs requis manquants.'],
+                ['username' => $username]
+            );
+            \Capsule\Http\Support\FlashBag::add('error', 'Le formulaire contient des erreurs.');
+
+            return $this->res->redirect('/login', 303); // PRG
         }
 
-        $success = Authenticator::login(
-            $this->pdo,
-            $username,
-            $password
-        );
+        $success = Authenticator::login($this->pdo, $username, $password);
 
         if ($success) {
-            Redirect::to('/dashboard/account', 302);
+            // Redirection vers le dashboard
+            return $this->res->redirect('/dashboard/account', 302);
         }
 
-        // PRG en cas d'échec d’authentification
-        FormState::set(['_global' => 'Identifiants incorrects.'], ['username' => $username]);
-        FlashBag::add('error', 'Identifiants incorrects.');
-        Redirect::to('/login');
+        // Échec → PRG avec message et préremplissage
+        \Capsule\Http\Support\FormState::set(
+            ['_global' => 'Identifiants incorrects.'],
+            ['username' => $username]
+        );
+        \Capsule\Http\Support\FlashBag::add('error', 'Identifiants incorrects.');
+
+        return $this->res->redirect('/login', 303);
     }
 
-    public function logout(): void
+    /** GET/POST /logout — détruit la session et redirige */
+    #[Route(path: '/logout', methods: ['GET', 'POST'])]
+    public function logout(): Response
     {
         Authenticator::logout();
-        Redirect::to('/login');
+
+        return $this->res->redirect('/login', 302);
     }
 }
