@@ -11,6 +11,8 @@ use Capsule\Contracts\ViewRendererInterface;
 use Capsule\Http\Message\Response;
 use Capsule\Routing\Attribute\Route;
 use Capsule\View\BaseController;
+use Capsule\Security\CsrfTokenManager;
+use Capsule\Security\CurrentUserProvider;
 
 final class HomeController extends BaseController
 {
@@ -60,22 +62,17 @@ final class HomeController extends BaseController
         $articles = $this->mapArticles($this->articleService->getUpcoming());
 
         // CSRF (trusted HTML)
-        $csrf_input = (function (): string {
-            ob_start();
-            \Capsule\Security\CsrfTokenManager::insertInput();
-
-            return (string)ob_get_clean();
-        })();
+        $csrf_input = CsrfTokenManager::insertInput();
 
         $currentLang = $_SESSION['lang'] ?? 'fr';
-        $isAuth = \Capsule\Security\CurrentUserProvider::isAuthenticated();
+        $isAuth = CurrentUserProvider::isAuthenticated();
+        $i18n = $this->strings();
         $languages = [
-            ['code' => 'fr','label' => $this->strings()['lang_fr'] ?? 'Français','selected' => $currentLang === 'fr'],
-            ['code' => 'br','label' => $this->strings()['lang_br'] ?? 'Brezhoneg','selected' => $currentLang === 'br'],
+            ['code' => 'fr','label' => $i18n['lang_fr'] ?? 'Français','selected' => $currentLang === 'fr'],
+            ['code' => 'br','label' => $i18n['lang_br'] ?? 'Brezhoneg','selected' => $currentLang === 'br'],
         ];
 
-
-        // Partenaires / financeurs (prépare ici ou via un provider)
+        // Partenaires / financeurs
         $all = [
             ['name' => 'BUZUK', 'role' => 'partenaire', 'url' => 'https://buzuk.bzh/', 'logo' => '/assets/img/buzuk.webp'],
             ['name' => 'Région Bretagne', 'role' => 'financeur', 'url' => 'https://www.bretagne.bzh/', 'logo' => '/assets/img/bretagne.webp'],
@@ -87,27 +84,18 @@ final class HomeController extends BaseController
         $partenaires = array_values(array_filter($all, fn ($p) => $p['role'] === 'partenaire' || $p['role'] === ''));
         $financeurs = array_values(array_filter($all, fn ($p) => $p['role'] === 'financeur'));
 
-        return $this->html('pages/home.tpl.php', [
-            // layout flags
+        // -> page('home') => 'page:home' -> templates/pages/home.tpl.php (layout appliqué par ViewRenderer)
+        return $this->page('home', [
             'showHeader' => true,
             'showFooter' => true,
-
-            // i18n
-            'str' => $this->strings(),
-
-            // actualités / agenda
+            'str' => $i18n,
             'articles' => $articles,
-            'csrf_input' => $csrf_input,           // {{{csrf_input}}}
-            'action' => '/home/generate_ics',  // {{action}}
-
+            'csrf_input' => $csrf_input,         // {{{csrf_input}}}
+            'action' => '/home/generate_ics',
             'isAuthenticated' => $isAuth,
             'languages' => $languages,
-
-            // partenaires (partials y accèdent depuis le même contexte)
             'partenaires' => $partenaires,
             'financeurs' => $financeurs,
-
-            // contact
             'contact_action' => '/contact',
         ]);
     }
@@ -115,7 +103,7 @@ final class HomeController extends BaseController
     #[Route(path: '/projet', methods: ['GET'])]
     public function projet(): Response
     {
-        return $this->html('pages/projet.tpl.php', [
+        return $this->page('projet', [
             'showHeader' => true,
             'showFooter' => true,
             'str' => $this->strings(),
@@ -125,7 +113,7 @@ final class HomeController extends BaseController
     #[Route(path: '/galerie', methods: ['GET'])]
     public function galerie(): Response
     {
-        return $this->html('pages/galerie.tpl.php', [
+        return $this->page('galerie', [
             'showHeader' => true,
             'showFooter' => true,
             'str' => $this->strings(),
@@ -144,8 +132,7 @@ final class HomeController extends BaseController
             return $this->res->text('Not Found', 404);
         }
 
-        // TODO: mapper $dto en VM si tu veux Mustache 100% dumb
-        return $this->html('pages/articleDetails.tpl.php', [
+        return $this->page('articleDetails', [
             'showHeader' => true,
             'showFooter' => true,
             'str' => $this->strings(),

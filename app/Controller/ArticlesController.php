@@ -10,6 +10,8 @@ use App\Service\ArticleService;
 use Capsule\Contracts\ResponseFactoryInterface;
 use Capsule\Contracts\ViewRendererInterface;
 use Capsule\Http\Message\Response;
+use Capsule\Http\Support\FlashBag;
+use Capsule\Http\Support\FormState;
 use Capsule\Routing\Attribute\Route;
 use Capsule\Routing\Attribute\RoutePrefix;
 use Capsule\Security\CsrfTokenManager;
@@ -54,36 +56,30 @@ final class ArticlesController extends BaseController
         return $this->linksProvider->get($isAdmin);
     }
 
-    private function csrfInput(): string
+    /** @param array<string,mixed> $extra @return array<string,mixed> */
+    private function base(array $extra = []): array
     {
-        // renvoie le <input type="hidden" ...> (HTML “trusted”)
-        return CsrfTokenManager::insertInput();
-    }
+        $user = $this->currentUser();
+        $isAdmin = ($user['role'] ?? null) === 'admin';
 
-    /**
-     * Rendu du shell dashboard + composant central.
-     * @param array<string,mixed> $vars
-     */
-    private function renderDash(string $title, ?string $component = null, array $vars = []): Response
-    {
-        if ($component) {
-            $componentHtml = $this->view->render('components/dashboard/' . $component, $vars + [
-                'str' => $this->strings(),
-            ]);
-        }
-
-        // 2) rendre le shell dashboard
-        return $this->html('dashboard/home.tpl.php', [
+        $base = [
             'showHeader' => false,
             'showFooter' => false,
             'isDashboard' => true,
-            'title' => $title,
-            'links' => $this->sidebarLinks(),
-            'user' => $this->currentUser(),
             'str' => $this->strings(),
-            'flash' => \Capsule\Http\Support\FlashBag::consume(),
-            'dashboardContent' => $componentHtml,
-        ]);
+            'user' => $user,
+            'isAdmin' => $isAdmin,
+            'links' => $this->sidebarLinks(),
+            'flash' => FlashBag::consume(),
+        ];
+
+        return array_replace($base, $extra);
+    }
+
+    private function csrfInput(): string
+    {
+        // HTML “trusted”
+        return CsrfTokenManager::insertInput();
     }
 
     /**
@@ -120,7 +116,7 @@ final class ArticlesController extends BaseController
     }
 
     /**
-     * Mappe un ArticleDTO en VM pour le formulaire (créa/édition).
+     * Mappe un ArticleDTO/envoi POST en VM pour le formulaire (créa/édition).
      * @param array<string,mixed>|object|null $src
      * @return array<string,mixed>
      */
@@ -159,11 +155,13 @@ final class ArticlesController extends BaseController
         $list = $this->articles->getAll() ?? [];
         $items = array_map(fn ($dto) => $this->mapListItem($dto), $list);
 
-        return $this->renderDash('Articles', 'dash_articles.tpl.php', [
+        return $this->page('dashboard:home', $this->base([
+            'title' => 'Articles',
+            'component' => 'dashboard/dash_articles', // {{> component:@component }}
             'createUrl' => '/dashboard/articles/create',
             'articles' => $items,
             'csrf_input' => $this->csrfInput(),
-        ]);
+        ]));
     }
 
     /** GET /dashboard/articles/show/{id} */
@@ -175,7 +173,6 @@ final class ArticlesController extends BaseController
             return $this->res->text('Not Found', 404);
         }
 
-        // VM simple pour la vue détail
         $vm = [
             'title' => (string)($dto->titre ?? ''),
             'summary' => (string)($dto->resume ?? ''),
@@ -187,24 +184,28 @@ final class ArticlesController extends BaseController
             'backUrl' => '/dashboard/articles',
         ];
 
-        return $this->renderDash('Détail de l’article', 'dash_article_show.tpl.php', [
+        return $this->page('dashboard:home', $this->base([
+            'title' => 'Détail de l’article',
+            'component' => 'dashboard/dash_article_show',
             'article' => $vm,
-        ]);
+        ]));
     }
 
     /** GET /dashboard/articles/create */
     #[Route(path: '/create', methods: ['GET'])]
     public function createForm(): Response
     {
-        $data = \Capsule\Http\Support\FormState::consumeData();
-        $errors = \Capsule\Http\Support\FormState::consumeErrors();
+        $data = FormState::consumeData();
+        $errors = FormState::consumeErrors();
 
-        return $this->renderDash('Créer un article', 'dash_article_form.tpl.php', [
+        return $this->page('dashboard:home', $this->base([
+            'title' => 'Créer un article',
+            'component' => 'dashboard/dash_article_form',
             'action' => '/dashboard/articles/create',
             'article' => $this->mapFormData($data),
             'errors' => $errors,
             'csrf_input' => $this->csrfInput(),
-        ]);
+        ]));
     }
 
     /** POST /dashboard/articles/create */
@@ -213,16 +214,17 @@ final class ArticlesController extends BaseController
     {
         CsrfTokenManager::requireValidToken();
 
-        $current = $this->currentUser(); // si tu veux associer l’auteur
+        $current = $this->currentUser();
         $result = $this->articles->create($_POST, $current);
+
         if (!empty($result['errors'])) {
-            \Capsule\Http\Support\FlashBag::add('error', 'Le formulaire contient des erreurs.');
-            \Capsule\Http\Support\FormState::set($result['errors'], $result['data'] ?? $_POST);
+            FlashBag::add('error', 'Le formulaire contient des erreurs.');
+            FormState::set($result['errors'], $result['data'] ?? $_POST);
 
             return $this->res->redirect('/dashboard/articles/create', 303);
         }
 
-        \Capsule\Http\Support\FlashBag::add('success', 'Article créé.');
+        FlashBag::add('success', 'Article créé.');
 
         return $this->res->redirect('/dashboard/articles', 302);
     }
@@ -236,15 +238,17 @@ final class ArticlesController extends BaseController
             return $this->res->text('Not Found', 404);
         }
 
-        $errors = \Capsule\Http\Support\FormState::consumeErrors();
-        $prefill = \Capsule\Http\Support\FormState::consumeData();
+        $errors = FormState::consumeErrors();
+        $prefill = FormState::consumeData();
 
-        return $this->renderDash('Modifier un article', 'dash_article_form.tpl.php', [
+        return $this->page('dashboard:home', $this->base([
+            'title' => 'Modifier un article',
+            'component' => 'dashboard/dash_article_form',
             'action' => "/dashboard/articles/edit/{$id}",
             'article' => $this->mapFormData($prefill ?: get_object_vars($dto)),
             'errors' => $errors,
             'csrf_input' => $this->csrfInput(),
-        ]);
+        ]));
     }
 
     /** POST /dashboard/articles/edit/{id} */
@@ -259,13 +263,13 @@ final class ArticlesController extends BaseController
 
         $result = $this->articles->update($id, $_POST);
         if (!empty($result['errors'])) {
-            \Capsule\Http\Support\FlashBag::add('error', 'Le formulaire contient des erreurs.');
-            \Capsule\Http\Support\FormState::set($result['errors'], $result['data'] ?? $_POST);
+            FlashBag::add('error', 'Le formulaire contient des erreurs.');
+            FormState::set($result['errors'], $result['data'] ?? $_POST);
 
             return $this->res->redirect("/dashboard/articles/edit/{$id}", 303);
         }
 
-        \Capsule\Http\Support\FlashBag::add('success', 'Article mis à jour.');
+        FlashBag::add('success', 'Article mis à jour.');
 
         return $this->res->redirect('/dashboard/articles', 302);
     }
@@ -279,7 +283,7 @@ final class ArticlesController extends BaseController
         // idempotent : delete “silencieux”
         $this->articles->delete($id);
 
-        \Capsule\Http\Support\FlashBag::add('success', 'Article supprimé.');
+        FlashBag::add('success', 'Article supprimé.');
 
         return $this->res->redirect('/dashboard/articles', 303);
     }

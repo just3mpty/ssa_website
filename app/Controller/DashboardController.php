@@ -11,6 +11,9 @@ use Capsule\Contracts\ViewRendererInterface;
 use Capsule\Domain\Service\PasswordService;
 use Capsule\Domain\Service\UserService;
 use Capsule\Http\Message\Response;
+use Capsule\Http\Support\FlashBag;
+use Capsule\Http\Support\FormState;
+use Capsule\Http\Support\Redirect;
 use Capsule\Routing\Attribute\Route;
 use Capsule\Routing\Attribute\RoutePrefix;
 use Capsule\Security\CsrfTokenManager;
@@ -20,8 +23,6 @@ use Capsule\View\BaseController;
 #[RoutePrefix('/dashboard')]
 final class DashboardController extends BaseController
 {
-    private ?array $strings = null;
-
     public function __construct(
         private readonly UserService $users,
         private readonly PasswordService $passwords,
@@ -32,151 +33,117 @@ final class DashboardController extends BaseController
         parent::__construct($res, $view);
     }
 
-    /* -------------------------------------------------------
-     * Helpers
-     * ----------------------------------------------------- */
+    /** cache i18n par requête */
+    private ?array $strings = null;
 
     /** @return array<string,string> */
-    private function strings(): array
+    private function i18n(): array
     {
         return $this->strings ??= TranslationLoader::load(defaultLang: 'fr');
     }
 
     /** @return array{id?:int,username?:string,role?:string,email?:string} */
-    private function currentUser(): array
+    private function me(): array
     {
         return CurrentUserProvider::getUser() ?? [];
     }
 
     /** @return list<array{title:string,url:string,icon:string}> */
-    private function sidebarLinks(bool $isAdmin): array
+    private function sidebar(bool $isAdmin): array
     {
         return $this->links->get($isAdmin);
     }
 
-    /**
-     * Payload commun au layout Dashboard (shell)
-     * @param array<string,mixed> $extra
-     * @return array<string,mixed>
+    /** payload commun au shell dashboard
+     *  @param array<string,mixed> $extra
+     *  @return array<string,mixed>
      */
     private function base(array $extra = []): array
     {
-        $user = $this->currentUser();
+        $user = $this->me();
         $isAdmin = ($user['role'] ?? null) === 'admin';
 
         $base = [
-            // flags layout
             'showHeader' => false,
             'showFooter' => false,
             'isDashboard' => true,
-
-            // i18n / user / nav
-            'str' => $this->strings(),
+            'str' => $this->i18n(),
             'user' => $user,
             'isAdmin' => $isAdmin,
-            'links' => $this->sidebarLinks($isAdmin),
-
-            // flash (PRG)
-            'flash' => \Capsule\Http\Support\FlashBag::consume(),
+            'links' => $this->sidebar($isAdmin),
+            'flash' => FlashBag::consume(),
         ];
 
         return array_replace($base, $extra);
     }
 
-    /** Champ CSRF (HTML de confiance) */
+    /** champ CSRF “trusted HTML” */
     private function csrfInput(): string
     {
         return CsrfTokenManager::insertInput();
     }
 
-    /**
-     * Rend le shell dashboard + injecte un composant rendu dans {{{
-     * dashboardContent }}}.
-     *
-     * @param string $title
-     * @param string|null $component  ex: 'dash_account' (fichier: templates/components/dash_account.tpl.php)
-     * @param array<string,mixed> $vars Variables passées au composant
-     */
-    private function renderDash(string $title, ?string $component = null, array $vars = []): Response
-    {
-        $content = null;
+    /* ---------------- Routes (GET) ---------------- */
 
-        if ($component !== null) {
-            // IMPORTANT: on rend explicitement un composant
-            // Chemin final: templates/components/<component>.tpl.php
-            $content = $this->view->render(
-                'components/' . $component . '.tpl.php',
-                $vars + ['str' => $this->strings()]
-            );
-        }
-
-        return $this->html('dashboard/home.tpl.php', $this->base([
-            'title' => $title,
-            'dashboardContent' => $content, // injecté dans le shell
-        ]));
-    }
-
-    /* -------------------------------------------------------
-     * Routes
-     * ----------------------------------------------------- */
-
-    /** GET /dashboard */
     #[Route(path: '', methods: ['GET'])]
     public function index(): Response
     {
-        // Pas de composant spécifique → la zone de droite peut rester vide
-        return $this->renderDash('Dashboard');
+        return $this->page('dashboard:home', $this->base([
+            'title' => 'Dashboard',
+        ]));
     }
 
-    /** GET /dashboard/users (protégé par middleware admin) */
     #[Route(path: '/users', methods: ['GET'])]
     public function users(): Response
     {
-        $errors = \Capsule\Http\Support\FormState::consumeErrors();
-        $prefill = \Capsule\Http\Support\FormState::consumeData();
+        $errors = FormState::consumeErrors();
+        $prefill = FormState::consumeData();
 
-        return $this->renderDash('Utilisateurs', 'dash_users', [
+        return $this->page('dashboard:home', $this->base([
+            'title' => 'Utilisateurs',
+            'component' => 'dashboard/dash_users',
             'users' => $this->users->getAllUsers(),
             'errors' => $errors,
             'prefill' => $prefill,
             'createAction' => '/dashboard/users/create',
             'deleteAction' => '/dashboard/users/delete',
             'csrf_input' => $this->csrfInput(),
-        ]);
+        ]));
     }
 
-    /** GET /dashboard/account */
     #[Route(path: '/account', methods: ['GET'])]
     public function account(): Response
     {
-        $errors = \Capsule\Http\Support\FormState::consumeErrors();
-        $prefill = \Capsule\Http\Support\FormState::consumeData();
+        $errors = FormState::consumeErrors();
+        $prefill = FormState::consumeData();
 
-        return $this->renderDash('Mon compte', 'dash_account', [
+        return $this->page('dashboard:home', $this->base([
+            'title' => 'Mon compte',
+            'component' => 'dashboard/dash_account',
             'errors' => $errors,
             'prefill' => $prefill,
-            'action' => '/dashboard/account/password', // attendu par le template
-            'editUserAction' => '/dashboard/account/update',   // si tu ajoutes un formulaire d’édition
+            'action' => '/dashboard/account/password',
+            'editUserAction' => '/dashboard/account/update',
             'csrf_input' => $this->csrfInput(),
-        ]);
+        ]));
     }
 
-    /** GET /dashboard/agenda */
     #[Route(path: '/agenda', methods: ['GET'])]
     public function agenda(): Response
     {
-        return $this->renderDash('Mon agenda', 'dash_agenda', [
-            // ajoute ici les données de l’agenda si besoin
-        ]);
+        return $this->page('dashboard:home', $this->base([
+            'title' => 'Mon agenda',
+            'component' => 'dashboard/dash_agenda',
+        ]));
     }
+    /* ---------------- Actions (POST) ---------------- */
 
-    /** POST /dashboard/account/password */
     #[Route(path: '/account/password', methods: ['POST'])]
     public function accountPassword(): Response
     {
         CsrfTokenManager::requireValidToken();
 
-        $userId = (int) (($this->currentUser()['id'] ?? 0));
+        $userId = (int) (($this->me()['id'] ?? 0));
         if ($userId <= 0) {
             return $this->res->text('Forbidden', 403);
         }
@@ -195,16 +162,16 @@ final class DashboardController extends BaseController
         if ($errors === []) {
             [$ok, $svcErrors] = $this->passwords->changePassword($userId, $old, $new);
             if ($ok) {
-                return $this->res
-                    ->redirect('/dashboard/account', 302)
-                    ->withHeader('Cache-Control', 'no-store');
+                return Redirect::withSuccess('/dashboard/account', 'Mot de passe modifié avec succès.');
             }
             $errors = $svcErrors ?: ['_global' => 'Échec de la modification du mot de passe.'];
         }
 
-        \Capsule\Http\Support\FormState::set($errors, []);
-        \Capsule\Http\Support\FlashBag::add('error', 'Le formulaire contient des erreurs.');
-
-        return $this->res->redirect('/dashboard/account', 303);
+        return Redirect::withErrors(
+            '/dashboard/account',
+            'Le formulaire contient des erreurs.',
+            $errors,
+            [] // pas de pré-remplissage sensible ici
+        );
     }
 }
