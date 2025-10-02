@@ -13,4 +13,4 @@
   </div>
 </footer>
 
-{{> components/copyright }}
+{{> component:homepage/copyright }}

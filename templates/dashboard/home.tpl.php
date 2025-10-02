@@ -2,18 +2,23 @@
   <aside>
     <h2>Dashboard</h2>
     <ul>
-      {{#each links}}
+    {{#each links}}
         <li>
-          <a href="{{url}}">
+        <a href="{{url}}">
             <img src="/assets/icons/{{icon}}.svg" alt="" />
             {{title}}
-          </a>
+        </a>
         </li>
-      {{/each}}
+    {{/each}}
     </ul>
   </aside>
 
   <div class="dashboard-content">
-    {{{dashboardContent}}}
+    {{#component}}
+      {{> component:@component }}
+    {{/component}}
+    {{^component}}
+      <p>Bienvenue dans votre tableau de bord.</p>
+    {{/component}}
   </div>
 </section>

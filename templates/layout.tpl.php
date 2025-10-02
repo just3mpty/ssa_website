@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-
 <html lang="{{str.lang}}">
+    
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,10 +12,11 @@
   <link rel="stylesheet" href="/assets/css/config.css">
   <link rel="stylesheet" href="/assets/css/styles.css">
   <link rel="icon" type="image/png" href="/assets/img/logoSSA.png">
-</head>
-<body>
+    </head>
+
+    <body>
   {{#showHeader}}
-    {{> partials/header }}
+    {{> partial:header }}
   {{/showHeader}}
 
   <main>
@@ -23,7 +24,7 @@
   </main>
 
   {{#showFooter}}
-    {{> partials/footer }}
+    {{> partial:footer }}
   {{/showFooter}}
 
   <script src="/assets/js/script.js" defer></script>
