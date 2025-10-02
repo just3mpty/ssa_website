@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
-use Capsule\Core\DIContainer;
-use Capsule\Routing\Router;
+use Capsule\Infrastructure\Container\DIContainer;
+use Capsule\Routing\Discovery\RouteScanner;
+use Capsule\Routing\RouterHandler;
+use Capsule\Routing\Dispatch\ControllerInvoker;
 
-require_once dirname(__DIR__) . '/src/Helper/html_secure.php';
+require_once dirname(__DIR__) . '/src/Support/html_secure.php';
 
 /** 1) Container */
 $container = require dirname(__DIR__) . '/config/container.php';
@@ -14,26 +16,29 @@ if (!$container instanceof DIContainer) {
 }
 
 /** 2) Router */
-$router = new Router();
+$router = new RouterHandler();
 
-/**
- * 3) Charger l’enregistreur de routes (callable)
- *    La fonction retournée doit avoir la signature:
- *      function (Router $router, DIContainer $c): void
- */
-$registerRoutes = require dirname(__DIR__) . '/config/routes.php';
-if (!is_callable($registerRoutes)) {
-    throw new RuntimeException('config/routes.php must return a callable (Router, DIContainer) => void.');
+/** 3) Lier container à l’invoker */
+ControllerInvoker::setContainer($container);
+
+/** 4) Découverte auto */
+$controllers = [];
+$baseDir = dirname(__DIR__) . '/app/Controller';
+$files = glob($baseDir . '/*Controller.php') ?: [];
+foreach ($files as $file) {
+    $fqcn = 'App\\Controller\\' . basename($file, '.php');
+    if (!class_exists($fqcn)) {
+        require_once $file;
+    }
+    if (class_exists($fqcn)) {
+        $controllers[] = $fqcn;
+    }
 }
 
-/** 4) Enregistrer toutes les routes (avec groupes/middlewares/noms si besoin) */
-$registerRoutes($router, $container);
+/** 5) Enregistrer les routes via attributs */
+if ($controllers) {
+    RouteScanner::register($controllers, $router);
+}
 
-/** 5) NotFound handler */
-$router->setNotFoundHandler(function (): void {
-    http_response_code(404);
-    echo '404 Not Found';
-});
-
-/** 6) Retourner le router prêt à être dispatché par public/index.php */
-return $router;
+/** 6) Retourner container + router */
+return [$container, $router];

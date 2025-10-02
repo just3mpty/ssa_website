@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Lang;
 
-use App\Lang\Translate;
-
 /**
  * Classe utilitaire pour charger un ensemble standardisé de chaînes de traduction multilingue.
  *
@@ -24,10 +22,11 @@ class TranslationLoader
      */
     public static function load(string $defaultLang = 'fr'): array
     {
-        Translate::detect_and_load($defaultLang);
+        Translate::detectAndLoad($defaultLang);
         /** @var array<string,string> $out */
         $out = Translate::all();
         $out['lang'] = $_SESSION['lang'] ?? $defaultLang;
+
         return $out;
     }
 }

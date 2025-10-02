@@ -16,6 +16,7 @@ final class CurrentUserProvider
         if (session_status() !== \PHP_SESSION_ACTIVE) {
             session_start();
         }
+
         return $_SESSION['admin'] ?? null;
     }
 

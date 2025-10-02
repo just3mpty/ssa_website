@@ -9,11 +9,13 @@ use App\Dto\ArticleDTO;
 
 final class ArticleService
 {
-    public function __construct(private ArticleRepository $articleRepository) {}
+    public function __construct(private ArticleRepository $articleRepository)
+    {
+    }
 
     /** Champs requis et optionnels (pour lisibilité & évolutivité) */
-    private const REQUIRED_FIELDS  = ['titre', 'resume', 'description', 'date_article', 'hours'];
-    private const OPTIONAL_FIELDS  = ['lieu', 'image'];
+    private const REQUIRED_FIELDS = ['titre', 'resume', 'description', 'date_article', 'hours'];
+    private const OPTIONAL_FIELDS = ['lieu', 'image'];
 
     /* =======================
        ======= Queries =======
@@ -38,6 +40,7 @@ final class ArticleService
         if ($id <= 0) {
             throw new \InvalidArgumentException('ID doit être positif.');
         }
+
         return $this->articleRepository->findById($id);
     }
 
@@ -52,7 +55,7 @@ final class ArticleService
      */
     public function create(array $input, array $user): array
     {
-        $data   = $this->sanitize($input);
+        $data = $this->sanitize($input);
         $errors = $this->validate($data);
 
         if ($errors !== []) {
@@ -81,7 +84,7 @@ final class ArticleService
             return ['errors' => ['_global' => 'Identifiant invalide.'], 'data' => $input];
         }
 
-        $data   = $this->sanitize($input);
+        $data = $this->sanitize($input);
         $errors = $this->validate($data);
 
         if ($errors !== []) {
@@ -158,7 +161,7 @@ final class ArticleService
             $d = \DateTime::createFromFormat('Y-m-d', (string)$data['date_article']);
             $ok = $d && $d->format('Y-m-d') === $data['date_article'];
             if (!$ok) {
-                $errors['date_article'] = "Format date invalide (attendu : AAAA-MM-JJ)";
+                $errors['date_article'] = 'Format date invalide (attendu : AAAA-MM-JJ)';
             }
         }
 
@@ -167,7 +170,7 @@ final class ArticleService
             $h = \DateTime::createFromFormat('H:i:s', (string)$data['hours'])
                 ?: \DateTime::createFromFormat('H:i', (string)$data['hours']);
             if (!$h) {
-                $errors['hours'] = "Format heure invalide (attendu : HH:MM ou HH:MM:SS)";
+                $errors['hours'] = 'Format heure invalide (attendu : HH:MM ou HH:MM:SS)';
             }
         }
 

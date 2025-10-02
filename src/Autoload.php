@@ -2,7 +2,8 @@
 
 declare(strict_types=1);
 
-#
+namespace Capsule;
+
 /**
  * Table de correspondance entre namespaces racines et répertoires physiques.
  *
@@ -17,7 +18,7 @@ declare(strict_types=1);
  */
 const ALIASES = [
     'Capsule' => 'src',
-    'App'        => 'app',
+    'App' => 'app',
 ];
 
 /**
@@ -45,7 +46,7 @@ spl_autoload_register(function (string $class): void {
     } else {
         throw new \Exception(
             "Namespace « $rootNamespace » invalide. "
-                . "Un namespace doit commencer par : « " . implode(' », « ', array_keys(ALIASES)) . " »"
+                . 'Un namespace doit commencer par : « ' . implode(' », « ', array_keys(ALIASES)) . ' »'
         );
     }
 
@@ -54,7 +55,7 @@ spl_autoload_register(function (string $class): void {
     if (!file_exists($filepath)) {
         throw new \Exception(
             "Fichier introuvable : « $filepath » pour la classe « $class ». "
-                . "Vérifie le nom de fichier, la casse et le namespace."
+                . 'Vérifie le nom de fichier, la casse et le namespace.'
         );
     }
 

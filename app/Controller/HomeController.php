@@ -6,119 +6,143 @@ namespace App\Controller;
 
 use App\Lang\TranslationLoader;
 use App\Service\ArticleService;
-use Capsule\Core\RenderController;
-use Capsule\Http\RequestUtils;
+use Capsule\Contracts\ResponseFactoryInterface;
+use Capsule\Contracts\ViewRendererInterface;
+use Capsule\Http\Message\Response;
+use Capsule\Routing\Attribute\Route;
+use Capsule\View\BaseController;
+use Capsule\Security\CsrfTokenManager;
+use Capsule\Security\CurrentUserProvider;
 
-// TODO: : Mettre les articles dans le home
-final class HomeController extends RenderController
+final class HomeController extends BaseController
 {
     private ?array $strings = null;
 
-    public function __construct(private ArticleService $articleService) {}
+    public function __construct(
+        private ArticleService $articleService,
+        ResponseFactoryInterface $res,
+        ViewRendererInterface $view
+    ) {
+        parent::__construct($res, $view);
+    }
 
-    /* ---------- Helpers ---------- */
-
+    /** @return array<string,mixed> */
     private function strings(): array
     {
         return $this->strings ??= TranslationLoader::load(defaultLang: 'fr');
     }
 
-    /**
-     * Base payload commun aux pages publiques.
-     * @param array $extra Variables spécifiques à la vue
-     * @param bool  $withArticles Injecte les articles à venir si true
-     */
-    private function base(array $extra = [], bool $withArticles = true): array
+    /** @return list<array{date:string,time:string,title:string,summary:string,location:string,ics_datetime:string}> */
+    private function mapArticles(null|array|\Traversable $raw): array
     {
-        $base = [
-            'showHeader' => true,
-            'showFooter' => true,
-            'str'        => $this->strings(),
+        if ($raw === null) {
+            return [];
+        }
+        $items = is_array($raw) ? $raw : iterator_to_array($raw);
+
+        return array_map(function ($a) {
+            $date = (string)($a->date_article ?? '');
+            $time = substr((string)($a->hours ?? ''), 0, 5);
+
+            return [
+                'date' => $date,
+                'time' => $time,
+                'title' => (string)($a->titre ?? ''),
+                'summary' => (string)($a->resume ?? ''),
+                'location' => (string)($a->lieu ?? ''),
+                'ics_datetime' => $date . ' ' . $time . ':00',
+            ];
+        }, $items);
+    }
+
+    #[Route(path: '/', methods: ['GET'])]
+    public function home(): Response
+    {
+        // Agenda
+        $articles = $this->mapArticles($this->articleService->getUpcoming());
+
+        // CSRF (trusted HTML)
+        $csrf_input = CsrfTokenManager::insertInput();
+
+        $currentLang = $_SESSION['lang'] ?? 'fr';
+        $isAuth = CurrentUserProvider::isAuthenticated();
+        $i18n = $this->strings();
+        $languages = [
+            ['code' => 'fr','label' => $i18n['lang_fr'] ?? 'Français','selected' => $currentLang === 'fr'],
+            ['code' => 'br','label' => $i18n['lang_br'] ?? 'Brezhoneg','selected' => $currentLang === 'br'],
         ];
 
-        if ($withArticles) {
-            $base['articles'] = $this->articleService->getUpcoming();
-        }
+        // Partenaires / financeurs
+        $all = [
+            ['name' => 'BUZUK', 'role' => 'partenaire', 'url' => 'https://buzuk.bzh/', 'logo' => '/assets/img/buzuk.webp'],
+            ['name' => 'Région Bretagne', 'role' => 'financeur', 'url' => 'https://www.bretagne.bzh/', 'logo' => '/assets/img/bretagne.webp'],
+            ['name' => 'ULAMIR-CPIE', 'role' => 'partenaire', 'url' => 'https://ulamir-cpie.bzh/', 'logo' => '/assets/img/ulamircpie.webp'],
+            ['name' => 'Pôle ESS Pays de Morlaix', 'role' => 'partenaire', 'url' => 'https://www.adess29.fr/faire-reseau/le-pole-du-pays-de-morlaix/', 'logo' => '/assets/img/ess.webp'],
+            ['name' => 'RESAM', 'role' => 'partenaire', 'url' => 'https://www.resam.net/', 'logo' => '/assets/img/resam.webp'],
+            ['name' => 'Leader financement Européen', 'role' => 'financeur', 'url' => 'https://leaderfrance.fr/le-programme-leader/', 'logo' => '/assets/img/feader.webp'],
+        ];
+        $partenaires = array_values(array_filter($all, fn ($p) => $p['role'] === 'partenaire' || $p['role'] === ''));
+        $financeurs = array_values(array_filter($all, fn ($p) => $p['role'] === 'financeur'));
 
-        return array_replace($base, $extra);
+        // -> page('home') => 'page:home' -> templates/pages/home.tpl.php (layout appliqué par ViewRenderer)
+        return $this->page('home', [
+            'showHeader' => true,
+            'showFooter' => true,
+            'str' => $i18n,
+            'articles' => $articles,
+            'csrf_input' => $csrf_input,         // {{{csrf_input}}}
+            'action' => '/home/generate_ics',
+            'isAuthenticated' => $isAuth,
+            'languages' => $languages,
+            'partenaires' => $partenaires,
+            'financeurs' => $financeurs,
+            'contact_action' => '/contact',
+        ]);
     }
 
-    /* ---------- Pages ---------- */
-
-    public function home(): void
+    #[Route(path: '/projet', methods: ['GET'])]
+    public function projet(): Response
     {
-        $articles = $this->articleService->getUpcoming();
-        echo $this->renderView('pages/home.php', $this->base(['articles' => $articles]));
+        return $this->page('projet', [
+            'showHeader' => true,
+            'showFooter' => true,
+            'str' => $this->strings(),
+        ]);
     }
 
-    public function projet(): void
+    #[Route(path: '/galerie', methods: ['GET'])]
+    public function galerie(): Response
     {
-        echo $this->renderView('pages/projet.php', $this->base());
+        return $this->page('galerie', [
+            'showHeader' => true,
+            'showFooter' => true,
+            'str' => $this->strings(),
+        ]);
     }
 
-    public function galerie(): void
+    #[Route(path: '/article/{id}', methods: ['GET'])]
+    public function article(int $id): Response
     {
-        echo $this->renderView('pages/galerie.php', $this->base());
-    }
-
-    public function article(string|array $params): void
-    {
-        $id = is_array($params) ? (int)($params['id'] ?? 0) : (int)$params;
         if ($id <= 0) {
-            http_response_code(400);
-            echo 'Bad Request';
-            return;
+            return $this->res->text('Bad Request', 400);
         }
 
         $dto = $this->articleService->getById($id);
         if (!$dto) {
-            http_response_code(404);
-            echo 'Not Found';
-            return;
+            return $this->res->text('Not Found', 404);
         }
 
-        echo $this->renderView('pages/articleDetails.php', $this->base([
-            'article' => $dto,
-        ], /* withArticles */ false));
-    }
-
-    public function contactMail(): void
-    {
-        RequestUtils::ensurePostOrRedirect('/contact');
-
-        if (isset($_POST['message']) && isset($_POST['email']) && isset($_POST['name'])) {
-            $to = 'aurelien.corre@outlook.fr';
-            $subject = 'Message de ' . $_POST['name'];
-            $content = htmlspecialchars($_POST['message']);
-
-            $message = '
-            <html>
-                <head>
-                    <title>Nouveau message de ' . $_POST['name'] . '</title>
-                </head>
-                <body>
-                    <p>' . $content . '</p>
-                </body>
-            </html>
-     ';
-
-            $headers[] = 'MIME-Version: 1.0';
-            $headers[] = 'Content-type: text/html; charset=iso-8859-1';
-            $headers[] = 'From: ' . $_POST['email'];
-            $headers[] = 'Reply-To: ' . $_POST['email'];
-            $headers[] = 'X-Mailer: PHP/' . phpversion();
-
-            $sent = mail($to, $subject, $message, implode("\r\n", $headers));
-
-            if ($sent) {
-                echo "Votre message a bien été envoyé.";
-            } else {
-                $error = error_get_last();
-                $details = isset($error['message']) ? $error['message'] : 'Erreur inconnue.';
-                echo "Une erreur est survenue lors de l'envoi :<br><pre>{$details}</pre>";
-            }
-        } else {
-            echo "Veuillez remplir tous les champs du formulaire.";
-        }
+        return $this->page('articleDetails', [
+            'showHeader' => true,
+            'showFooter' => true,
+            'str' => $this->strings(),
+            'article' => [
+                'title' => (string)($dto->titre ?? ''),
+                'summary' => (string)($dto->resume ?? ''),
+                'date' => (string)($dto->date_article ?? ''),
+                'time' => substr((string)($dto->hours ?? ''), 0, 5),
+                'place' => (string)($dto->lieu ?? ''),
+            ],
+        ]);
     }
 }

@@ -15,7 +15,7 @@ class CsrfTokenManager
     /**
      * Clé de stockage du token CSRF dans la session.
      */
-    const TOKEN_KEY = '_csrf';
+    public const TOKEN_KEY = '_csrf';
 
     /**
      * Récupère ou génère un token CSRF unique pour la session.
@@ -27,6 +27,7 @@ class CsrfTokenManager
         if (empty($_SESSION[self::TOKEN_KEY])) {
             $_SESSION[self::TOKEN_KEY] = bin2hex(random_bytes(32));
         }
+
         return $_SESSION[self::TOKEN_KEY];
     }
 
@@ -40,6 +41,7 @@ class CsrfTokenManager
     public static function insertInput(): string
     {
         $token = self::getToken();
+
         return '<input type="hidden" name="_csrf" value="' . htmlspecialchars($token, ENT_QUOTES, 'UTF-8') . '">';
     }
 

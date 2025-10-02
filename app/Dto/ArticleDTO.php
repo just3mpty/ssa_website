@@ -43,5 +43,6 @@ class ArticleDTO
         public readonly string $created_at,
         public readonly int $author_id,
         public ?string $author
-    ) {}
+    ) {
+    }
 }

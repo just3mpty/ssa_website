@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Dto\ArticleDTO;
-use Capsule\Repository\BaseRepository;
+use Capsule\Domain\Repository\BaseRepository;
 use PDO;
 
 /**
@@ -58,6 +58,7 @@ class ArticleRepository extends BaseRepository
         );
         $stmt->execute(['today' => date('Y-m-d')]);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
         return array_map([$this, 'hydrate'], $rows ?: []);
     }
 
@@ -75,6 +76,7 @@ class ArticleRepository extends BaseRepository
             "SELECT * FROM {$this->table} WHERE author_id = :author_id ORDER BY date_article DESC",
             ['author_id' => $authorId]
         );
+
         return array_map([$this, 'hydrate'], $rows ?: []);
     }
 
@@ -87,6 +89,7 @@ class ArticleRepository extends BaseRepository
     public function findById(int $id): ?ArticleDTO
     {
         $row = $this->find($id);
+
         return is_array($row) ? $this->hydrate($row) : null;
     }
 
@@ -99,6 +102,7 @@ class ArticleRepository extends BaseRepository
     {
         $stmt = $this->pdo->query("SELECT * FROM {$this->table} ORDER BY date_article DESC");
         $rows = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+
         return array_map([$this, 'hydrate'], $rows ?: []);
     }
 
@@ -127,6 +131,7 @@ class ArticleRepository extends BaseRepository
     {
         $stmt = $this->pdo->prepare("DELETE FROM {$this->table} WHERE author_id = :author_id");
         $stmt->execute(['author_id' => $authorId]);
+
         return $stmt->rowCount();
     }
 

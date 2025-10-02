@@ -6,72 +6,68 @@ namespace Capsule\Security;
 
 use PDO;
 
-/**
- * Classe d’authentification utilisateur.
- *
- * Gère la connexion/déconnexion et la vérification d'état d'authentification.
- * Stocke les données essentielles de session pour l’utilisateur connecté.
- */
-class Authenticator
+final class Authenticator
 {
-    /**
-     * Tente de connecter un utilisateur avec un nom d'utilisateur et un mot de passe.
-     *
-     * Vérifie le mot de passe hashé en base, initialise la session sécurisée.
-     *
-     * @param PDO    $pdo      Instance PDO connectée à la base de données.
-     * @param string $username Nom d'utilisateur soumis.
-     * @param string $password Mot de passe clair soumis.
-     * @return bool  True si authentification réussie, false sinon.
-     */
+    private static function ensureSessionStarted(): void
+    {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            return;
+        }
+        // Sécurise un minimum (mets secure=1 en prod HTTPS)
+        ini_set('session.use_strict_mode', '1');
+        ini_set('session.cookie_httponly', '1');
+        ini_set('session.cookie_samesite', 'Strict');
+        @session_start(); // ne produit rien si déjà démarrée ailleurs
+    }
+
+    private static function safeRegenerateId(): void
+    {
+        // Ne tente pas si les headers sont déjà envoyés (sinon warning)
+        if (headers_sent()) {
+            return; // fallback: on garde l’ID courant (pas idéal mais pas d’erreur)
+        }
+        // session doit être active
+        self::ensureSessionStarted();
+        @session_regenerate_id(true);
+    }
+
     public static function login(PDO $pdo, string $username, string $password): bool
     {
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = :username");
+        $stmt = $pdo->prepare('SELECT id, username, role, email, password_hash FROM users WHERE username = :username');
         $stmt->execute(['username' => $username]);
-        $user = $stmt->fetch();
+        $user = $stmt->fetch(\PDO::FETCH_ASSOC);
 
         if ($user && password_verify($password, $user['password_hash'])) {
-            session_regenerate_id(true);
+            self::ensureSessionStarted();
+            self::safeRegenerateId(); // éviter fixation de session
+
             $_SESSION['admin'] = [
-                'id'       => $user['id'],
-                'username' => $user['username'],
-                'role'     => $user['role'],
-                'email'    => $user['email'],
+                'id' => (int)$user['id'],
+                'username' => (string)$user['username'],
+                'role' => (string)$user['role'],
+                'email' => (string)$user['email'],
             ];
+
+            // Libère le verrou de session avant redirection
+            @session_write_close();
+
             return true;
         }
 
         return false;
     }
 
-    /**
-     * Déconnecte l'utilisateur courant en détruisant la session.
-     *
-     * Vide la session, supprime le cookie et détruit la session serveur.
-     *
-     * @return void
-     */
     public static function logout(): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_start();
-        }
+        self::ensureSessionStarted();
 
         $_SESSION = [];
 
         if (ini_get('session.use_cookies')) {
-            $params = session_get_cookie_params();
-            setcookie(
-                session_name(),
-                '',
-                time() - 42000,
-                $params['path'],
-                $params['domain'],
-                $params['secure'],
-                $params['httponly']
-            );
+            $p = session_get_cookie_params();
+            setcookie(session_name(), '', time() - 42000, $p['path'], $p['domain'], $p['secure'], $p['httponly']);
         }
 
-        session_destroy();
+        @session_destroy();
     }
 }

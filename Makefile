@@ -4,7 +4,7 @@ PHP ?= $(DC) exec -T web php
 COMPOSER ?= $(DC) exec -T web composer
 
 .PHONY: up down restart build pull logs ps \
-        setup setup-dev install vendor-clean dump \
+        setup setup-dev install vendor-clean dump\
         phpstan test \
         pma pma-stop open-pma open-web open-doc \
         db-purge bash-db bash-web init
@@ -60,7 +60,6 @@ vendor-clean: ## Réinstalle vendor proprement (host)
 
 dump:
 	composer dump-autoload
-
 # ---------- Qualité / Tests ----------
 phpstan:   ## Analyse statique
 	vendor/bin/phpstan analyse app src --level=6

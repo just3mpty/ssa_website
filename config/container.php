@@ -2,12 +2,22 @@
 
 declare(strict_types=1);
 
-use Capsule\Core\DIContainer;
-use Capsule\Database\MariaDBConnection;
-use Capsule\Repository\UserRepository;
-use Capsule\Service\UserService;
-use Capsule\Service\PasswordService;
-
+use App\Controller\AgendaController;
+use App\Controller\HelloController;
+use Capsule\Auth\PhpSessionReader;
+use Capsule\Contracts\ResponseFactoryInterface;
+use Capsule\Contracts\SessionReader;
+use Capsule\Contracts\ViewRendererInterface;
+use Capsule\Http\Factory\ResponseFactory;
+use Capsule\Http\Middleware\AuthRequiredMiddleware;
+use Capsule\Http\Middleware\DebugHeaders;
+use Capsule\Http\Middleware\ErrorBoundary;
+use Capsule\Http\Middleware\SecurityHeaders;
+use Capsule\Infrastructure\Container\DIContainer;
+use Capsule\Infrastructure\Database\MariaDBConnection;
+use Capsule\Domain\Repository\UserRepository;
+use Capsule\Domain\Service\UserService;
+use Capsule\Domain\Service\PasswordService;
 use App\Repository\ArticleRepository;
 use App\Service\ArticleService;
 use App\Navigation\SidebarLinksProvider;
@@ -17,48 +27,162 @@ use App\Controller\ArticlesController;
 use App\Controller\DashboardController;
 use App\Controller\CalendarController;
 use App\Controller\UserController;
-
+use Capsule\View\FilesystemTemplateLocator;
+use Capsule\View\MiniMustache;
 
 return (function (): DIContainer {
-    $container = new DIContainer();
+    $c = new DIContainer();
     $LENGTH_PASSWORD = 8;
 
     // --- Core deps ---
-    $container->set('pdo', fn() => MariaDBConnection::getInstance());
+    $c->set('pdo', fn () => MariaDBConnection::getInstance());
+
+    $c->set(DebugHeaders::class, fn ($c) => new DebugHeaders(
+        res: $c->get(\Capsule\Contracts\ResponseFactoryInterface::class),
+        enabled: true // passe à false en prod
+    ));
+
+    $c->set(ErrorBoundary::class, fn ($c) => new ErrorBoundary(
+        $c->get(ResponseFactoryInterface::class),
+        debug: true,
+        appName: 'SSA Website'
+    ));
+
+    $c->set(
+        SecurityHeaders::class,
+        fn () => new SecurityHeaders(
+            dev: true,   // <-- mets false en prod
+            https: false // true si HTTPS prod
+        )
+    );
+
+    $c->set(SessionReader::class, fn () => new PhpSessionReader());
+
+    // Middleware: démarrer la session tôt (optionnel mais recommandé)
+    // $c->set(StartSessionEarly::class, fn () => new StartSessionEarly(
+    //     secure: false,     // true en prod HTTPS
+    //     sameSite: 'Strict' // 'Lax' si tu veux autoriser retour de redirection post-login cross-site
+    // ));
+
+    // AuthRequiredMiddleware correctement câblé
+    $c->set(AuthRequiredMiddleware::class, fn ($c) => new AuthRequiredMiddleware(
+        session:   $c->get(SessionReader::class),
+        res:       $c->get(ResponseFactoryInterface::class),
+        requiredRole: 'admin',                 // role exigé
+        protectedPrefix: '/dashboard',         // périmètre protégé
+        whitelist: ['/login', '/logout'],      // routes publiques dans ce périmètre
+        redirectTo: '/login',                  // destination si non autorisé
+        sessionKey: 'admin',                   // clé session user
+        roleKey: 'role',                       // clé rôle dans la session
+    ));
+
+
+    $c->set(ResponseFactoryInterface::class, fn () => new ResponseFactory());
+    $c->set(ViewRendererInterface::class, function () {
+        $tplRoot = realpath(dirname(__DIR__) . '/templates');
+        if ($tplRoot === false) {
+            throw new \RuntimeException('Templates directory not found');
+        }
+
+        $locator = new FilesystemTemplateLocator([
+            'page' => $tplRoot . '/pages',
+            'component' => $tplRoot . '/components',
+            'partial' => $tplRoot . '/partials',
+            'admin' => $tplRoot . '/admin',
+            'dashboard' => $tplRoot . '/dashboard',
+            'layout' => $tplRoot, // layout:layout → templates/layout.tpl.php
+        ]);
+
+        $engine = new MiniMustache($locator);
+
+        return new class ($engine) implements ViewRendererInterface {
+            public function __construct(private MiniMustache $m)
+            {
+            }
+
+            /** Page = avec layout */
+            public function render(string $template, array $data = []): string
+            {
+                // $template attendu: "page:..." ou "dashboard:..."
+                $content = $this->m->render($template, $data);
+
+                return $this->m->render('layout:layout', $data + ['content' => $content]);
+            }
+
+            /** Component = fragment sans layout */
+            public function renderComponent(string $componentPath, array $data = []): string
+            {
+                // Accepter "component:..." ou suffixe "dashboard/..." (on homogénéise ici)
+                $logical = str_contains($componentPath, ':')
+                    ? $componentPath
+                    : 'component:' . ltrim($componentPath, '/');
+
+                return $this->m->render($logical, $data);
+            }
+        };
+    });
 
     // --- Repositories ---
-    $container->set(ArticleRepository::class, fn($container) => new ArticleRepository($container->get('pdo')));
-    $container->set(UserRepository::class,    fn($container) => new UserRepository($container->get('pdo')));
+    $c->set(ArticleRepository::class, fn ($c) => new ArticleRepository($c->get('pdo')));
+    $c->set(UserRepository::class, fn ($c) => new UserRepository($c->get('pdo')));
 
     // --- Services ---
-    $container->set(ArticleService::class, fn($container) => new ArticleService($container->get(ArticleRepository::class)));
-    $container->set(UserService::class,    fn($container) => new UserService($container->get(UserRepository::class)));
-    $container->set('passwords',           fn($container) => new PasswordService(
-        $container->get(UserRepository::class),
+    $c->set(
+        ArticleService::class,
+        fn ($c) => new ArticleService($c->get(ArticleRepository::class))
+    );
+    $c->set(UserService::class, fn ($c) => new UserService($c->get(UserRepository::class)));
+    $c->set('passwords', fn ($c) => new PasswordService(
+        $c->get(UserRepository::class),
         $LENGTH_PASSWORD,
         []
     ));
 
     // --- Navigation ---
-    $container->set(SidebarLinksProvider::class, fn() => new SidebarLinksProvider());
+    $c->set(SidebarLinksProvider::class, fn () => new SidebarLinksProvider());
 
     // --- Controllers ---
-    $container->set(HomeController::class,      fn($container) => new HomeController($container->get(ArticleService::class)));
-    $container->set(LoginController::class,       fn($container) => new LoginController($container->get('pdo')));
-    $container->set(DashboardController::class,   fn($container) => new DashboardController(
-        $container->get(UserService::class),
-        $container->get('passwords'),
-        $container->get(SidebarLinksProvider::class),
+    $c->set(HelloController::class, fn ($c) => new HelloController(
+        $c->get(ResponseFactoryInterface::class)
     ));
-    $container->set(UserController::class,   fn($container) => new UserController(
-        $container->get(UserService::class),
-        $container->get('passwords'),
-    ));
-    $container->set(ArticlesController::class, fn($container) => new ArticlesController(
-        $container->get(ArticleService::class),
-        $container->get(SidebarLinksProvider::class),
-    ));
-    $container->set(CalendarController::class, fn($container) => new CalendarController());
 
-    return $container;
+    $c->set(HomeController::class, fn ($c) => new HomeController(
+        $c->get(\App\Service\ArticleService::class),
+        $c->get(ResponseFactoryInterface::class),
+        $c->get(ViewRendererInterface::class),
+    ));
+    $c->set(LoginController::class, fn ($c) => new LoginController(
+        $c->get('pdo'),
+        $c->get(ResponseFactoryInterface::class),
+        $c->get(ViewRendererInterface::class),
+    ));
+
+    $c->set(AgendaController::class, fn ($c) => new AgendaController(
+        $c->get(ResponseFactoryInterface::class),
+        $c->get(ViewRendererInterface::class),
+    ));
+
+    $c->set(DashboardController::class, fn ($c) => new DashboardController(
+        $c->get(UserService::class),
+        $c->get('passwords'),
+        $c->get(SidebarLinksProvider::class),
+        $c->get(ResponseFactoryInterface::class),
+        $c->get(ViewRendererInterface::class),
+    ));
+    $c->set(UserController::class, fn ($c) => new UserController(
+        $c->get(UserService::class),
+        $c->get('passwords'),
+        $c->get(ResponseFactoryInterface::class),
+        $c->get(ViewRendererInterface::class),
+    ));
+    $c->set(ArticlesController::class, fn ($c) => new ArticlesController(
+        $c->get(ArticleService::class),
+        $c->get(SidebarLinksProvider::class),
+        $c->get(ResponseFactoryInterface::class),
+        $c->get(ViewRendererInterface::class),
+    ));
+
+    $c->set(CalendarController::class, fn ($c) => new CalendarController());
+
+    return $c;
 })();

@@ -4,151 +4,152 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use Capsule\Core\RenderController;
-use App\Navigation\SidebarLinksProvider;
 use App\Lang\TranslationLoader;
-use Capsule\Service\PasswordService;
-use Capsule\Security\CurrentUserProvider;
-use Capsule\Http\RequestUtils;
-use Capsule\Http\FlashBag;
-use Capsule\Http\Redirect;
-use Capsule\Http\FormState;
+use App\Navigation\SidebarLinksProvider;
+use Capsule\Contracts\ResponseFactoryInterface;
+use Capsule\Contracts\ViewRendererInterface;
+use Capsule\Domain\Service\PasswordService;
+use Capsule\Domain\Service\UserService;
+use Capsule\Http\Message\Response;
+use Capsule\Http\Support\FlashBag;
+use Capsule\Http\Support\FormState;
+use Capsule\Http\Support\Redirect;
+use Capsule\Routing\Attribute\Route;
+use Capsule\Routing\Attribute\RoutePrefix;
 use Capsule\Security\CsrfTokenManager;
-use Capsule\Service\UserService;
+use Capsule\Security\CurrentUserProvider;
+use Capsule\View\BaseController;
 
-final class DashboardController extends RenderController
+#[RoutePrefix('/dashboard')]
+final class DashboardController extends BaseController
 {
     public function __construct(
-        private readonly UserService $userService,
+        private readonly UserService $users,
         private readonly PasswordService $passwords,
-        private readonly SidebarLinksProvider $linksProvider,
-    ) {}
+        private readonly SidebarLinksProvider $links,
+        ResponseFactoryInterface $res,
+        ViewRendererInterface $view,
+    ) {
+        parent::__construct($res, $view);
+    }
 
-    /** Cache par requête */
+    /** cache i18n par requête */
     private ?array $strings = null;
 
-    /* -------------------- Helpers -------------------- */
-
-    private function str(): array
+    /** @return array<string,string> */
+    private function i18n(): array
     {
         return $this->strings ??= TranslationLoader::load(defaultLang: 'fr');
     }
 
-    private function links(bool $isAdmin): array
+    /** @return array{id?:int,username?:string,role?:string,email?:string} */
+    private function me(): array
     {
-        return $this->linksProvider->get($isAdmin);
+        return CurrentUserProvider::getUser() ?? [];
     }
 
-    /** Payload commun au layout Dashboard */
-    private function basePayload(array $extra = []): array
+    /** @return list<array{title:string,url:string,icon:string}> */
+    private function sidebar(bool $isAdmin): array
     {
-        $user    = CurrentUserProvider::getUser() ?? [];
+        return $this->links->get($isAdmin);
+    }
+
+    /** payload commun au shell dashboard
+     *  @param array<string,mixed> $extra
+     *  @return array<string,mixed>
+     */
+    private function base(array $extra = []): array
+    {
+        $user = $this->me();
         $isAdmin = ($user['role'] ?? null) === 'admin';
 
         $base = [
+            'showHeader' => false,
+            'showFooter' => false,
             'isDashboard' => true,
-            'title'       => '',
-            'user'        => $user,
-            'username'    => $user['username'] ?? '',
-            'isAdmin'     => $isAdmin,
-            'links'       => $this->links($isAdmin),
-            'str'         => $this->str(),
-            'flash'       => FlashBag::consume(),
+            'str' => $this->i18n(),
+            'user' => $user,
+            'isAdmin' => $isAdmin,
+            'links' => $this->sidebar($isAdmin),
+            'flash' => FlashBag::consume(),
         ];
 
         return array_replace($base, $extra);
     }
 
-    /**
-     * Point unique de rendu du dashboard (DRY).
-     */
-    private function renderDash(string $title, ?string $component = null, array $vars = []): void
+    /** champ CSRF “trusted HTML” */
+    private function csrfInput(): string
     {
-        $content = null;
-        if ($component !== null) {
-            $vars += ['str' => $this->str()];
-            $content = $this->renderComponent($component, $vars);
-        }
-
-        $payload = [
-            'title'            => $title,
-            'dashboardContent' => $content,
-        ];
-
-        echo $this->renderView('dashboard/home.php', $this->basePayload($payload));
+        return CsrfTokenManager::insertInput();
     }
 
-    /* -------------------- Routes -------------------- */
+    /* ---------------- Routes (GET) ---------------- */
 
-    public function index(): void
+    #[Route(path: '', methods: ['GET'])]
+    public function index(): Response
     {
-        $this->renderDash('Dashboard');
+        return $this->page('dashboard:home', $this->base([
+            'title' => 'Dashboard',
+        ]));
     }
 
-
-    public function users(): void
+    #[Route(path: '/users', methods: ['GET'])]
+    public function users(): Response
     {
-        // Accès admin géré par middleware
-        $users = $this->userService->getAllUsers();
-
-        $errors  = FormState::consumeErrors();
+        $errors = FormState::consumeErrors();
         $prefill = FormState::consumeData();
-        $payload = [
-            'users'        => $users,
-            'errors'       => $errors,
-            'prefill'      => $prefill,
+
+        return $this->page('dashboard:home', $this->base([
+            'title' => 'Utilisateurs',
+            'component' => 'dashboard/dash_users',
+            'users' => $this->users->getAllUsers(),
+            'errors' => $errors,
+            'prefill' => $prefill,
             'createAction' => '/dashboard/users/create',
             'deleteAction' => '/dashboard/users/delete',
-        ];
-
-        $this->renderDash('Utilisateurs', 'dash_users.php', $payload);
+            'csrf_input' => $this->csrfInput(),
+        ]));
     }
 
-    /* ===== Compte (GET/POST) ===== */
-    public function account(): void
+    #[Route(path: '/account', methods: ['GET'])]
+    public function account(): Response
     {
-        $errors  = FormState::consumeErrors();
+        $errors = FormState::consumeErrors();
         $prefill = FormState::consumeData();
-        $user = CurrentUserProvider::getUser() ?? [];
 
-
-        // header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-        // header('Pragma: no-cache');
-        // header('Expires: 0');
-        $payload = [
-            'errors'                => $errors,
-            'accountPasswordAction' => '/dashboard/account/password',
-            'prefill'               => $prefill,
-            'user'                  => $user,
-            // ajout pour test UI modif user
-            'editUserAction'        => '/dashboard/account/update', // à implémenter plus tard
-        ];
-
-        $this->renderDash('Mon compte', 'dash_account.php', $payload);
+        return $this->page('dashboard:home', $this->base([
+            'title' => 'Mon compte',
+            'component' => 'dashboard/dash_account',
+            'errors' => $errors,
+            'prefill' => $prefill,
+            'action' => '/dashboard/account/password',
+            'editUserAction' => '/dashboard/account/update',
+            'csrf_input' => $this->csrfInput(),
+        ]));
     }
 
-    public function agenda(): void
+    #[Route(path: '/agenda', methods: ['GET'])]
+    public function agenda(): Response
     {
-
-        $this->renderDash('Mon agenda', 'dash_agenda.php', []);
+        return $this->page('dashboard:home', $this->base([
+            'title' => 'Mon agenda',
+            'component' => 'dashboard/dash_agenda',
+        ]));
     }
+    /* ---------------- Actions (POST) ---------------- */
 
-    /** POST /dashboard/account/password */
-    public function accountPassword(): void
+    #[Route(path: '/account/password', methods: ['POST'])]
+    public function accountPassword(): Response
     {
-        RequestUtils::ensurePostOrRedirect('/dashboard/account');
         CsrfTokenManager::requireValidToken();
 
-        $user    = CurrentUserProvider::getUser();
-        $userId  = (int)($user['id'] ?? 0);
+        $userId = (int) (($this->me()['id'] ?? 0));
         if ($userId <= 0) {
-            http_response_code(403);
-            echo 'Forbidden';
-            return;
+            return $this->res->text('Forbidden', 403);
         }
 
-        $old     = trim((string)($_POST['old_password'] ?? ''));
-        $new     = trim((string)($_POST['new_password'] ?? ''));
+        $old = trim((string)($_POST['old_password'] ?? ''));
+        $new = trim((string)($_POST['new_password'] ?? ''));
         $confirm = trim((string)($_POST['confirm_new_password'] ?? ''));
 
         $errors = [];
@@ -161,91 +162,16 @@ final class DashboardController extends RenderController
         if ($errors === []) {
             [$ok, $svcErrors] = $this->passwords->changePassword($userId, $old, $new);
             if ($ok) {
-                Redirect::withSuccess('/dashboard/account', 'Mot de passe modifié avec succès.');
+                return Redirect::withSuccess('/dashboard/account', 'Mot de passe modifié avec succès.');
             }
             $errors = $svcErrors ?: ['_global' => 'Échec de la modification du mot de passe.'];
         }
-        Redirect::withErrors('/dashboard/account', 'Le formulaire contient des erreurs.', $errors, []);
+
+        return Redirect::withErrors(
+            '/dashboard/account',
+            'Le formulaire contient des erreurs.',
+            $errors,
+            [] // pas de pré-remplissage sensible ici
+        );
     }
-
-
-    // public function usersUpdate(): void
-    // {
-    //     RequestUtils::ensurePostOrRedirect('/dashboard/users');
-    //     //CsrfTokenManager::requireValidToken();
-    //     $id       = (int)($_POST['id'] ?? 0);
-    //     $username = trim((string)($_POST['username'] ?? ''));
-    //     $email    = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL) ?: null;
-    //     $role     = trim((string)($_POST['role'] ?? 'employee'));
-
-
-    //     $errors = [];
-    //     if ($id <= 0)        $errors['_global'] = 'ID utilisateur invalide.';
-    //     if ($username === '') $errors['username'] = 'Requis.';
-    //     if (!$email)          $errors['email']    = 'Email invalide.';
-
-    //     if ($errors !== []) {
-    //         Redirect::withErrors(
-    //             "/dashboard/users/{$id}",                
-    //             'Le formulaire contient des erreurs.',
-    //             $errors,
-    //             ['username' => $username, 'email' => (string)$email, 'role' => $role]
-    //         );
-    //     }
-
-    //     try {
-    //         $input = ['username' => $username, 'email' => (string)$email, 'role' => $role];
-
-    //         $this->userService->updateUser($id, $input);
-    //         Redirect::withSuccess("/dashboard/account", 'Utilisateur modifié avec succès.');
-    //     } catch (\Throwable $e) {
-    //         Redirect::withErrors(
-    //             // '/dashboard/users',
-    //             '/dashboard/account',
-    //             'Erreur lors de la modification.',
-    //             ['_global' => 'Modification impossible.'],
-    //             ['username' => $username, 'email' => (string)$email, 'role' => $role]
-    //         );
-    //     }
-    // }
-
-
-    // public function usersUpdate(): void
-    // {
-    //     RequestUtils::ensurePostOrRedirect('/dashboard/users');
-    //     //CsrfTokenManager::requireValidToken();
-
-    //     $id       = (int)($_POST['id'] ?? 0);
-    //     $username = trim((string)($_POST['username'] ?? ''));
-    //     $email    = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL) ?: null;
-    //     $role     = trim((string)($_POST['role'] ?? 'employee'));
-
-    //     $errors = [];
-    //     if ($id <= 0)        $errors['_global'] = 'ID utilisateur invalide.';
-    //     if ($username === '') $errors['username'] = 'Requis.';
-    //     if (!$email)          $errors['email']    = 'Email invalide.';
-
-    //     if ($errors !== []) {
-    //         Redirect::withErrors(
-    //             '/dashboard/users',
-    //             'Le formulaire contient des erreurs.',
-    //             $errors,
-    //             ['username' => $username, 'email' => (string)$email, 'role' => $role]
-    //         );
-    //     }
-
-    //     try {
-    //         $this->userService->updateUser($id, ['email' => (string)$email, 'username' => $username, 'role' => $role]);
-    //         Redirect::withSuccess('/dashboard/users', 'Utilisateur modifié avec succès.');
-    //     } catch (\Throwable $e) {
-    //         Redirect::withErrors(
-    //             '/dashboard/users',
-    //             'Erreur lors de la modification.',
-    //             ['_global' => 'Modification impossible.'],
-    //             ['username' => $username, 'email' => (string)$email, 'role' => $role]
-    //         );
-    //     }
-    // }
-
-
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Capsule\Contracts;
 
-use Capsule\Http\Request;
+use Capsule\Http\Message\Request;
 
 /**
  * Router minimal : résout un handler pour une requête.

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Capsule\Contracts;
 
-use Capsule\Http\Request;
-use Capsule\Http\Response;
+use Capsule\Http\Message\Request;
+use Capsule\Http\Message\Response;
 
 /**
  * Middleware single-pass.
@@ -21,5 +21,5 @@ interface MiddlewareInterface
     /**
      * @param callable(): mixed $next
      */
-    public function process(Request $request, callable $next): Response;
+    public function process(Request $req, HandlerInterface $next): Response;
 }
