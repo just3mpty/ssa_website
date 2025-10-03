@@ -7,7 +7,6 @@ namespace App\Controller;
 use Capsule\Contracts\ResponseFactoryInterface;
 use Capsule\Contracts\ViewRendererInterface;
 use Capsule\Domain\Service\UserService;
-use Capsule\Http\Support\RequestUtils;
 use Capsule\Routing\Attribute\Route;
 use Capsule\Routing\Attribute\RoutePrefix;
 use Capsule\Security\CsrfTokenManager;
@@ -32,7 +31,6 @@ final class UserController extends BaseController
     #[Route(path: '/create', methods: ['POST'])]
     public function create(): Response
     {
-        RequestUtils::ensurePostOrRedirect('/dashboard/users');
         CsrfTokenManager::requireValidToken();
 
         $username = trim((string)($_POST['username'] ?? ''));
@@ -86,7 +84,6 @@ final class UserController extends BaseController
     #[Route(path: '/delete', methods: ['POST'])]
     public function delete(): Response
     {
-        RequestUtils::ensurePostOrRedirect('/dashboard/users');
         CsrfTokenManager::requireValidToken();
 
         $ids = array_map('intval', (array)($_POST['user_ids'] ?? []));
@@ -139,7 +136,6 @@ final class UserController extends BaseController
     #[Route(path: '/update', methods: ['POST'])]
     public function update(): Response
     {
-        RequestUtils::ensurePostOrRedirect('/dashboard/users');
         CsrfTokenManager::requireValidToken();
 
         $id = (int)($_POST['id'] ?? 0);

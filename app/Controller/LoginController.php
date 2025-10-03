@@ -34,7 +34,7 @@ final class LoginController extends BaseController
         $prefill = $this->formData();     // toujours array
 
         // Résout en "page:admin/login" via $this->pageNs
-        return $this->page('login', [
+        return $this->page('admin:login', [
              'showHeader' => true,
              'showFooter' => true,
              'title' => 'Connexion',
