@@ -107,11 +107,11 @@ class ArticleRepository extends BaseRepository
     }
 
     /**
-     * Récupère tous les événements (DTO).
+     * Récupère tous les articles avec auteur.
      *
-     * @return ArticleDTO[]
+     * @return array<int,ArticleDTO>
      */
-    public function all(): array
+    public function getAllWithAuthor(): array
     {
         $stmt = $this->pdo->query(
             "SELECT a.*, u.username as author_name 

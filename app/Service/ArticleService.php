@@ -24,15 +24,13 @@ final class ArticleService
     /** @return ArticleDTO[] */
     public function getUpcoming(): array
     {
-        /** @var array<array<string,mixed>> $rows */
         return $this->articleRepository->upcoming();
     }
 
     /** @return ArticleDTO[] */
     public function getAll(): array
     {
-        /** @var array<array<string,mixed>> $rows */
-        return $this->articleRepository->all();
+        return $this->articleRepository->getAllWithAuthor();
     }
 
     public function getById(int $id): ?ArticleDTO
