@@ -28,42 +28,43 @@ final class LoginController extends BaseController
 
     /** GET /login — affiche le formulaire */
     #[Route(path: '/login', methods: ['GET'])]
-    public function loginForm(Request $req): Response
+    public function loginForm(): Response
     {
-        $errors = \Capsule\Http\Support\FormState::consumeErrors();
-        $prefill = \Capsule\Http\Support\FormState::consumeData();
+        $errors = $this->formErrors();   // toujours array
+        $prefill = $this->formData();     // toujours array
 
-        return $this->page('admin:login', [     // <-- ICI
-            'showHeader' => true,
-            'showFooter' => true,
-            'title' => 'Connexion',
-            'str' => $this->translations(),
-            'error' => $errors['_global'] ?? null,
-            'errors' => $errors,
-            'prefill' => $prefill,
-            'csrf_input' => $this->csrfInput(), // {{{csrf_input}}}
-            'action' => '/login',
-        ]);
+        // Résout en "page:admin/login" via $this->pageNs
+        return $this->page('login', [
+             'showHeader' => true,
+             'showFooter' => true,
+             'title' => 'Connexion',
+             'str' => $this->translations(),
+             'error' => $errors['_global'] ?? null,
+             'errors' => $errors,
+             'prefill' => $prefill,
+             'csrf_input' => $this->csrfInput(), // {{{csrf_input}}}
+             'action' => '/login',
+         ]);
     }
+
 
     /** POST /login — traite la soumission */
     #[Route(path: '/login', methods: ['POST'])]
     public function loginSubmit(Request $req): Response
     {
-        if (strtoupper($req->method) !== 'POST') {
-            return $this->res->redirect('/login', 303);
-        }
-
         CsrfTokenManager::requireValidToken();
 
         $username = trim((string)($_POST['username'] ?? ''));
         $password = (string)($_POST['password'] ?? '');
 
         if ($username === '' || $password === '') {
-            \Capsule\Http\Support\FormState::set(['_global' => 'Champs requis manquants.'], ['username' => $username]);
-            \Capsule\Http\Support\FlashBag::add('error', 'Le formulaire contient des erreurs.');
-
-            return $this->res->redirect('/login', 303); // PRG
+            // PRG standardisé (stocke errors+data+flash et redirige)
+            return $this->redirectWithErrors(
+                '/login',
+                'Le formulaire contient des erreurs.',
+                ['_global' => 'Champs requis manquants.'],
+                ['username' => $username] // jamais le password
+            );
         }
 
         $success = Authenticator::login($this->pdo, $username, $password);
@@ -72,10 +73,12 @@ final class LoginController extends BaseController
             return $this->res->redirect('/dashboard/account', 302);
         }
 
-        \Capsule\Http\Support\FormState::set(['_global' => 'Identifiants incorrects.'], ['username' => $username]);
-        \Capsule\Http\Support\FlashBag::add('error', 'Identifiants incorrects.');
-
-        return $this->res->redirect('/login', 303);
+        return $this->redirectWithErrors(
+            '/login',
+            'Identifiants incorrects.',
+            ['_global' => 'Identifiants incorrects.'],
+            ['username' => $username]
+        );
     }
 
     /** GET/POST /logout — détruit la session et redirige */
