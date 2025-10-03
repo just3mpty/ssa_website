@@ -4,25 +4,19 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Lang\TranslationLoader;
 use App\Navigation\SidebarLinksProvider;
 use App\Service\ArticleService;
 use Capsule\Contracts\ResponseFactoryInterface;
 use Capsule\Contracts\ViewRendererInterface;
 use Capsule\Http\Message\Response;
-use Capsule\Http\Support\FlashBag;
-use Capsule\Http\Support\FormState;
 use Capsule\Routing\Attribute\Route;
 use Capsule\Routing\Attribute\RoutePrefix;
 use Capsule\Security\CsrfTokenManager;
-use Capsule\Security\CurrentUserProvider;
 use Capsule\View\BaseController;
 
 #[RoutePrefix('/dashboard/articles')]
 final class ArticlesController extends BaseController
 {
-    private ?array $strings = null;
-
     public function __construct(
         private readonly ArticleService $articles,
         private readonly SidebarLinksProvider $linksProvider,
@@ -36,51 +30,35 @@ final class ArticlesController extends BaseController
      * Helpers
      * ----------------------------------------------------- */
 
-    /** @return array<string,string> */
-    private function strings(): array
-    {
-        return $this->strings ??= TranslationLoader::load(defaultLang: 'fr');
-    }
-
-    /** @return array{id?:int,username?:string,role?:string,email?:string} */
-    private function currentUser(): array
-    {
-        return CurrentUserProvider::getUser() ?? [];
-    }
-
     /** @return list<array{title:string,url:string,icon:string}> */
     private function sidebarLinks(): array
     {
-        $isAdmin = ($this->currentUser()['role'] ?? null) === 'admin';
-
-        return $this->linksProvider->get($isAdmin);
+        return $this->linksProvider->get($this->isAdmin());
     }
 
-    /** @param array<string,mixed> $extra @return array<string,mixed> */
+    /**
+     * @param array<string,mixed> $extra
+     * @return array<string,mixed>
+     */
     private function base(array $extra = []): array
     {
         $user = $this->currentUser();
-        $isAdmin = ($user['role'] ?? null) === 'admin';
 
         $base = [
             'showHeader' => false,
             'showFooter' => false,
             'isDashboard' => true,
-            'str' => $this->strings(),
+            'str' => $this->translations(),
             'user' => $user,
-            'isAdmin' => $isAdmin,
+            'isAdmin' => $this->isAdmin(),
             'links' => $this->sidebarLinks(),
-            'flash' => FlashBag::consume(),
+            'flash' => $this->flashMessages(),
         ];
 
         return array_replace($base, $extra);
     }
 
-    private function csrfInput(): string
-    {
-        // HTML “trusted”
-        return CsrfTokenManager::insertInput();
-    }
+
 
     /**
      * Mappe un ArticleDTO en VM pour la liste.
@@ -152,7 +130,7 @@ final class ArticlesController extends BaseController
     #[Route(path: '', methods: ['GET'])]
     public function index(): Response
     {
-        $list = $this->articles->getAll() ?? [];
+        $list = $this->articles->getAll();
         $items = array_map(fn ($dto) => $this->mapListItem($dto), $list);
 
         return $this->page('dashboard:home', $this->base([
@@ -195,8 +173,8 @@ final class ArticlesController extends BaseController
     #[Route(path: '/create', methods: ['GET'])]
     public function createForm(): Response
     {
-        $data = FormState::consumeData();
-        $errors = FormState::consumeErrors();
+        $data = $this->formData();
+        $errors = $this->formErrors();
 
         return $this->page('dashboard:home', $this->base([
             'title' => 'Créer un article',
@@ -218,15 +196,15 @@ final class ArticlesController extends BaseController
         $result = $this->articles->create($_POST, $current);
 
         if (!empty($result['errors'])) {
-            FlashBag::add('error', 'Le formulaire contient des erreurs.');
-            FormState::set($result['errors'], $result['data'] ?? $_POST);
-
-            return $this->res->redirect('/dashboard/articles/create', 303);
+            return $this->redirectWithErrors(
+                '/dashboard/articles/create',
+                'Le formulaire contient des erreurs.',
+                $result['errors'],
+                $result['data'] ?? $_POST
+            );
         }
 
-        FlashBag::add('success', 'Article créé.');
-
-        return $this->res->redirect('/dashboard/articles', 302);
+        return $this->redirectWithSuccess('/dashboard/articles', 'Article créé.');
     }
 
     /** GET /dashboard/articles/edit/{id} */
@@ -238,8 +216,8 @@ final class ArticlesController extends BaseController
             return $this->res->text('Not Found', 404);
         }
 
-        $errors = FormState::consumeErrors();
-        $prefill = FormState::consumeData();
+        $errors = $this->formErrors();
+        $prefill = $this->formData();
 
         return $this->page('dashboard:home', $this->base([
             'title' => 'Modifier un article',
@@ -263,15 +241,15 @@ final class ArticlesController extends BaseController
 
         $result = $this->articles->update($id, $_POST);
         if (!empty($result['errors'])) {
-            FlashBag::add('error', 'Le formulaire contient des erreurs.');
-            FormState::set($result['errors'], $result['data'] ?? $_POST);
-
-            return $this->res->redirect("/dashboard/articles/edit/{$id}", 303);
+            return $this->redirectWithErrors(
+                "/dashboard/articles/edit/{$id}",
+                'Le formulaire contient des erreurs.',
+                $result['errors'],
+                $result['data'] ?? $_POST
+            );
         }
 
-        FlashBag::add('success', 'Article mis à jour.');
-
-        return $this->res->redirect('/dashboard/articles', 302);
+        return $this->redirectWithSuccess('/dashboard/articles', 'Article mis à jour.');
     }
 
     /** POST /dashboard/articles/delete/{id} */
@@ -283,8 +261,6 @@ final class ArticlesController extends BaseController
         // idempotent : delete “silencieux”
         $this->articles->delete($id);
 
-        FlashBag::add('success', 'Article supprimé.');
-
-        return $this->res->redirect('/dashboard/articles', 303);
+        return $this->redirectWithSuccess('/dashboard/articles', 'Article supprimé.');
     }
 }

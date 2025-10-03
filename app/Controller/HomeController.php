@@ -4,20 +4,15 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Lang\TranslationLoader;
 use App\Service\ArticleService;
 use Capsule\Contracts\ResponseFactoryInterface;
 use Capsule\Contracts\ViewRendererInterface;
 use Capsule\Http\Message\Response;
 use Capsule\Routing\Attribute\Route;
 use Capsule\View\BaseController;
-use Capsule\Security\CsrfTokenManager;
-use Capsule\Security\CurrentUserProvider;
 
 final class HomeController extends BaseController
 {
-    private ?array $strings = null;
-
     public function __construct(
         private ArticleService $articleService,
         ResponseFactoryInterface $res,
@@ -26,13 +21,10 @@ final class HomeController extends BaseController
         parent::__construct($res, $view);
     }
 
-    /** @return array<string,mixed> */
-    private function strings(): array
-    {
-        return $this->strings ??= TranslationLoader::load(defaultLang: 'fr');
-    }
-
-    /** @return list<array{date:string,time:string,title:string,summary:string,location:string,ics_datetime:string}> */
+    /**
+     * @param null|array<object>|\Traversable<object> $raw
+     * @return list<array{date:string,time:string,title:string,summary:string,location:string,ics_datetime:string}>
+     */
     private function mapArticles(null|array|\Traversable $raw): array
     {
         if ($raw === null) {
@@ -62,11 +54,11 @@ final class HomeController extends BaseController
         $articles = $this->mapArticles($this->articleService->getUpcoming());
 
         // CSRF (trusted HTML)
-        $csrf_input = CsrfTokenManager::insertInput();
+        $csrf_input = $this->csrfInput();
 
         $currentLang = $_SESSION['lang'] ?? 'fr';
-        $isAuth = CurrentUserProvider::isAuthenticated();
-        $i18n = $this->strings();
+        $isAuth = $this->isAuthenticated();
+        $i18n = $this->translations();
         $languages = [
             ['code' => 'fr','label' => $i18n['lang_fr'] ?? 'Français','selected' => $currentLang === 'fr'],
             ['code' => 'br','label' => $i18n['lang_br'] ?? 'Brezhoneg','selected' => $currentLang === 'br'],
@@ -81,7 +73,7 @@ final class HomeController extends BaseController
             ['name' => 'RESAM', 'role' => 'partenaire', 'url' => 'https://www.resam.net/', 'logo' => '/assets/img/resam.webp'],
             ['name' => 'Leader financement Européen', 'role' => 'financeur', 'url' => 'https://leaderfrance.fr/le-programme-leader/', 'logo' => '/assets/img/feader.webp'],
         ];
-        $partenaires = array_values(array_filter($all, fn ($p) => $p['role'] === 'partenaire' || $p['role'] === ''));
+        $partenaires = array_values(array_filter($all, fn ($p) => $p['role'] === 'partenaire'));
         $financeurs = array_values(array_filter($all, fn ($p) => $p['role'] === 'financeur'));
 
         // -> page('home') => 'page:home' -> templates/pages/home.tpl.php (layout appliqué par ViewRenderer)
@@ -106,7 +98,7 @@ final class HomeController extends BaseController
         return $this->page('projet', [
             'showHeader' => true,
             'showFooter' => true,
-            'str' => $this->strings(),
+            'str' => $this->translations(),
         ]);
     }
 
@@ -116,7 +108,7 @@ final class HomeController extends BaseController
         return $this->page('galerie', [
             'showHeader' => true,
             'showFooter' => true,
-            'str' => $this->strings(),
+            'str' => $this->translations(),
         ]);
     }
 
@@ -135,7 +127,7 @@ final class HomeController extends BaseController
         return $this->page('articleDetails', [
             'showHeader' => true,
             'showFooter' => true,
-            'str' => $this->strings(),
+            'str' => $this->translations(),
             'article' => [
                 'title' => (string)($dto->titre ?? ''),
                 'summary' => (string)($dto->resume ?? ''),

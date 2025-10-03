@@ -7,6 +7,11 @@ namespace Capsule\View;
 use Capsule\Contracts\ViewRendererInterface;
 use Capsule\Contracts\ResponseFactoryInterface;
 use Capsule\Http\Message\Response;
+use Capsule\Security\CsrfTokenManager;
+use Capsule\Security\CurrentUserProvider;
+use Capsule\Http\Support\Redirect;
+use Capsule\Http\Support\FlashBag;
+use Capsule\Http\Support\FormState;
 
 /**
  * Contrôleur de Base
@@ -19,6 +24,8 @@ use Capsule\Http\Message\Response;
  */
 abstract class BaseController
 {
+    use TranslationTrait;
+
     /**
      * Namespace par défaut pour les pages (surchargeable)
      *
@@ -126,5 +133,103 @@ abstract class BaseController
             : ($this->componentNs !== '' ? "component:{$this->componentNs}/{$name}" : "component:{$name}");
 
         return $this->view->renderComponent($logical, $data);
+    }
+
+    /**
+     * Génère un champ CSRF sécurisé
+     *
+     * @return string HTML du champ CSRF
+     */
+    protected function csrfInput(): string
+    {
+        return CsrfTokenManager::insertInput();
+    }
+
+    /**
+     * Récupère l'utilisateur courant
+     *
+     * @return array{id?:int,username?:string,role?:string,email?:string} Données utilisateur
+     */
+    protected function currentUser(): array
+    {
+        return CurrentUserProvider::getUser() ?? [];
+    }
+
+    /**
+     * Vérifie si l'utilisateur est authentifié
+     *
+     * @return bool True si authentifié
+     */
+    protected function isAuthenticated(): bool
+    {
+        return CurrentUserProvider::isAuthenticated();
+    }
+
+    /**
+     * Vérifie si l'utilisateur est admin
+     *
+     * @return bool True si admin
+     */
+    protected function isAdmin(): bool
+    {
+        $user = $this->currentUser();
+
+        return ($user['role'] ?? null) === 'admin';
+    }
+
+    /**
+     * Redirection avec erreurs (PRG pattern)
+     *
+     * @param string $to URL de destination
+     * @param string $flash Message flash
+     * @param array<string,string> $errors Erreurs de formulaire
+     * @param array<string,mixed> $data Données pré-remplies
+     * @return Response Réponse de redirection
+     */
+    protected function redirectWithErrors(string $to, string $flash, array $errors, array $data = []): Response
+    {
+        return Redirect::withErrors($to, $flash, $errors, $data);
+    }
+
+    /**
+     * Redirection avec succès (PRG pattern)
+     *
+     * @param string $to URL de destination
+     * @param string $flash Message flash
+     * @return Response Réponse de redirection
+     */
+    protected function redirectWithSuccess(string $to, string $flash): Response
+    {
+        return Redirect::withSuccess($to, $flash);
+    }
+
+    /**
+     * Récupère les messages flash
+     *
+     * @return array<string,array<mixed>> Messages flash
+     */
+    protected function flashMessages(): array
+    {
+        return FlashBag::consume();
+    }
+
+    /**
+     * Récupère les erreurs de formulaire
+     *
+     * @return array<string,string> Erreurs de formulaire
+     */
+    protected function formErrors(): array
+    {
+        return FormState::consumeErrors() ?? [];
+    }
+
+    /**
+     * Récupère les données pré-remplies du formulaire
+     *
+     * @return array<string,mixed> Données pré-remplies
+     */
+    protected function formData(): array
+    {
+        return FormState::consumeData() ?? [];
     }
 }

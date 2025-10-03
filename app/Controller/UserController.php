@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Lang\TranslationLoader;
 use Capsule\Contracts\ResponseFactoryInterface;
 use Capsule\Contracts\ViewRendererInterface;
 use Capsule\Domain\Service\UserService;
-use Capsule\Domain\Service\PasswordService;
-use Capsule\Http\Support\Redirect;
 use Capsule\Http\Support\RequestUtils;
 use Capsule\Routing\Attribute\Route;
 use Capsule\Routing\Attribute\RoutePrefix;
@@ -23,32 +20,10 @@ final class UserController extends BaseController
 {
     public function __construct(
         private readonly UserService $userService,
-        private readonly PasswordService $passwords,
         ResponseFactoryInterface $res,
         ViewRendererInterface $view,
     ) {
         parent::__construct($res, $view);
-    }
-
-    /** i18n one-shot cache */
-    private ?array $strings = null;
-
-    /** @return array<string,string> */
-    private function str(): array
-    {
-        return $this->strings ??= TranslationLoader::load(defaultLang: 'fr');
-    }
-
-    /** Redirection PRG avec erreurs + préremplissage */
-    private function backWithErrors(string $to, string $flash, array $errors, array $data = []): Response
-    {
-        return Redirect::withErrors($to, $flash, $errors, $data);
-    }
-
-    /** Redirection PRG succès */
-    private function backWithSuccess(string $to, string $flash): Response
-    {
-        return Redirect::withSuccess($to, $flash);
     }
 
     /* =========================================================
@@ -83,7 +58,7 @@ final class UserController extends BaseController
         }
 
         if ($errors !== []) {
-            return $this->backWithErrors(
+            return $this->redirectWithErrors(
                 '/dashboard/users',
                 'Le formulaire contient des erreurs.',
                 $errors,
@@ -94,9 +69,9 @@ final class UserController extends BaseController
         try {
             $this->userService->createUser($username, $password, (string)$email, $role);
 
-            return $this->backWithSuccess('/dashboard/users', 'Utilisateur créé avec succès.');
+            return $this->redirectWithSuccess('/dashboard/users', 'Utilisateur créé avec succès.');
         } catch (\Throwable $e) {
-            return $this->backWithErrors(
+            return $this->redirectWithErrors(
                 '/dashboard/users',
                 'Erreur lors de la création.',
                 ['_global' => 'Création impossible.'],
@@ -118,7 +93,7 @@ final class UserController extends BaseController
         $ids = array_values(array_filter($ids, static fn (int $id) => $id > 0));
 
         if ($ids === []) {
-            return $this->backWithErrors(
+            return $this->redirectWithErrors(
                 '/dashboard/users',
                 'Aucun utilisateur sélectionné.',
                 ['_global' => 'Aucun utilisateur sélectionné.']
@@ -130,7 +105,7 @@ final class UserController extends BaseController
         $filtered = array_values(array_filter($ids, static fn (int $id) => $id !== $meId));
 
         if ($filtered === []) {
-            return $this->backWithErrors(
+            return $this->redirectWithErrors(
                 '/dashboard/users',
                 'Aucune suppression effectuée.',
                 ['_global' => 'Vous ne pouvez pas supprimer votre propre compte.']
@@ -148,10 +123,10 @@ final class UserController extends BaseController
         }
 
         if ($deleted > 0) {
-            return $this->backWithSuccess('/dashboard/users', "Utilisateur(s) supprimé(s) : {$deleted}.");
+            return $this->redirectWithSuccess('/dashboard/users', "Utilisateur(s) supprimé(s) : {$deleted}.");
         }
 
-        return $this->backWithErrors(
+        return $this->redirectWithErrors(
             '/dashboard/users',
             'Aucune suppression effectuée.',
             ['_global' => 'Aucune suppression effectuée.']
@@ -189,7 +164,7 @@ final class UserController extends BaseController
         }
 
         if ($errors !== []) {
-            return $this->backWithErrors(
+            return $this->redirectWithErrors(
                 '/dashboard/users',
                 'Le formulaire contient des erreurs.',
                 $errors,
@@ -204,9 +179,9 @@ final class UserController extends BaseController
                 'role' => $role,
             ]);
 
-            return $this->backWithSuccess('/dashboard/users', 'Utilisateur modifié avec succès.');
+            return $this->redirectWithSuccess('/dashboard/users', 'Utilisateur modifié avec succès.');
         } catch (\Throwable $e) {
-            return $this->backWithErrors(
+            return $this->redirectWithErrors(
                 '/dashboard/users',
                 'Erreur lors de la modification.',
                 ['_global' => 'Modification impossible.'],

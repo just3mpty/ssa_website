@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Lang\TranslationLoader;
 use Capsule\Contracts\ResponseFactoryInterface;
 use Capsule\Contracts\ViewRendererInterface;
 use Capsule\Http\Message\Request;
@@ -19,20 +18,12 @@ use PDO;
 #[RoutePrefix('')]
 final class LoginController extends BaseController
 {
-    private ?array $strings = null;
-
     public function __construct(
         private PDO $pdo,
         ResponseFactoryInterface $res,
         ViewRendererInterface $view
     ) {
         parent::__construct($res, $view);
-    }
-
-    /** @return array<string,string> */
-    private function strings(): array
-    {
-        return $this->strings ??= TranslationLoader::load(defaultLang: 'fr');
     }
 
     /** GET /login — affiche le formulaire */
@@ -46,11 +37,11 @@ final class LoginController extends BaseController
             'showHeader' => true,
             'showFooter' => true,
             'title' => 'Connexion',
-            'str' => $this->strings(),
+            'str' => $this->translations(),
             'error' => $errors['_global'] ?? null,
             'errors' => $errors,
             'prefill' => $prefill,
-            'csrf_input' => CsrfTokenManager::insertInput(), // {{{csrf_input}}}
+            'csrf_input' => $this->csrfInput(), // {{{csrf_input}}}
             'action' => '/login',
         ]);
     }

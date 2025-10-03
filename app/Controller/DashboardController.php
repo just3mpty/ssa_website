@@ -4,20 +4,15 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Lang\TranslationLoader;
 use App\Navigation\SidebarLinksProvider;
 use Capsule\Contracts\ResponseFactoryInterface;
 use Capsule\Contracts\ViewRendererInterface;
 use Capsule\Domain\Service\PasswordService;
 use Capsule\Domain\Service\UserService;
 use Capsule\Http\Message\Response;
-use Capsule\Http\Support\FlashBag;
-use Capsule\Http\Support\FormState;
-use Capsule\Http\Support\Redirect;
 use Capsule\Routing\Attribute\Route;
 use Capsule\Routing\Attribute\RoutePrefix;
 use Capsule\Security\CsrfTokenManager;
-use Capsule\Security\CurrentUserProvider;
 use Capsule\View\BaseController;
 
 #[RoutePrefix('/dashboard')]
@@ -33,21 +28,6 @@ final class DashboardController extends BaseController
         parent::__construct($res, $view);
     }
 
-    /** cache i18n par requête */
-    private ?array $strings = null;
-
-    /** @return array<string,string> */
-    private function i18n(): array
-    {
-        return $this->strings ??= TranslationLoader::load(defaultLang: 'fr');
-    }
-
-    /** @return array{id?:int,username?:string,role?:string,email?:string} */
-    private function me(): array
-    {
-        return CurrentUserProvider::getUser() ?? [];
-    }
-
     /** @return list<array{title:string,url:string,icon:string}> */
     private function sidebar(bool $isAdmin): array
     {
@@ -60,28 +40,24 @@ final class DashboardController extends BaseController
      */
     private function base(array $extra = []): array
     {
-        $user = $this->me();
-        $isAdmin = ($user['role'] ?? null) === 'admin';
+        $user = $this->currentUser();
+        $isAdmin = $this->isAdmin();
 
         $base = [
             'showHeader' => false,
             'showFooter' => false,
             'isDashboard' => true,
-            'str' => $this->i18n(),
+            'str' => $this->translations(),
             'user' => $user,
             'isAdmin' => $isAdmin,
             'links' => $this->sidebar($isAdmin),
-            'flash' => FlashBag::consume(),
+            'flash' => $this->flashMessages(),
         ];
 
         return array_replace($base, $extra);
     }
 
-    /** champ CSRF “trusted HTML” */
-    private function csrfInput(): string
-    {
-        return CsrfTokenManager::insertInput();
-    }
+
 
     /* ---------------- Routes (GET) ---------------- */
 
@@ -96,8 +72,8 @@ final class DashboardController extends BaseController
     #[Route(path: '/users', methods: ['GET'])]
     public function users(): Response
     {
-        $errors = FormState::consumeErrors();
-        $prefill = FormState::consumeData();
+        $errors = $this->formErrors();
+        $prefill = $this->formData();
 
         return $this->page('dashboard:home', $this->base([
             'title' => 'Utilisateurs',
@@ -114,8 +90,8 @@ final class DashboardController extends BaseController
     #[Route(path: '/account', methods: ['GET'])]
     public function account(): Response
     {
-        $errors = FormState::consumeErrors();
-        $prefill = FormState::consumeData();
+        $errors = $this->formErrors();
+        $prefill = $this->formData();
 
         return $this->page('dashboard:home', $this->base([
             'title' => 'Mon compte',
@@ -143,7 +119,7 @@ final class DashboardController extends BaseController
     {
         CsrfTokenManager::requireValidToken();
 
-        $userId = (int) (($this->me()['id'] ?? 0));
+        $userId = (int) (($this->currentUser()['id'] ?? 0));
         if ($userId <= 0) {
             return $this->res->text('Forbidden', 403);
         }
@@ -162,12 +138,15 @@ final class DashboardController extends BaseController
         if ($errors === []) {
             [$ok, $svcErrors] = $this->passwords->changePassword($userId, $old, $new);
             if ($ok) {
-                return Redirect::withSuccess('/dashboard/account', 'Mot de passe modifié avec succès.');
+                return $this->redirectWithSuccess(
+                    '/dashboard/account',
+                    'Mot de passe modifié avec succès.'
+                );
             }
             $errors = $svcErrors ?: ['_global' => 'Échec de la modification du mot de passe.'];
         }
 
-        return Redirect::withErrors(
+        return $this->redirectWithErrors(
             '/dashboard/account',
             'Le formulaire contient des erreurs.',
             $errors,
