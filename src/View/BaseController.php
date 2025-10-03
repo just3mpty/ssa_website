@@ -9,18 +9,19 @@ use Capsule\Contracts\ResponseFactoryInterface;
 use Capsule\Http\Message\Response;
 use Capsule\Security\CsrfTokenManager;
 use Capsule\Security\CurrentUserProvider;
-use Capsule\Http\Support\Redirect;
 use Capsule\Http\Support\FlashBag;
 use Capsule\Http\Support\FormState;
 
 /**
  * Contrôleur de Base
  *
- * Classe abstraite fournissant les méthodes utilitaires communes à tous les contrôleurs.
- * Gère le rendu des vues, les redirections et l'injection des dépendances.
+ * - Orchestration HTTP (rendu, redirections) via ResponseFactoryInterface.
+ * - Aides PRG (withErrors/withSuccess) : stockent l’état puis renvoient une 303.
+ * - Helpers d’accès à l’utilisateur courant et aux messages flash.
  *
- * @package Capsule\View
- * @abstract
+ * Invariants :
+ * - formErrors()/formData() retournent toujours un array (jamais null).
+ * - page()/comp() résolvent les noms logiques avec pageNs/componentNs si fournis.
  */
 abstract class BaseController
 {
@@ -28,24 +29,16 @@ abstract class BaseController
 
     /**
      * Namespace par défaut pour les pages (surchargeable)
-     *
-     * @var string Ex: 'dashboard' pour les pages du dashboard
+     * Ex: 'dashboard' pour les pages du dashboard.
      */
     protected string $pageNs = '';
 
     /**
      * Namespace par défaut pour les composants (surchargeable)
-     *
-     * @var string Ex: 'dashboard' pour les composants du dashboard
+     * Ex: 'dashboard' pour les composants du dashboard.
      */
     protected string $componentNs = '';
 
-    /**
-     * Constructeur du contrôleur de base
-     *
-     * @param ResponseFactoryInterface $res Factory pour créer des réponses HTTP
-     * @param ViewRendererInterface $view Moteur de rendu des vues
-     */
     public function __construct(
         protected ResponseFactoryInterface $res,
         protected ViewRendererInterface $view
@@ -53,13 +46,10 @@ abstract class BaseController
     }
 
     /**
-     * Rend une template HTML avec layout (méthode legacy)
+     * Rend une template avec layout (héritage historique).
+     * @deprecated Utiliser page() à la place.
      *
-     * @deprecated Utiliser page() à la place
-     * @param string $template Chemin de la template
-     * @param array<string,mixed> $data Données à passer à la template
-     * @param int $status Code HTTP de la réponse
-     * @return Response Réponse HTTP
+     * @param array<string,mixed> $data
      */
     protected function html(string $template, array $data = [], int $status = 200): Response
     {
@@ -69,11 +59,7 @@ abstract class BaseController
     }
 
     /**
-     * Crée une redirection HTTP
-     *
-     * @param string $location URL de destination
-     * @param int $status Code HTTP de redirection (302 par défaut)
-     * @return Response Réponse de redirection
+     * Redirection HTTP standard.
      */
     protected function redirect(string $location, int $status = 302): Response
     {
@@ -81,12 +67,10 @@ abstract class BaseController
     }
 
     /**
-     * Rend un composant sans layout (méthode legacy)
+     * Rend un composant sans layout (héritage historique).
+     * @deprecated Utiliser comp() à la place.
      *
-     * @deprecated Utiliser comp() à la place
-     * @param string $componentPath Chemin du composant
-     * @param array<string,mixed> $data Données à passer au composant
-     * @return string HTML du composant
+     * @param array<string,mixed> $data
      */
     protected function component(string $componentPath, array $data = []): string
     {
@@ -94,19 +78,12 @@ abstract class BaseController
     }
 
     /**
-     * Rend une page avec layout via noms logiques
+     * Rend une page avec layout via noms logiques.
      *
-     * Utilise les noms logiques pour résoudre les templates avec layout automatique.
-     * Ex: 'home' → 'page:home', 'dashboard:home' → 'dashboard:home'
-     *
-     * @param string $name Nom logique de la page
-     * @param array<string,mixed> $data Données à passer à la page
-     * @param int $status Code HTTP de la réponse
-     * @return Response Réponse HTTP avec la page rendue
+     * @param array<string,mixed> $data
      */
     protected function page(string $name, array $data = [], int $status = 200): Response
     {
-        // Résolution du nom logique
         $logical = str_contains($name, ':')
             ? $name
             : ($this->pageNs !== '' ? "page:{$this->pageNs}/{$name}" : "page:{$name}");
@@ -117,14 +94,9 @@ abstract class BaseController
     }
 
     /**
-     * Rend un composant (fragment) sans layout via noms logiques
+     * Rend un composant (fragment) via noms logiques.
      *
-     * Utilise les noms logiques pour résoudre les composants sans layout.
-     * Ex: 'dashboard/articles' → 'component:dashboard/articles'
-     *
-     * @param string $name Nom logique du composant
-     * @param array<string,mixed> $data Données à passer au composant
-     * @return string HTML du composant
+     * @param array<string,mixed> $data
      */
     protected function comp(string $name, array $data = []): string
     {
@@ -136,9 +108,7 @@ abstract class BaseController
     }
 
     /**
-     * Génère un champ CSRF sécurisé
-     *
-     * @return string HTML du champ CSRF
+     * Champ CSRF (HTML <input ...>) prêt à insérer dans un formulaire.
      */
     protected function csrfInput(): string
     {
@@ -146,9 +116,8 @@ abstract class BaseController
     }
 
     /**
-     * Récupère l'utilisateur courant
-     *
-     * @return array{id?:int,username?:string,role?:string,email?:string} Données utilisateur
+     * Données utilisateur courant.
+     * @return array{id?:int,username?:string,role?:string,email?:string}
      */
     protected function currentUser(): array
     {
@@ -156,9 +125,7 @@ abstract class BaseController
     }
 
     /**
-     * Vérifie si l'utilisateur est authentifié
-     *
-     * @return bool True si authentifié
+     * Indique si un utilisateur est authentifié.
      */
     protected function isAuthenticated(): bool
     {
@@ -166,9 +133,7 @@ abstract class BaseController
     }
 
     /**
-     * Vérifie si l'utilisateur est admin
-     *
-     * @return bool True si admin
+     * Vérifie si l’utilisateur courant est admin.
      */
     protected function isAdmin(): bool
     {
@@ -178,35 +143,32 @@ abstract class BaseController
     }
 
     /**
-     * Redirection avec erreurs (PRG pattern)
+     * Redirection PRG avec erreurs + pré-remplissage.
      *
-     * @param string $to URL de destination
-     * @param string $flash Message flash
-     * @param array<string,string> $errors Erreurs de formulaire
-     * @param array<string,mixed> $data Données pré-remplies
-     * @return Response Réponse de redirection
+     * @param array<string,string> $errors
+     * @param array<string,mixed>  $data
      */
     protected function redirectWithErrors(string $to, string $flash, array $errors, array $data = []): Response
     {
-        return Redirect::withErrors($to, $flash, $errors, $data);
+        FormState::set($errors, $data);
+        FlashBag::add('error', $flash);
+
+        return $this->res->redirect($to, 303);
     }
 
     /**
-     * Redirection avec succès (PRG pattern)
-     *
-     * @param string $to URL de destination
-     * @param string $flash Message flash
-     * @return Response Réponse de redirection
+     * Redirection PRG avec succès.
      */
     protected function redirectWithSuccess(string $to, string $flash): Response
     {
-        return Redirect::withSuccess($to, $flash);
+        FlashBag::add('success', $flash);
+
+        return $this->res->redirect($to, 303);
     }
 
     /**
-     * Récupère les messages flash
-     *
-     * @return array<string,array<mixed>> Messages flash
+     * Consomme les messages flash (one-shot).
+     * @return array<string,array<mixed>>
      */
     protected function flashMessages(): array
     {
@@ -214,9 +176,8 @@ abstract class BaseController
     }
 
     /**
-     * Récupère les erreurs de formulaire
-     *
-     * @return array<string,string> Erreurs de formulaire
+     * Consomme les erreurs de formulaire (one-shot).
+     * @return array<string,string>
      */
     protected function formErrors(): array
     {
@@ -224,9 +185,8 @@ abstract class BaseController
     }
 
     /**
-     * Récupère les données pré-remplies du formulaire
-     *
-     * @return array<string,mixed> Données pré-remplies
+     * Consomme les données de formulaire (one-shot).
+     * @return array<string,mixed>
      */
     protected function formData(): array
     {
