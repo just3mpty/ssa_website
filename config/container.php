@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Controller\AgendaController;
-
 use Capsule\Auth\PhpSessionReader;
 use Capsule\Contracts\ResponseFactoryInterface;
 use Capsule\Contracts\SessionReader;
@@ -14,7 +13,6 @@ use Capsule\Http\Middleware\DebugHeaders;
 use Capsule\Http\Middleware\ErrorBoundary;
 use Capsule\Http\Middleware\SecurityHeaders;
 use Capsule\Infrastructure\Container\DIContainer;
-use Capsule\Infrastructure\Database\MariaDBConnection;
 use Capsule\Domain\Repository\UserRepository;
 use Capsule\Domain\Service\UserService;
 use Capsule\Domain\Service\PasswordService;
@@ -25,7 +23,6 @@ use App\Controller\HomeController;
 use App\Controller\LoginController;
 use App\Controller\ArticlesController;
 use App\Controller\DashboardController;
-
 use App\Controller\UserController;
 use Capsule\View\FilesystemTemplateLocator;
 use Capsule\View\MiniMustache;
@@ -33,38 +30,25 @@ use Capsule\View\MiniMustache;
 return (function (): DIContainer {
     $c = new DIContainer();
     $LENGTH_PASSWORD = 8;
-
-    // --- Core deps ---
-    $c->set('pdo', fn () => MariaDBConnection::getInstance());
+    $isDev = true; // -> Changer vers false quand prod
+    $https = false; // -> Changer vers true quand prod
 
     $c->set(DebugHeaders::class, fn ($c) => new DebugHeaders(
         res: $c->get(\Capsule\Contracts\ResponseFactoryInterface::class),
-        enabled: true // passe à false en prod
+        enabled: $isDev
     ));
-
     $c->set(ErrorBoundary::class, fn ($c) => new ErrorBoundary(
         $c->get(ResponseFactoryInterface::class),
-        debug: true,
+        debug: $isDev,
         appName: 'SSA Website'
     ));
-
-    $c->set(
-        SecurityHeaders::class,
-        fn () => new SecurityHeaders(
-            dev: true,   // <-- mets false en prod
-            https: false // true si HTTPS prod
-        )
-    );
+    $c->set(SecurityHeaders::class, fn () => new SecurityHeaders(
+        dev: $isDev,
+        https: $https
+    ));
 
     $c->set(SessionReader::class, fn () => new PhpSessionReader());
 
-    // Middleware: démarrer la session tôt (optionnel mais recommandé)
-    // $c->set(StartSessionEarly::class, fn () => new StartSessionEarly(
-    //     secure: false,     // true en prod HTTPS
-    //     sameSite: 'Strict' // 'Lax' si tu veux autoriser retour de redirection post-login cross-site
-    // ));
-
-    // AuthRequiredMiddleware correctement câblé
     $c->set(AuthRequiredMiddleware::class, fn ($c) => new AuthRequiredMiddleware(
         session:   $c->get(SessionReader::class),
         res:       $c->get(ResponseFactoryInterface::class),
@@ -83,15 +67,21 @@ return (function (): DIContainer {
         if ($tplRoot === false) {
             throw new \RuntimeException('Templates directory not found');
         }
+        $map = [
+                    'page' => $tplRoot . '/pages',
+                    'component' => $tplRoot . '/components',
+                    'partial' => $tplRoot . '/partials',
+                    'admin' => $tplRoot . '/admin',
+                    'dashboard' => $tplRoot . '/dashboard',
+                    'layout' => $tplRoot, // layout:layout → templates/layout.tpl.php
+        ];
 
-        $locator = new FilesystemTemplateLocator([
-            'page' => $tplRoot . '/pages',
-            'component' => $tplRoot . '/components',
-            'partial' => $tplRoot . '/partials',
-            'admin' => $tplRoot . '/admin',
-            'dashboard' => $tplRoot . '/dashboard',
-            'layout' => $tplRoot, // layout:layout → templates/layout.tpl.php
-        ]);
+        foreach ($map as $ns => $dir) {
+            if (!is_dir($dir)) {
+                throw new \RuntimeException("Template namespace '{$ns}' directory missing: {$dir}");
+            }
+        }
+        $locator = new FilesystemTemplateLocator($map);
 
         $engine = new MiniMustache($locator);
 
@@ -168,7 +158,6 @@ return (function (): DIContainer {
     ));
     $c->set(UserController::class, fn ($c) => new UserController(
         $c->get(UserService::class),
-        $c->get('passwords'),
         $c->get(ResponseFactoryInterface::class),
         $c->get(ViewRendererInterface::class),
     ));

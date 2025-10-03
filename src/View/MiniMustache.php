@@ -1,6 +1,5 @@
 <?php
 
-// src/View/MiniMustache.php
 declare(strict_types=1);
 
 namespace Capsule\View;
