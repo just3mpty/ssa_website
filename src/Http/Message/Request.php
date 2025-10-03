@@ -63,7 +63,6 @@ final class Request
         // 2) Path normalisé (sans query, root par défaut, sécurité)
         $uri = (string)($srv['REQUEST_URI'] ?? '/');
         $path = strtok($uri, '?') ?: '/';
-        $path = $path === '' ? '/' : $path;
         // bloque null bytes et directory traversal naïf
         if (str_contains($path, "\0")) {
             $path = '/';

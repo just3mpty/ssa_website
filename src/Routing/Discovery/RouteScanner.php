@@ -53,7 +53,6 @@ final class RouteScanner
 
                     // Construction du chemin complet
                     $path = $prefix . '/' . ltrim($r->path, '/');
-                    $path = $path === '' ? '/' : $path;
 
                     // Compilation de la route en regex
                     $compiled = RouteCompiler::compile($path);
