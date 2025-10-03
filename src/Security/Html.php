@@ -84,8 +84,8 @@ final class Html
      * Les clés sont conservées, et les types non string (int, bool, null…) ne sont pas modifiés.
      * Utile pour sécuriser des données à afficher ou envoyer.
      *
-     * @param array|object $data Données à échapper (deep map).
-     * @return array Tableau échappé récursivement.
+     * @param array<mixed>|object $data Données à échapper (deep map).
+     * @return array<mixed> Tableau échappé récursivement.
      */
     public static function escapeArray(array|object $data): array
     {
@@ -101,17 +101,14 @@ final class Html
             return $data;
         }
 
-        if (is_object($data)) {
-            $result = [];
-            foreach (get_object_vars($data) as $k => $v) {
-                $result[$k] = (is_array($v) || is_object($v))
-                    ? self::escapeArray($v)
-                    : $escape($v);
-            }
-
-            return $result;
+        // $data is guaranteed to be an object here due to type hint
+        $result = [];
+        foreach (get_object_vars($data) as $k => $v) {
+            $result[$k] = (is_array($v) || is_object($v))
+                ? self::escapeArray($v)
+                : $escape($v);
         }
 
-        return [];
+        return $result;
     }
 }

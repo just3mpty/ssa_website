@@ -110,14 +110,11 @@ final class AgendaController extends BaseController
 
     /* ------------------------- Helpers ------------------------- */
 
-    private function csrfInput(): string
-    {
-        return CsrfTokenManager::insertInput();
-    }
+
 
     private function strFromQuery(Request $req, string $key): ?string
     {
-        $q = $req->queryParams[$key] ?? null;
+        $q = $req->query[$key] ?? null;
 
         return is_string($q) ? $q : null;
     }
@@ -183,7 +180,7 @@ final class AgendaController extends BaseController
      * @param list<array{name:string,date:string}> $days
      * @param list<array{display:string,hour:int}> $hours
      * @param list<array{date:string,time:string,title:string,location:string,duration:float}> $events
-     * @return array{days:list<array{name:string,date:string}>,hours:list<array{display:string,hour:int,rows:list<mixed>}>>}
+     * @return array<string,mixed>
      */
     private function buildGrid(array $days, array $hours, array $events): array
     {
@@ -210,7 +207,7 @@ final class AgendaController extends BaseController
         // Ici, on prépare une structure d’accès simple pour les callbacks.
 
         // On post-transforme les days en injectant une “getter simple”
-        $daysForTpl = array_map(function ($d) use ($pxHour, $pxHalf) {
+        $daysForTpl = array_map(function ($d) {
             $byHour = $d['_events'];
             unset($d['_events']);
 
@@ -223,11 +220,10 @@ final class AgendaController extends BaseController
 
         // On “emballe” hours pour que chaque croisement (day,hour) puisse récupérer
         // les events et en déduire style/top/height
-        $hoursForTpl = array_map(function ($h) use ($daysForTpl, $pxHour, $pxHalf) {
-            $h['_days'] = array_map(function ($d) use ($h, $pxHalf, $pxHour) {
+        $hoursForTpl = array_map(function ($h) use ($daysForTpl, $pxHour) {
+            $h['_days'] = array_map(function ($d) use ($h, $pxHour) {
                 $hour = (int)$h['hour'];
-                $byHour = $d['__byHour'] ?? [];
-                $rawEvents = $byHour[$d['date']] ?? $byHour; // sécurité
+                $byHour = $d['__byHour'];
 
                 $cellEvents = [];
                 if (isset($byHour[$hour])) {
@@ -241,7 +237,7 @@ final class AgendaController extends BaseController
                             'duration' => $ev['duration'],
                             'css_class' => $isHalf ? 'event-half-hour' : 'event-whole-hour',
                             'height_px' => (int)round($ev['duration'] * $pxHour),
-                            'top_px' => $isHalf ? (int)$pxHalf : 0,
+                            'top_px' => $isHalf ? (int)($pxHour / 2) : 0,
                         ];
                     }
                 }
@@ -275,6 +271,7 @@ final class AgendaController extends BaseController
     }
 
     /** Sidebar links si tu en as besoin dans le shell */
+    /** @return list<array{title:string,url:string,icon:string}> */
     private function linksForSidebar(): array
     {
         // branche sur ton SidebarLinksProvider si dispo.
