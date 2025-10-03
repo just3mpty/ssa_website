@@ -24,6 +24,7 @@ use App\Controller\LoginController;
 use App\Controller\ArticlesController;
 use App\Controller\DashboardController;
 use App\Controller\UserController;
+use Capsule\Infrastructure\Database\MariaDBConnection;
 use Capsule\View\FilesystemTemplateLocator;
 use Capsule\View\MiniMustache;
 
@@ -32,6 +33,9 @@ return (function (): DIContainer {
     $LENGTH_PASSWORD = 8;
     $isDev = true; // -> Changer vers false quand prod
     $https = false; // -> Changer vers true quand prod
+
+    // --- Core deps ---
+    $c->set('pdo', fn () => MariaDBConnection::getInstance());
 
     $c->set(DebugHeaders::class, fn ($c) => new DebugHeaders(
         res: $c->get(\Capsule\Contracts\ResponseFactoryInterface::class),
