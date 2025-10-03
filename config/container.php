@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Controller\AgendaController;
-use App\Controller\HelloController;
+
 use Capsule\Auth\PhpSessionReader;
 use Capsule\Contracts\ResponseFactoryInterface;
 use Capsule\Contracts\SessionReader;
@@ -25,7 +25,7 @@ use App\Controller\HomeController;
 use App\Controller\LoginController;
 use App\Controller\ArticlesController;
 use App\Controller\DashboardController;
-use App\Controller\CalendarController;
+
 use App\Controller\UserController;
 use Capsule\View\FilesystemTemplateLocator;
 use Capsule\View\MiniMustache;
@@ -142,9 +142,6 @@ return (function (): DIContainer {
     $c->set(SidebarLinksProvider::class, fn () => new SidebarLinksProvider());
 
     // --- Controllers ---
-    $c->set(HelloController::class, fn ($c) => new HelloController(
-        $c->get(ResponseFactoryInterface::class)
-    ));
 
     $c->set(HomeController::class, fn ($c) => new HomeController(
         $c->get(\App\Service\ArticleService::class),
@@ -182,7 +179,7 @@ return (function (): DIContainer {
         $c->get(ViewRendererInterface::class),
     ));
 
-    $c->set(CalendarController::class, fn ($c) => new CalendarController());
+
 
     return $c;
 })();
