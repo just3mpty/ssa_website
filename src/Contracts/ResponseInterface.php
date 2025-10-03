@@ -44,7 +44,7 @@ interface ResponseInterface
     /**
      * Retourne une nouvelle instance avec le corps modifié.
      *
-     * @param string|iterable $body Nouveau corps de réponse
+     * @param string|iterable<string> $body Nouveau corps de réponse
      * @return self Nouvelle instance de réponse
      */
     public function withBody(string|iterable $body): self;

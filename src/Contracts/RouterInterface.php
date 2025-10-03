@@ -14,7 +14,7 @@ use Capsule\Http\Message\Request;
  * - Peut lever HttpException 404 (route absente) ou 405 (méthode non autorisée).
  *
  * @return callable(Request):Response
- * @throws HttpException
+ * @throws \Capsule\Http\Exception\HttpException
  */
 interface RouterInterface
 {

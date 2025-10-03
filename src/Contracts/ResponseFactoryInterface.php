@@ -18,7 +18,7 @@ interface ResponseFactoryInterface
      * Crée une réponse HTTP basique.
      *
      * @param int $status Code de statut HTTP (défaut: 200)
-     * @param string|iterable $body Corps de la réponse (défaut: chaîne vide)
+     * @param string|iterable<string> $body Corps de la réponse (défaut: chaîne vide)
      * @return Response Instance de réponse configurée
      */
     public function createResponse(int $status = 200, string|iterable $body = ''): Response;

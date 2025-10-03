@@ -129,7 +129,7 @@ class UserService
     }
 
     /**
-     * @param array<int,mixed> $data
+     * @param array<string,mixed> $data
      */
     public function updateUser(int $id, array $data): bool
     {

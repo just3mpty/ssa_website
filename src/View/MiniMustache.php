@@ -9,6 +9,7 @@ use Capsule\Contracts\TemplateLocatorInterface;
 
 final class MiniMustache
 {
+    /** @var array<string,string> */
     private array $cache = [];
 
     public function __construct(private TemplateLocatorInterface $locator)

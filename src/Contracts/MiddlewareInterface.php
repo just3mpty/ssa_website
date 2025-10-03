@@ -18,8 +18,5 @@ use Capsule\Http\Message\Response;
  */
 interface MiddlewareInterface
 {
-    /**
-     * @param callable(): mixed $next
-     */
     public function process(Request $req, HandlerInterface $next): Response;
 }
