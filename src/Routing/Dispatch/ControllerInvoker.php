@@ -9,7 +9,6 @@ use Capsule\Contracts\HandlerInterface;
 use Capsule\Contracts\MiddlewareInterface;
 use Capsule\Http\Message\Request;
 use Capsule\Http\Message\Response;
-use Capsule\Http\Factory\ResponseFactory;
 use Capsule\Routing\Compiler\CompiledRoute;
 
 /**
@@ -54,6 +53,8 @@ final class ControllerInvoker
 
         // 2) Adapter final : bind + invoke (sera en bout de pipeline)
         $final = new class ($callable, $vars, $c) implements HandlerInterface {
+            /** @param array{0:object,1:string} $callable */
+            /** @param array<string,string> $vars */
             public function __construct(
                 private array $callable,
                 private array $vars,
@@ -69,8 +70,15 @@ final class ControllerInvoker
                 try {
                     $args = SimpleArgumentBinder::bind($rm, $request, $this->vars, $this->c);
                 } catch (\RuntimeException $e) {
-                    // Politique simple : 400 Bad Request JSON
-                    return ResponseFactory::json(['error' => $e->getMessage()], 400);
+                    /** @var \Capsule\Contracts\ResponseFactoryInterface $res */
+                    $res = $this->c->get(\Capsule\Contracts\ResponseFactoryInterface::class);
+                    $accept = (string)($request->headers['Accept'] ?? '');
+                    $publicMsg = 'Bad request'; // ne pas exposer $e->getMessage()
+                    if (str_contains($accept, 'application/json')) {
+                        return $res->json(['error' => $publicMsg], 400);
+                    }
+
+                    return $res->text($publicMsg, 400);
                 }
 
                 /** @var Response $resp */
