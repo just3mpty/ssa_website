@@ -171,26 +171,32 @@ if (createUser) {
 
 
 // CREER EVENT AGENDA
-document.getElementById("btn-open-modal").onclick = function() {
-    document.getElementById("modalCreateEvent").style.display = "flex";
-};
+// document.getElementById("btn-open-modal").onclick = function() {
+//     document.getElementById("modalCreateEvent").style.display = "flex";
+// };
 
-document.getElementById("closeModal").onclick = function() {
-    document.getElementById("modalCreateEvent").style.display = "none";
-};
+// document.getElementById("closeModal").onclick = function() {
+//     document.getElementById("modalCreateEvent").style.display = "none";
+// };
 
-// VOIR EVENT AGENDA
-document.querySelectorAll('#event-container').forEach(container => {
-    container.onclick = function() {
-        const detailDiv = this.querySelector('.detail');
-        if (detailDiv) {
-            detailDiv.hidden = !detailDiv.hidden;
-        }
-    };
-}); 
+// // VOIR EVENT AGENDA
+// document.querySelectorAll('#event-container').forEach(container => {
+//     container.onclick = function() {
+//         const detailDiv = this.querySelector('.detail');
+//         if (detailDiv) {
+//             detailDiv.hidden = !detailDiv.hidden;
+//         }
+//     };
+// }); 
 
 // EDIT USER INFO via UI sur DASH_ACCOUNT.PHP pour l'instant
 
+document.querySelectorAll(".editBtn").forEach((btn) => {
+    btn.addEventListener("click", editLeUser);
+});
+
+
+// Fonction pour gérer l'édition d'un utilisateur
 function editLeUser(event) {
     console.log("Bouton 'Gérer' cliqué");
     // Récupérer la ligne (tr) correspondant au bouton "Gérer" cliqué
@@ -270,9 +276,9 @@ function editLeUser(event) {
                 form.action = '/dashboard/users/delete';
 
                 form.innerHTML = `
+                    {{{csrf_input}}}
                     <input type="hidden" name="action" value="delete">
                     <input type="hidden" name="user_ids[]" value="${id}">
-                    <?= \CapsuleLib\Security\CsrfTokenManager::insertInput(); ?>
                 `;
 
                 document.body.appendChild(form);
@@ -290,7 +296,8 @@ function editLeUser(event) {
             roleCell.className = originalRole + ' role'; // Restaurer la classe du rôle
             roleCell.innerHTML = "<p> '<?php echo htmlspecialchars($user->email); ?>' </p>";
             row.querySelector('.role p').textContent = originalRole;
-            actionCell.innerHTML = '<button class="editBtn" type="button" onclick="editLeUser(event)">Gérer</button>';
+            actionCell.innerHTML = '<button class="editBtn" type="button">Gérer</button>';
+            actionCell.querySelector(".editBtn").addEventListener("click", editLeUser);
         });
 
         // Gestion du bouton "Enregistrer"
@@ -305,7 +312,7 @@ function editLeUser(event) {
                 form.action = '/dashboard/users/update';
     
                 form.innerHTML = `
-                    
+                    {{{csrf_input}}}
                     <input type="hidden" name="action" value="update">
                     <input type="hidden" name="id" value="${id}">
                     <input type="hidden" name="username" value="${newUsername}">

@@ -114,7 +114,7 @@ final class DashboardController extends BaseController
     }
     /* ---------------- Actions (POST) ---------------- */
 
-    #[Route(path: '/account/password', methods: ['POST'])]
+    #[Route(path: '/account', methods: ['POST'])]
     public function accountPassword(): Response
     {
         CsrfTokenManager::requireValidToken();
