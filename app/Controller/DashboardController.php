@@ -135,6 +135,10 @@ final class DashboardController extends BaseController
             $errors['confirm_new_password'] = 'Les nouveaux mots de passe ne correspondent pas.';
         }
 
+        if (strlen($new) < 8) {
+            $errors['new_password'] = 'Le mot de passe doit contenir au moins 8 caractères.';
+        }
+        
         if ($errors === []) {
             [$ok, $svcErrors] = $this->passwords->changePassword($userId, $old, $new);
             if ($ok) {

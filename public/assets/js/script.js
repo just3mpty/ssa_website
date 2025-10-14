@@ -266,7 +266,7 @@ function editLeUser(event) {
         actionCell.appendChild(btnSave);
         actionCell.appendChild(btnCancel);
         actionCell.appendChild(btnSuppr);
-        
+
 
         // Gestion du bouton "Supprimer"
         btnSuppr.addEventListener('click', () => {
@@ -275,10 +275,10 @@ function editLeUser(event) {
                 form.method = 'POST';
                 form.action = '/dashboard/users/delete';
 
-                form.innerHTML = `
-                    {{{csrf_input}}}
-                    <input type="hidden" name="action" value="delete">
-                    <input type="hidden" name="user_ids[]" value="${id}">
+                const csrfFragment = document.querySelector('#csrf-template').innerHTML;
+                form.innerHTML = csrfFragment + `
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="user_ids[]" value="${id}">
                 `;
 
                 document.body.appendChild(form);
@@ -310,9 +310,11 @@ function editLeUser(event) {
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = '/dashboard/users/update';
-    
-                form.innerHTML = `
-                    {{{csrf_input}}}
+                
+
+                const csrfFragment = document.querySelector('#csrf-template').innerHTML;
+                form.innerHTML = csrfFragment + `
+                    
                     <input type="hidden" name="action" value="update">
                     <input type="hidden" name="id" value="${id}">
                     <input type="hidden" name="username" value="${newUsername}">
